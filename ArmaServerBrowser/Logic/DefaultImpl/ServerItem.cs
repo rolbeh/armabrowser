@@ -15,6 +15,7 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
 
         private int _maxNumPlayers;
         private string _mission;
+        private string _version;
 
         #endregion Field
 
@@ -54,7 +55,18 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
 
         public int Port { get; internal set; }
 
-        public string Version { get; internal set; }
+        public string Version
+        {
+            get { return _version; }
+            set
+            {
+                if (_version == value) return;
+                _version = value;
+                OnPropertyChanged();
+            }
+        }
+
+        //public string Version { get; internal set; }
 
         public string ModsText
         {
@@ -92,5 +104,7 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
         public string _modsText { get; set; }
 
         public bool Passworded { get; set; }
+
+        public bool IsVersionOk { get; set; }
     }
 }
