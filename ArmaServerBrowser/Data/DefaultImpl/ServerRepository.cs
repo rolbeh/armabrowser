@@ -276,7 +276,8 @@ namespace ArmaServerBrowser.Data.DefaultImpl
                             Mission = fields["mission"],
                             Players = Int32.Parse(fields["numplayers"]),
                             Mode = fields["gametype"],
-                            Mods = fields["mod"]
+                            Mods = fields["mod"],
+                            Version = fields["gamever"]
                         };
                     if (itemGenerated != null)
                     {

@@ -19,6 +19,8 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
         private ObservableCollection<IAddon> _addons;
         private Data.IServerRepository _defaultServerRepository;
         private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
+        private string _armaPath = null;
+        private string _armaVersion = null;
 
         #endregion Fields
 
@@ -37,11 +39,31 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
             }
         }
 
+        public string ArmaVersion
+        {
+            get
+            {
+                if (_armaVersion == null)
+                {
+                    if (System.IO.File.Exists(Path.Combine(ArmaPath, "arma3.exe")))
+                    {
+                        var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(ArmaPath, "arma3.exe"));
+                        _armaVersion = string.Format("{0}.{1}.{2:000}{3}", version.FileMajorPart, version.FileMinorPart, version.FilePrivatePart, version.FileBuildPart);  
+                    }
+                    else
+                        _armaVersion = "";
+                }
+                return _armaVersion;
+            }
+        }
+
         public string ArmaPath
         {
             get
             {
-                return _defaultDataRepository.GetArma3Folder().ToString();
+                if (_armaPath == null)
+                    _armaPath = _defaultDataRepository.GetArma3Folder().ToString();
+                return _armaPath;
             }
         }
 
@@ -87,6 +109,7 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
         }*/
 
 
+
         public void ReloadServerItems(string filterByHostOrMission, CancellationToken cancellationToke)
         {
 
@@ -125,7 +148,8 @@ namespace ArmaServerBrowser.Logic.DefaultImpl
                                               Port = dataItem.Port,
                                               Signatures = dataItem.Signatures,
                                               Version = dataItem.Version,
-                                              Passworded = dataItem.Passworded
+                                              Passworded = dataItem.Passworded,
+                                              IsVersionOk = ArmaVersion == dataItem.Version
                                           };
                                     UiTask.RunInUiAsync((dest2, item2) => dest2.Add(item2), dest, item).Wait();
                                 }).ToArray();
