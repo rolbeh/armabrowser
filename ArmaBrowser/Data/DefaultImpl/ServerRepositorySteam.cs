@@ -1,0 +1,433 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ArmaBrowser.Data.DefaultImpl
+{
+    sealed class ServerRepositorySteam : IServerRepository
+    {
+        static Encoding CharEncoding = Encoding.GetEncoding(1252);
+
+        IPEndPoint[] IServerRepository.GetServerEndPoints()
+        {
+            throw new NotSupportedException();
+        }
+
+        IServerVo[] IServerRepository.GetServerList(string hostAndMissionFilter, Action<IServerVo> itemGenerated = null)
+        {
+            // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
+
+            var bufferList = new List<IServerVo>(5000);
+
+            IPEndPoint lastEndPoint = new IPEndPoint(0, 0);
+
+
+            var addressBytes = new byte[4];
+            var portBytes = new byte[2];
+            int port = 0;
+
+
+            var roundtrips = 0;
+            using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
+            {
+                udp.Connect("208.64.200.52", 27011);
+                while (true)
+                {
+
+                    string request = "1ÿ";
+                    request += lastEndPoint + "\0";
+                    request += "\\gamedir\\Arma3";
+                    //request += "\\empty\\0";
+
+                    request += "\0";
+
+                    var bytes = CharEncoding.GetBytes(request);
+
+                    //udp.Connect("146.66.155.8", 27019);
+                    IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
+                    var sendlen = udp.Send(bytes, bytes.Length);
+
+                    udp.Client.ReceiveTimeout = 900;
+
+                    byte[] buffer = null;
+                    try
+                    {
+                        roundtrips++;
+                        Debug.WriteLine("RoundTrips " + roundtrips + " " + request + System.Environment.NewLine);
+
+                        buffer = udp.Receive(ref endp);
+                    }
+                    catch (System.Net.Sockets.SocketException ex)
+                    {
+                        break;
+                    }
+                    catch (TimeoutException)
+                    {
+                        break;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        break;
+                    }
+
+                    using (var mem = new System.IO.MemoryStream(buffer, false))
+                    using (var br = new System.IO.BinaryReader(mem, Encoding.UTF8))
+                    {
+                        var i = br.ReadUInt32();
+                        i = br.ReadUInt16();
+
+                        while (mem.Position < mem.Length)
+                        {
+
+                            addressBytes[0] = br.ReadByte();
+                            addressBytes[1] = br.ReadByte();
+                            addressBytes[2] = br.ReadByte();
+                            addressBytes[3] = br.ReadByte();
+
+                            portBytes[0] = br.ReadByte();
+                            portBytes[1] = br.ReadByte();
+
+                            port = portBytes[0] << 8 | portBytes[1];
+                            lastEndPoint = new IPEndPoint(new IPAddress(addressBytes), port);
+
+                            if (lastEndPoint.Address.GetAddressBytes().All(b => b == 0))
+                                break;
+                            var item = new ServerItem();
+                            item.Host = lastEndPoint.Address;
+                            item.QueryPort = lastEndPoint.Port;
+                            bufferList.Add(item);
+                            if (itemGenerated != null)
+                                itemGenerated(item);
+                        }
+
+                        if (lastEndPoint.Address.GetAddressBytes().All(b => b == 0))
+                            break;
+                    }
+                }
+            }
+
+            return bufferList.ToArray();
+        }
+
+        IServerVo IServerRepository.GetServerInfo(IPEndPoint gameServerEndpoint)
+        {
+
+            byte[] startBytes = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
+            byte Header = 0x54;
+            string qryAsString = "Source Engine Query";
+
+            List<byte> qry = new List<byte>();
+            qry.AddRange(startBytes);
+            qry.Add(Header);
+            qry.AddRange(Encoding.Default.GetBytes(qryAsString));
+            qry.Add(0x00);
+
+            ServerQueryRequest item = null;
+            var sw = new System.Diagnostics.Stopwatch();
+            var buffer = new byte[2048];
+            using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
+            {
+                udp.Connect(gameServerEndpoint);
+
+                udp.AllowNatTraversal(true);
+                udp.Client.ReceiveTimeout = 200;
+
+                try
+                {
+                    IPEndPoint endp = null;
+                    sw.Start();
+                    udp.Send(qry.ToArray(), qry.Count);
+
+                    System.Net.Sockets.SocketError errorCode;
+                    var receivedLenght = udp.Client.Receive(buffer, 0, 2048, System.Net.Sockets.SocketFlags.None, out errorCode);
+                    sw.Stop();
+                    if (errorCode != System.Net.Sockets.SocketError.Success) return null;
+                    if (receivedLenght == buffer.Length)
+                        throw new Exception("Buffer zu klein");
+
+
+                    var receivedBytes = new byte[receivedLenght];
+                    Buffer.BlockCopy(buffer, 0, receivedBytes, 0, receivedLenght);
+                    //var receivedBytes = udp.Receive(ref endp);
+
+                    var enconding = System.Text.Encoding.UTF8; // System.Text.Encoding.ASCII;
+
+                    using (var mem = new System.IO.MemoryStream(receivedBytes))
+                    using (var br = new System.IO.BinaryReader(mem, CharEncoding))
+                    {
+                        br.ReadInt32();
+                        br.ReadByte();
+                        item = new ServerQueryRequest();
+                        item.ProtocolVersion = br.ReadByte();
+
+                        item.Ping = sw.ElapsedMilliseconds;
+
+                        var count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                        item.GameServerName = enconding.GetString(br.ReadBytes(count));
+                        br.ReadByte(); // null-byte
+
+                        count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                        item.Map = enconding.GetString(br.ReadBytes(count));
+                        br.ReadByte(); // null-byte
+
+                        count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                        item.Folder = enconding.GetString(br.ReadBytes(count));
+                        br.ReadByte(); // null-byte
+
+                        count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                        item.Game = enconding.GetString(br.ReadBytes(count));
+                        br.ReadByte(); // null-byte
+
+                        item.ID = br.ReadInt16();
+
+                        item.CurrentPlayerCount = br.ReadByte();
+
+                        item.MaxPlayerCount = br.ReadByte();
+
+                        item.CurrentBotsCount = br.ReadByte();
+
+                        item.ServerType = (ServerQueryRequestType)br.ReadByte();
+
+                        item.Passwort = br.ReadByte() == 1;
+
+                        item.VAC = br.ReadByte() == 1;
+
+                        item.Mode = br.ReadByte() == 1;
+
+                        count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                        item.Version = enconding.GetString(br.ReadBytes(count));
+                        br.ReadByte(); // null-byte
+
+                        var edfCode = br.ReadByte();
+
+                        item.Data = receivedBytes;
+
+                        if ((edfCode & 0x80) == 0x80)
+                            item.GamePort = br.ReadUInt16();
+
+
+
+                        if ((edfCode & 0x10) == 0x10)
+                            item.ServerSteamId = br.ReadInt64();
+
+                        //if ((edfCode & 0x40) == 0x40)
+                        //    Console.WriteLine("spectator server");
+
+                        if ((edfCode & 0x20) == 0x20)
+                        {
+                            count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+                            item.Keywords = enconding.GetString(br.ReadBytes(count));
+                            br.ReadByte(); // null-byte
+                        }
+
+                        if ((edfCode & 0x01) == 0x01)
+                            item.GameID = br.ReadInt64();
+
+                        // https://community.bistudio.com/wiki/STEAMWORKSquery
+                    }
+                    byte ruleRequestByte = 0x56;
+                    byte playerRequestByte = 0x55;
+
+                    try
+                    {
+
+
+                        // Rules auslesen
+                        var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, ruleRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
+                        var sendlen = udp.Send(challengeRequest, 9);
+
+                        var respose = udp.Receive(ref endp);
+
+                        respose[4] = ruleRequestByte;
+                        sendlen = udp.Send(respose, 9);
+                        respose = udp.Receive(ref endp);
+
+
+                        int ruleCount = respose[5] + (respose[6] >> 8);
+                        int offset = 7;
+
+                        for (int i = 0; i < ruleCount; i++)
+                        {
+                            item.KeyValues.Add(ReadStringNullTerminated(respose, ref offset),
+                                                ReadStringNullTerminated(respose, ref offset));
+                        }
+
+
+
+                    }
+                    catch
+                    {
+
+                    }
+
+                    if (item.CurrentPlayerCount > 0)
+                        try
+                        {
+                            var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, playerRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
+                            var sendlen = udp.Send(challengeRequest, 9);
+
+                            var respose = udp.Receive(ref endp);
+
+                            respose[4] = playerRequestByte;
+                            sendlen = udp.Send(respose, 9);
+                            respose = udp.Receive(ref endp);
+
+                            byte playerCount = respose[5];
+                            var offset = 6;
+                            for (byte i = 0; i < playerCount; i++)
+                            {
+
+                                var p = new ServerQueryRequest.Player();
+                                p.Idx = respose[offset];
+                                offset += 1;
+                                p.Name = ReadStringNullTerminated(respose, ref offset);
+                                p.Score = BitConverter.ToInt32(respose, offset);
+                                offset += 4;
+                                p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(respose, offset)));
+
+                                offset += 4;
+                                item.Players.Add(p);
+                            }
+                        }
+                        catch
+                        {
+
+
+                        }
+                }
+                catch
+                {
+                    sw.Stop();
+                }
+
+
+            }
+
+            var modName = GetValue("modNames", item.KeyValues);
+
+            var modHashs = GetValue("modHashes", item.KeyValues);
+
+            return item != null
+                        ? new ServerItem
+                        {
+                            Host = gameServerEndpoint.Address,
+                            QueryPort = gameServerEndpoint.Port,
+                            Name = item.GameServerName,
+                            Gamename = "Arma3",
+                            Mission = item.Game,
+                            MaxPlayers = item.MaxPlayerCount,
+                            CurrentPlayerCount = item.CurrentPlayerCount,
+                            Passworded = item.Passwort,
+                            Port = item.GamePort,
+                            Version = item.Version,
+                            Keywords = item.Keywords,
+                            CurrentPlayers = new string[0],
+                            Ping = item.Ping,
+                            Players = item.Players.Cast<ISteamGameServerPlayer>().ToArray(),
+                            Mods = modName,
+                            Modhashs = modHashs
+                        }
+                        : null;
+
+
+        }
+
+        private static string GetValue(string keyWord, Dictionary<string, string> dic)
+        {
+            var sb = new StringBuilder();
+            var keyWordLen = keyWord.Length;
+            var key = dic.Keys.FirstOrDefault(k => k.Length >= keyWordLen && keyWord == k.Substring(0, keyWordLen));
+            if (key != null)
+            {
+                var idx = key.LastIndexOf('-') + 1;
+                var count = 0;
+                if (Int32.TryParse(key.Substring(idx, key.Length - idx), out count))
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        sb.Append(dic[string.Format("{0}:{1}-{2}", keyWord, i, count)]);
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string ReadStringNullTerminated(byte[] bytes, ref int offset)
+        {
+            var count = Array.FindIndex(bytes, (int)offset, IsNULL) - (int)offset;
+            var result = System.Text.Encoding.UTF8.GetString(bytes, offset, count);
+            offset = offset + count + 1/*null-byte*/;
+            return result;
+        }
+
+        static bool IsNULL(byte b)
+        {
+            return b == System.Byte.MinValue;
+        }
+
+        class ServerQueryRequest
+        {
+
+            public ServerQueryRequest()
+            {
+                Keywords = string.Empty;
+                KeyValues = new Dictionary<string, string>();
+                Players = new List<Player>(byte.MaxValue);
+            }
+
+            public byte ProtocolVersion;
+            public string GameServerName;
+            public string Map;
+            public string Folder;
+            public string Game;
+
+            public short ID;
+            public byte CurrentPlayerCount;
+            public byte MaxPlayerCount;
+            public byte CurrentBotsCount;
+            public ServerQueryRequestType ServerType;
+            public bool Passwort;
+
+            public bool VAC;
+            public bool Mode;
+            public string Version;
+            public Int32 GamePort;
+            public byte[] Data;
+
+            public long ServerSteamId;
+
+            public string Keywords;
+
+            public long GameID;
+            public long Ping;
+
+            public Dictionary<string, string> KeyValues { get; private set; }
+
+            public class Player : ISteamGameServerPlayer
+            {
+                public string Name { get; set; }
+
+                public Int32 Score { get; set; }
+
+                public TimeSpan OnlineTime { get; set; }
+
+                public byte Idx { get; set; }
+            }
+
+            public List<Player> Players { get; private set; }
+        }
+
+
+        enum ServerQueryRequestType
+        {
+            DedicatedServer = 0x64, // 'd'
+            NonDedicatedServer = 0x6C, // 'l'
+            RelayServer = 0x70, // 'p'
+        }
+    }
+}
