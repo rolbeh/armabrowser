@@ -1,4 +1,4 @@
-﻿<Window x:Uid="Window_1" x:Class="ArmaServerBrowser.MainWindow"
+﻿<Window x:Class="ArmaServerBrowser.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:ArmaServerBrowser.ViewModel"
@@ -117,7 +117,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1" x:Uid="Button_1" Click="Button_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
+                    <Button Grid.Column="1"  Click="Button_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
                             Foreground="Black"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}">
@@ -255,9 +255,9 @@
                         <views:AddonsControl Margin="0,5" />
                     </Grid>
                     <ListBox Grid.Row="2" Margin="0,5,0,0" DisplayMemberPath="DisplayText" Height="133" VerticalAlignment="Top" ItemsSource="{Binding Source={StaticResource CvsSelectedAddons}}" />
-                    <StackPanel x:Uid="CheckBox_LaunchWithoutHost"  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom">
+                    <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom">
                         <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="Ohne Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
-                        <CheckBox x:Uid="CheckBox_asAdmin" IsChecked="{Binding RunAsAdmin}" Content="Als Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
+                        <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="Als Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
 
                     </StackPanel>
 
@@ -283,7 +283,7 @@
                     <TextBlock Text="{Binding SelectedServerItem.Version, FallbackValue=Version : 0.0.0.0, StringFormat=Version :\{0\}}" Height="15"/>
                 </StackPanel>
                 <TextBlock Text="{Binding SelectedServerItem.ModsText, StringFormat=Addons :{0}, FallbackValue='Addons : Arma 3'}" HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap" />
-                <Button Grid.Column="1" x:Uid="BtnPlay"
+                <Button Grid.Column="1" 
                         Width="102"  
                         HorizontalAlignment="Center" 
                         Command="Open"

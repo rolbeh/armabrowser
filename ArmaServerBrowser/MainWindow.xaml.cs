@@ -117,7 +117,7 @@ namespace ArmaServerBrowser
 
         private void ServerListControl_Loaded(object sender, RoutedEventArgs e)
         {
-            MyViewModel.Reload();
+            Task.Delay(500).ContinueWith(t => MyViewModel.Reload());
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

@@ -24,7 +24,7 @@
             <MouseBinding MouseAction="LeftDoubleClick" Command="ApplicationCommands.Open" />
         </DataGrid.InputBindings>-->
         <DataGrid.Columns>
-            <DataGridTemplateColumn x:Uid="DataGridTextColumn_Country" Header="Land"
+            <DataGridTemplateColumn Header="Land"
                                 SortMemberPath="Country"
                                 Width="50"
                                 IsReadOnly="True"
@@ -59,28 +59,28 @@
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTextColumn x:Uid="DataGridTextColumn_Host" Header="Server"
+            <DataGridTextColumn Header="Server"
                                 Binding="{Binding Name}"
                                 Width="350"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn x:Uid="DataGridTextColumn_Mission" Header="Mission"
+            <DataGridTextColumn Header="Mission"
                                 Binding="{Binding Mission}" 
                                 Width="*"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn x:Uid="DataGridTextColumn_Mode" Header="Mode"
+            <DataGridTextColumn  Header="Mode"
                                 Binding="{Binding Mode}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn x:Uid="DataGridTextColumn_Players" Header="Spieler"
+            <DataGridTextColumn Header="Spieler"
                                 Binding="{Binding Players}" 
                                 Width="50"
                                 SortDirection="Descending"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn x:Uid="DataGridTextColumn_Mods" Header="Mods"
+            <DataGridTextColumn  Header="Mods"
                                 Binding="{Binding Path=ModsText}" 
                                 Width="50"
                                 IsReadOnly="True"
