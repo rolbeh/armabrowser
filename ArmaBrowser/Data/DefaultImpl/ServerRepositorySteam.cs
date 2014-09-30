@@ -58,7 +58,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     try
                     {
                         roundtrips++;
-                        Debug.WriteLine("RoundTrips " + roundtrips + " " + request + System.Environment.NewLine);
+                        Debug.WriteLine("RoundTrips " + roundtrips);
 
                         buffer = udp.Receive(ref endp);
                     }

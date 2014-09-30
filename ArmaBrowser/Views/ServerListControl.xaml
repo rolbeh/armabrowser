@@ -25,21 +25,33 @@
         <!--<DataGrid.InputBindings>
             <MouseBinding MouseAction="LeftDoubleClick" Command="ApplicationCommands.Open" />
         </DataGrid.InputBindings>-->
+        
+        <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow">
+                <Setter Property="Height" Value="0"/>
+                <Setter Property="Opacity" Value="0"/>
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard AutoReverse="False">
+                                <DoubleAnimation From="0" To="21" Storyboard.TargetProperty="Height"
+                                                 Duration="0:0:0:0.200"/>
+                                <DoubleAnimation From="22" To="18" Storyboard.TargetProperty="Height"
+                                                 Duration="0:0:0:0.100"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                        <BeginStoryboard>
+                            <Storyboard AutoReverse="False">
+                                <DoubleAnimation From="0.0" To="1.0" Storyboard.TargetProperty="Opacity"
+                                                 Duration="0:0:0:0.300"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+        </DataGrid.RowStyle>
+        
         <DataGrid.Columns>
-            <!--<DataGridTemplateColumn Header="Land"
-                                SortMemberPath="Country"
-                                Width="50"
-                                IsReadOnly="True"
-                                >
-                --><!--Binding="{Binding Country}"--><!--
-                <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate>
-                        <Image Source="{Binding Path=CountryUrl}" Width="16" Height="11" ToolTip="{Binding Path=Country}">
-                             
-                        </Image>
-                    </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>-->
             <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
                 <DataGridTemplateColumn.Header>
                     <TextBlock Text="&#x1f511;" IsHitTestVisible="False" FontSize="12"/>
