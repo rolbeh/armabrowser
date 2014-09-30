@@ -23,6 +23,9 @@ namespace ArmaBrowser.ViewModel
         private uint _loadingBusy;
         private string _armaPath;
         private string _selectedEndPoint;
+        private bool _runAsAdmin;
+        private bool _launchWithoutHost;
+        private IEnumerable<System.Net.IPEndPoint> _lastItems = new System.Net.IPEndPoint[0];
 
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
 
@@ -71,8 +74,15 @@ namespace ArmaBrowser.ViewModel
                 OnPropertyChanged();
 
                 Properties.Settings.Default.TextFilter = _textFilter;
-                ServerItemsView.Refresh();
+                ServerItemsViewRefresh();
             }
+        }
+
+        private void ServerItemsViewRefresh()
+        {
+            ServerItemsView.Refresh();
+            _lastItems = ServerItemsView.Cast<IServerItem>().Take(50).Select(i => { return new System.Net.IPEndPoint(i.Host, i.QueryPort); }).ToArray();
+
         }
 
         public IAddon SelectedAddon
@@ -83,7 +93,7 @@ namespace ArmaBrowser.ViewModel
                 if (_selectedAddon == value) return;
                 _selectedAddon = value;
                 OnPropertyChanged();
-                ServerItemsView.Refresh();
+                //ServerItemsView.Refresh();
             }
         }
 
@@ -102,9 +112,6 @@ namespace ArmaBrowser.ViewModel
 
             }
         }
-
-        private bool _runAsAdmin;
-        private bool _launchWithoutHost;
 
         public bool RunAsAdmin
         {
@@ -147,7 +154,7 @@ namespace ArmaBrowser.ViewModel
             //oldsrc.Dispose();
 
             var lastSelected = _selectedEndPoint;
-
+            
             Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token)
                 .ContinueWith(t =>
                 {
@@ -158,6 +165,12 @@ namespace ArmaBrowser.ViewModel
                     //}
                     EndLoading();
                 });
+
+        }
+
+        void Test()
+        {
+            var lastItems = ServerItemsView.Cast<IServerItem>().Select(i => { return new System.Net.IPEndPoint(i.Host, i.Port); });
 
         }
 
@@ -181,7 +194,7 @@ namespace ArmaBrowser.ViewModel
 
         void ReloadInternal(CancellationToken cancellationToken)
         {
-            _context.ReloadServerItems(TextFilter, cancellationToken);
+            _context.ReloadServerItems(_lastItems, cancellationToken);
             RefreshUseAddons();
         }
 

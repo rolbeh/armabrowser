@@ -17,7 +17,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             throw new NotSupportedException();
         }
 
-        IServerVo[] IServerRepository.GetServerList(string hostAndMissionFilter, Action<IServerVo> itemGenerated = null)
+        IServerVo[] IServerRepository.GetServerList(Action<IServerVo> itemGenerated)
         {
             // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
 
@@ -49,10 +49,11 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                     //udp.Connect("146.66.155.8", 27019);
                     IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
+                    udp.Client.ReceiveTimeout = 900;
+                    
                     var sendlen = udp.Send(bytes, bytes.Length);
 
-                    udp.Client.ReceiveTimeout = 900;
-
+                    
                     byte[] buffer = null;
                     try
                     {
@@ -134,7 +135,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                 udp.Connect(gameServerEndpoint);
 
                 udp.AllowNatTraversal(true);
-                udp.Client.ReceiveTimeout = 200;
+                udp.Client.ReceiveTimeout = 300;
 
                 try
                 {
@@ -229,75 +230,13 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                         // https://community.bistudio.com/wiki/STEAMWORKSquery
                     }
-                    byte ruleRequestByte = 0x56;
-                    byte playerRequestByte = 0x55;
-
-                    try
-                    {
-
-
-                        // Rules auslesen
-                        var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, ruleRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
-                        var sendlen = udp.Send(challengeRequest, 9);
-
-                        var respose = udp.Receive(ref endp);
-
-                        respose[4] = ruleRequestByte;
-                        sendlen = udp.Send(respose, 9);
-                        respose = udp.Receive(ref endp);
-
-
-                        int ruleCount = respose[5] + (respose[6] >> 8);
-                        int offset = 7;
-
-                        for (int i = 0; i < ruleCount; i++)
-                        {
-                            item.KeyValues.Add(ReadStringNullTerminated(respose, ref offset),
-                                                ReadStringNullTerminated(respose, ref offset));
-                        }
-
-
-
-                    }
-                    catch
-                    {
-
-                    }
+                    
+                    RequestRules(item, udp);
 
                     if (item.CurrentPlayerCount > 0)
-                        try
-                        {
-                            var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, playerRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
-                            var sendlen = udp.Send(challengeRequest, 9);
-
-                            var respose = udp.Receive(ref endp);
-
-                            respose[4] = playerRequestByte;
-                            sendlen = udp.Send(respose, 9);
-                            respose = udp.Receive(ref endp);
-
-                            byte playerCount = respose[5];
-                            var offset = 6;
-                            for (byte i = 0; i < playerCount; i++)
-                            {
-
-                                var p = new ServerQueryRequest.Player();
-                                p.Idx = respose[offset];
-                                offset += 1;
-                                p.Name = ReadStringNullTerminated(respose, ref offset);
-                                p.Score = BitConverter.ToInt32(respose, offset);
-                                offset += 4;
-                                p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(respose, offset)));
-
-                                offset += 4;
-                                item.Players.Add(p);
-                            }
-                        }
-                        catch
-                        {
-
-
-                        }
+                    {
+                        RequestPlayers(item, udp);
+                    }
                 }
                 catch
                 {
@@ -334,6 +273,107 @@ namespace ArmaBrowser.Data.DefaultImpl
                         : null;
 
 
+        }
+
+        private static void RequestRules(ServerQueryRequest item, System.Net.Sockets.UdpClient udp)
+        {
+            const byte ruleRequestByte = 0x56;
+            IPEndPoint endp = null;
+            try
+            {
+
+
+                // Rules auslesen
+                var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, ruleRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
+                var sendlen = udp.Send(challengeRequest, 9);
+
+                var respose = udp.Receive(ref endp);
+
+                if (respose[4] != 0x41)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error in RequestRules - Challenge response");
+                    return;
+                }
+                respose[4] = ruleRequestByte;
+                sendlen = udp.Send(respose, 9);
+                respose = udp.Receive(ref endp);
+
+                if (respose[4] != 0x45)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error in RequestRules - Rules response");
+                    return;
+                }
+
+                int ruleCount = respose[5] + (respose[6] >> 8);
+                int offset = 7;
+
+                for (int i = 0; i < ruleCount; i++)
+                {
+                    var key = ReadStringNullTerminated(respose, ref offset);
+                    var value = ReadStringNullTerminated(respose, ref offset);
+                    if (!string.IsNullOrEmpty(key))
+                        item.KeyValues.Add(key, value);
+                }
+
+
+
+            }
+            catch
+            {
+
+            }
+        }
+
+        private static void RequestPlayers(ServerQueryRequest item, System.Net.Sockets.UdpClient udp)
+        {
+            const byte playerRequestByte = 0x55;
+            try
+            {
+                IPEndPoint endp = null;
+
+                var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, playerRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
+                var sendlen = udp.Send(challengeRequest, 9);
+
+                var respose = udp.Receive(ref endp); // challenge response
+
+                if (respose[4] != 0x41)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error in RequestPlayers - Challenge response");
+                    return;
+                }
+
+                respose[4] = playerRequestByte;
+                sendlen = udp.Send(respose, 9);
+                respose = udp.Receive(ref endp);
+
+                if (respose[4] != 0x44)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error in RequestPlayers - Players response");
+                    return;
+                }
+
+                byte playerCount = respose[5];
+                var offset = 6;
+                for (byte i = 0; i < playerCount; i++)
+                {
+
+                    var p = new ServerQueryRequest.Player();
+                    p.Idx = respose[offset];
+                    offset += 1;
+                    p.Name = ReadStringNullTerminated(respose, ref offset);
+                    p.Score = BitConverter.ToInt32(respose, offset);
+                    offset += 4;
+                    p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(respose, offset)));
+
+                    offset += 4;
+                    item.Players.Add(p);
+                }
+            }
+            catch
+            {
+
+
+            }
         }
 
         private static string GetValue(string keyWord, Dictionary<string, string> dic)

@@ -6,6 +6,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+        xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         Title="ARMA III Server Browser (Community Project by Tackle armabrowser@gmx.net)" 
         Height="693" Width="1023" 
         UseLayoutRounding="False"
@@ -146,13 +147,7 @@
                             </FrameworkElement.Style>
                         </TextBlock>
                         <!-- bussy -->
-
-                        <!--
-                        
-                        Visibility="{Binding LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        -->
-
-                        <Grid  HorizontalAlignment="Right" Height="20" Width="20"  >
+                        <Grid  HorizontalAlignment="Right" Height="20" Width="20"  Visibility="{Binding LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}" >
                             <FrameworkElement.Resources>
                                 <RotateTransform x:Key="GridRotateTransform" />
                             </FrameworkElement.Resources>
@@ -283,13 +278,20 @@
                         <RowDefinition/>
                         <RowDefinition  MinHeight="30" Height="auto"  MaxHeight="150"/>
                     </Grid.RowDefinitions>
-                    <Image  Source="Img/ArmA_3_Logo.png" IsHitTestVisible="False" Opacity="0.3" Grid.RowSpan="3"/>
+                    <Border>
+                        <Border.Effect>
+                            
+                                <Shader:Glow x:Name="GlowShader" Threshold="0.6" GlowFactor="2"/>
+                                                     
+                        </Border.Effect>
+                        <Image  Source="Img/ArmA_3_Logo.png" Opacity=".5" IsHitTestVisible="False" Grid.RowSpan="3"/>
+                    </Border>
                     <views:ServerListControl/>
                     <!--  ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}" -->
-                    <ListBox Grid.Row="1"  MaxHeight="150"
+                    <ListBox Grid.Row="1"  MaxHeight="150" BorderThickness="1,0,1,1" BorderBrush="#FF688CAF"
                              Foreground="{StaticResource ForegroundNormalBrush}"
                             ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}"
-                             Background="Transparent" BorderThickness="1" 
+                             Background="Transparent"  
                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              >
@@ -349,6 +351,7 @@
                                
                                Padding="2"/>
 
+                    <Rectangle Grid.Row="1" Fill="#FF1D1D1D"/>
                     <Grid Grid.Row="1">
                         <views:AddonsControl Margin="0,5"   />
                     </Grid>
@@ -400,4 +403,28 @@
 
         </Grid>
     </Grid>
+    <!--<FrameworkElement.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard RepeatBehavior="Forever">
+                    <DoubleAnimation Storyboard.TargetName="GradientStop1" Storyboard.TargetProperty="Offset"
+                        AutoReverse="True"
+                        From="0"
+                        To="1"
+                        Duration="0:0:0:10.2">
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+            <BeginStoryboard>
+                <Storyboard RepeatBehavior="Forever">
+                    <DoubleAnimation Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="GlowFactor"
+                        AutoReverse="True"
+                        From="0.5"
+                        To="2"
+                        Duration="0:0:0:1">
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </FrameworkElement.Triggers>-->
 </Window>

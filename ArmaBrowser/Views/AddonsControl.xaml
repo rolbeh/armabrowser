@@ -12,7 +12,7 @@
                  BorderBrush="{x:Null}"
                  BorderThickness="0"
                  Foreground="{StaticResource ForegroundNormalBrush}"
-                 Background="{StaticResource BackroundNormalBrush}"
+                 Background="{x:Null}"
                  FontSize="14"
                  SelectedItem="{Binding Path=SelectedAddon}"
                  MouseUp="ListBox_MouseUp" >

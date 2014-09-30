@@ -16,8 +16,7 @@ namespace ArmaBrowser.Logic
 
         string ArmaPath { get; }
 
-        void ReloadServerItems(string filterByHostOrMission, CancellationToken cancellationToken);
-
+        void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> _lastAddresses, CancellationToken cancellationToken);
 
         void Open(IServerItem _selectedServerItem, IAddon[] addon, bool runAsAdmin = false);
 

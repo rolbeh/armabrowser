@@ -11,7 +11,7 @@ namespace ArmaBrowser.Data
     {
         IPEndPoint[] GetServerEndPoints();
 
-        IServerVo[] GetServerList(string hostAndMissionFilter, Action<IServerVo> itemGenerated = null);
+        IServerVo[] GetServerList(Action<IServerVo> itemGenerated = null);
 
         IServerVo GetServerInfo(IPEndPoint gameServer);
     }

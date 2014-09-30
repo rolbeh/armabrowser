@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <UsingTask TaskName="ShaderBuildTask.PixelShaderCompile" AssemblyName="ShaderBuildTask, Version=1.0.3072.18169, Culture=neutral, PublicKeyToken=44e467d1687af125" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -32,8 +33,8 @@
     <SuiteName>ArmaBrowser</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>27</ApplicationRevision>
-    <ApplicationVersion>0.2.18.%2a</ApplicationVersion>
+    <ApplicationRevision>28</ApplicationRevision>
+    <ApplicationVersion>0.2.19.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -144,6 +145,9 @@
       <DependentUpon>PreferencesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\HostConfigCollection.cs" />
+    <Compile Include="Shader\Glow.cs" />
+    <Compile Include="Shader\Shader.cs" />
+    <Compile Include="Shader\ShaderHelper.cs" />
     <Compile Include="Styles\VS2012WindowStyle.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
     <Compile Include="Views\AddonsControl.xaml.cs">
@@ -242,6 +246,12 @@
   <ItemGroup>
     <Resource Include="Img\ArmaBrowser32.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Effect Include="Shader\Shader.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Effect Include="Shader\Glow.fx" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -250,4 +260,13 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="EffectCompile" Condition="'@(Effect)' != '' ">
+    <PixelShaderCompile Sources="@(Effect)">
+      <Output TaskParameter="Outputs" ItemName="Resource" />
+    </PixelShaderCompile>
+  </Target>
+  <PropertyGroup>
+    <!-- Add effect compilation to the PrepareResourcesDependsOn so that the effect fx  get compiled before resources are collected -->
+    <PrepareResourcesDependsOn>EffectCompile;$(PrepareResourcesDependsOn)</PrepareResourcesDependsOn>
+  </PropertyGroup>
 </Project>

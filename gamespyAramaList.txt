@@ -1,0 +1,10 @@
+Gamename:    arma3pc
+Enctype:     -1
+Filter:
+Resolving    arma3pc.ms11.gamespy.com ... 69.10.30.247:28910
+Gamename:    arma3pc
+MSgamename:  gslive
+MSgamekey:   Xn221z
+Random id:   ~Ih"],?1
+Info query:
+Receiving:   ................................ 39855 bytes

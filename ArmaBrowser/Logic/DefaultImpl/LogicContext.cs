@@ -126,9 +126,39 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }*/
 
+        class _comp : System.Collections.Generic.IEqualityComparer<object>
+        {
+            internal static _comp Default = new _comp();
 
+            public bool Equals(object x, object y)
+            {
+                if (x == null || y == null)
+                    return false;
 
-        public void ReloadServerItems(string filterByHostOrMission, CancellationToken cancellationToke)
+                var ip = (System.Net.IPEndPoint)x;
+                var server = (Data.IServerVo)y;
+
+                return (ip.Address.ToString() + " " + ip.Port) == (server.Host.ToString() + " " + server.QueryPort);
+
+            }
+
+            public int GetHashCode(object obj)
+            {
+                var ip = obj as System.Net.IPEndPoint;
+                if (ip != null)
+                {
+                    return (ip.Address.ToString() + " " + ip.Port).GetHashCode();
+                }
+                var server = obj as Data.IServerVo;
+                if (server != null)
+                {
+                    return (server.Host.ToString() + " " + server.QueryPort).GetHashCode();
+                }
+                return obj.GetHashCode();
+            }
+        }
+
+        public void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToke)
         {
 
             //var hostEndpoints = _defaultServerRepository.GetServerEndPoints();
@@ -145,9 +175,31 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 return;
             }
 
-            _serverIPListe = _defaultServerRepository.GetServerList(filterByHostOrMission);
-            
+            _serverIPListe = _defaultServerRepository.GetServerList();
+            if (lastAddresses.Count() > 0)
+            {
+                var last = _serverIPListe.Join<Data.IServerVo, System.Net.IPEndPoint, object, Data.IServerVo>(lastAddresses,
+                                                                                    o => (object)o,
+                                                                                    i => (object)i,
+                                                                                    (o, i) => o,
+                                                                                    _comp.Default).ToArray();
 
+
+                _serverIPListe = _serverIPListe.Except(last).ToArray();
+                //    //, o => (object)o, i => (object)i, (o, i) => o, _comp.Default)
+                //    /*
+                //    (from server in _serverIPListe
+                //            join lastAddress in lastAddresses on new { Host = server.Host.ToString(), server.QueryPort } equals new { Host = lastAddress.Address.ToString(), QueryPort = lastAddress.Port }
+                //            select server).ToArray();
+                //*/
+                //var nonlast = (from server in _serverIPListe
+                //               join lastAddress in lastAddresses on new { Host = server.Host.ToString(), server.QueryPort } equals new { Host = lastAddress.Address.ToString(), QueryPort = lastAddress.Port } into j
+                //               from lastAddress in j.DefaultIfEmpty()
+                //               where lastAddresses == null
+                //               select server).ToArray();
+
+                _serverIPListe = last.Union(_serverIPListe).ToArray();
+            }
 
             cancellationToke.ThrowIfCancellationRequested();
             
@@ -168,30 +220,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
                                     
                                             var item = new ServerItem();
                                             AssignProperties(item,vo);
-                                            //{
-                                            //    //Country = vo.Country,
-                                            //    Gamename = vo.Gamename,
-                                            //    Host = vo.Host,
-                                            //    Island = vo.Map,
-                                            //    Mission = vo.Mission,
-                                            //    Mode = vo.Mode,
-                                            //    Modhashs = vo.Modhashs,
-                                            //    ModsText = vo.Mods,
-                                            //    Name = vo.Name,
-                                            //    CurrentPlayerCount = vo.CurrentPlayerCount,
-                                            //    MaxPlayers = vo.MaxPlayers,
-                                            //    Port = vo.Port,
-                                            //    QueryPort = vo.QueryPort,
-                                            //    Signatures = vo.Signatures,
-                                            //    Version = vo.Version,
-                                            //    Passworded = vo.Passworded,
-                                            //    Ping = vo.Ping,
-                                            //    IsVersionOk = ArmaVersion == vo.Version,
-                                            //    CurrentPlayers = string.Join(", ", vo.Players.Select(p => p.Name).OrderBy(s => s))
-
-                                            //};
                                            
-                                     
                                     UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
                                 });
 
