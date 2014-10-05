@@ -37,7 +37,7 @@ namespace ArmaBrowser.Styles
         }
     }
 
-    public partial class VS2012WindowStyle
+    internal partial class VS2012WindowStyle
     {
         #region sizing event handlers
 

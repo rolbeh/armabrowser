@@ -130,7 +130,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
         {
             internal static _comp Default = new _comp();
 
-            public bool Equals(object x, object y)
+            bool System.Collections.Generic.IEqualityComparer<object>.Equals(object x, object y)
             {
                 if (x == null || y == null)
                     return false;

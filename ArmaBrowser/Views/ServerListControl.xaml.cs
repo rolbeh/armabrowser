@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ArmaBrowser.ViewModel;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -18,12 +21,13 @@ namespace ArmaBrowser.Views
     /// <summary>
     /// Interaktionslogik für ServerListControl.xaml
     /// </summary>
-    public partial class ServerListControl : UserControl
+    partial class ServerListControl : UserControl
     {
         public ServerListControl()
-        {
+        {      
             InitializeComponent();
         }
+
 
         private void ServerDatagrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -44,5 +48,14 @@ namespace ArmaBrowser.Views
         {
             CommandManager.InvalidateRequerySuggested();
         }
+        
+        void ServerListControl_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+
+            }
+        }
+
     }
 }

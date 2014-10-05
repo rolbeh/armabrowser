@@ -9,7 +9,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     //https://github.com/defuse/password-hashing
 
-    class ArmaBrowserServerRepository : IArmaBrowserServerRepository
+    class ArmaBrowserServerJsonRepository : IArmaBrowserServerRepository
     {
         public void Test()
         {

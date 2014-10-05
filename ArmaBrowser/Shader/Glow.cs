@@ -6,7 +6,7 @@ using System.Windows.Threading;
 
 namespace ArmaBrowser.Shader
 {
-    public class Glow : ShaderEffect
+    class Glow : ShaderEffect
     {
         #region Member Data
 

@@ -27,7 +27,7 @@ namespace ArmaBrowser.Data
 
         public static IArmaBrowserServerRepository CreateNewArmaBrowserServerRepository()
         {
-            return new ArmaBrowserServerRepository();
+            return new ArmaBrowserServerJsonRepository();
         }
     }
 }

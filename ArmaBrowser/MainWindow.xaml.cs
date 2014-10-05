@@ -21,7 +21,7 @@ namespace ArmaBrowser
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    partial class MainWindow : Window
     {
         public MainWindow()
         {
@@ -42,7 +42,7 @@ namespace ArmaBrowser
 
                 Test.Freeze();
 
-            }catch(Exception ex)
+            }catch(Exception)
             {
                 throw;
             }

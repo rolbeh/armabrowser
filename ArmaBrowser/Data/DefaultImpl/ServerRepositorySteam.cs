@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -11,6 +12,7 @@ namespace ArmaBrowser.Data.DefaultImpl
     sealed class ServerRepositorySteam : IServerRepository
     {
         static Encoding CharEncoding = Encoding.GetEncoding(1252);
+        private System.Exception _excetion;
 
         IPEndPoint[] IServerRepository.GetServerEndPoints()
         {
@@ -62,16 +64,19 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                         buffer = udp.Receive(ref endp);
                     }
-                    catch (System.Net.Sockets.SocketException ex)
+                    catch (System.Net.Sockets.SocketException soEx)
                     {
+                        _excetion = soEx;
                         break;
                     }
-                    catch (TimeoutException)
+                    catch (TimeoutException timeEx)
                     {
+                        _excetion = timeEx;
                         break;
                     }
-                    catch (ObjectDisposedException)
+                    catch (ObjectDisposedException dispEx)
                     {
+                        _excetion = dispEx;
                         break;
                     }
 
@@ -111,6 +116,30 @@ namespace ArmaBrowser.Data.DefaultImpl
                 }
             }
 
+            if (bufferList.Count == 0 || _excetion != null)
+            {
+                bufferList.Clear();
+                var file = Properties.Settings.Default.HostList;
+                if (!string.IsNullOrEmpty(file))
+                {
+
+                }
+            }
+            else
+            {
+                var file = Path.GetTempFileName();
+                Properties.Settings.Default.HostList = file;
+                using(var fs = new FileStream(file, FileMode.OpenOrCreate))
+                using(var bw = new BinaryWriter(fs))
+                {
+                    while(fs.Position < fs.Length) 
+                    {
+                       // bufferList
+                    }
+                }
+            }
+
+
             return bufferList.ToArray();
         }
 
@@ -139,7 +168,6 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                 try
                 {
-                    IPEndPoint endp = null;
                     sw.Start();
                     udp.Send(qry.ToArray(), qry.Count);
 

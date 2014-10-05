@@ -141,5 +141,17 @@ namespace ArmaBrowser.Properties {
                 this["Upgraded"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HostList {
+            get {
+                return ((string)(this["HostList"]));
+            }
+            set {
+                this["HostList"] = value;
+            }
+        }
     }
 }

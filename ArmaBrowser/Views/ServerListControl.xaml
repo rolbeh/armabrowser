@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ArmaBrowser.Views.ServerListControl"
+﻿<UserControl x:Class="ArmaBrowser.Views.ServerListControl"  x:ClassModifier="internal"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,8 +7,64 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="700" 
-             d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
+             d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}"
+             >
+    <FrameworkElement.Resources>
 
+        <Storyboard x:Key="DataRowAnimationHeight" AutoReverse="False" >
+            <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
+        </Storyboard>
+
+        <Storyboard x:Key="DataRowAnimationOpacity" AutoReverse="False" >
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
+                             Duration="0:0:0:0.300"/>
+        </Storyboard>
+        
+        <EventTrigger x:Key="LoadedEvent" RoutedEvent="Loaded">
+            <BeginStoryboard >
+                <Storyboard  AutoReverse="False" >
+                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
+                </Storyboard>
+            </BeginStoryboard>
+            <BeginStoryboard >
+                <Storyboard   AutoReverse="False" >
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
+                             Duration="0:0:0:0.300"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+        
+        <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#7F000000" Offset="0.038"/>
+                        <GradientStop Color="#54767676" Offset="1"/>
+                        <GradientStop Color="#54767676" Offset="0"/>
+                        <GradientStop Color="#7F000000" Offset="0.941"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <!--<Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard >
+                        <Storyboard  AutoReverse="False" >
+                            <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard >
+                        <Storyboard   AutoReverse="False" >
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
+                             Duration="0:0:0:0.300"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>-->
+        </Style>
+        
+    </FrameworkElement.Resources>
     <DataGrid Grid.Row="1" x:Name="ServerDatagrid" 
               AutoGenerateColumns="False"
               Background="{x:Null}"
@@ -19,38 +75,13 @@
               IsSynchronizedWithCurrentItem="False"
               SelectedItem="{Binding Path=SelectedServerItem}"
               SelectionMode="Single"
-              RowBackground="{x:Null}"
+            
               FontSize="14" MouseDoubleClick="ServerDatagrid_MouseDoubleClick" SelectionChanged="ServerDatagrid_SelectionChanged"
-              >
-        <!--<DataGrid.InputBindings>
+              RowStyle="{StaticResource DataGridRowStyle}" >
+        <!--<DataGrid.InputBindings>  RowBackground="{x:Null}"
             <MouseBinding MouseAction="LeftDoubleClick" Command="ApplicationCommands.Open" />
         </DataGrid.InputBindings>-->
-        
-        <DataGrid.RowStyle>
-            <Style TargetType="DataGridRow">
-                <Setter Property="Height" Value="0"/>
-                <Setter Property="Opacity" Value="0"/>
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="Loaded">
-                        <BeginStoryboard>
-                            <Storyboard AutoReverse="False">
-                                <DoubleAnimation From="0" To="21" Storyboard.TargetProperty="Height"
-                                                 Duration="0:0:0:0.200"/>
-                                <DoubleAnimation From="22" To="18" Storyboard.TargetProperty="Height"
-                                                 Duration="0:0:0:0.100"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                        <BeginStoryboard>
-                            <Storyboard AutoReverse="False">
-                                <DoubleAnimation From="0.0" To="1.0" Storyboard.TargetProperty="Opacity"
-                                                 Duration="0:0:0:0.300"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Style.Triggers>
-            </Style>
-        </DataGrid.RowStyle>
-        
+
         <DataGrid.Columns>
             <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
                 <DataGridTemplateColumn.Header>

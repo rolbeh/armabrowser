@@ -17,7 +17,7 @@ namespace ArmaBrowser
     /// <summary>
     /// Interaktionslogik für PreferencesWindow.xaml
     /// </summary>
-    public partial class PreferencesWindow : Window
+    partial class PreferencesWindow : Window
     {
         public PreferencesWindow()
         {

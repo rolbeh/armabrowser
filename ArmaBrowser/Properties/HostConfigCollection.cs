@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ArmaBrowser.Properties
 {
     [Serializable]
-    public class HostConfig
+    internal class HostConfig
     {
         public string EndPoint {get;set;}
         
@@ -22,7 +22,7 @@ namespace ArmaBrowser.Properties
     }
 
     [Serializable] 
-    public class HostConfigCollection : IEnumerable<HostConfig>
+    internal class HostConfigCollection : IEnumerable<HostConfig>
     {
         private ArrayList _employees = new ArrayList();
           

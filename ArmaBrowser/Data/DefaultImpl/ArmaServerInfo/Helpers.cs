@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Data.DefaultImpl.ArmaServerInfo
 {
-    public static class Helpers
+    static class Helpers
     {
         public static byte[] GetTimeStamp()
         {

@@ -18,7 +18,7 @@ namespace ArmaBrowser.Views
     /// <summary>
     /// Interaktionslogik für AddonsControl.xaml
     /// </summary>
-    public partial class AddonsControl : UserControl
+    partial class AddonsControl : UserControl
     {
         public AddonsControl()
         {
