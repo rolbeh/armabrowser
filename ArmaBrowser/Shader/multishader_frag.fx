@@ -139,87 +139,88 @@ float makeNoise(float2 value)
 	return makeRandom(var);
 }
 
-Effects makeEffects(float2 uv : TEXCOORD)
-{
-	Effects result;
-
-	result.blurredColor = float3(0.0f, 0.0f, 0.0f);
-
-		float2 uShift_h = float2(blur_radius / textureWidth, direction_h / textureHeight);
-	//	float2 uShift_v = float2(direction_v / textureWidth, blur_radius / textureHeight);
-
-
-	////----------------------------------------------------------------------
-	//// blur / glow
-
-	float2 texCoord;
-
-	//// horizontal pass
-	texCoord = uv - float(gaussRadius / 2) * uShift_h;
-
-	for (int i = 0; i < gaussRadius; i++)
-	{
-		float3 p = tex2D(implicitInputSampler, texCoord);
-			result.blurredColor += gaussFilter[i] * p.xyz;
-		texCoord += uShift_h;
-	}
-
-	// vertical pass
-	/*texCoord = uv - float(gaussRadius / 2) * uShift_v;
-
-	for (int i = 0; i < gaussRadius; i++)
-	{
-		float3 p = tex2D(implicitInputSampler, texCoord);
-			result.blurredColor += gaussFilter[i] * p.xyz;
-		texCoord += uShift_v;
-	}*/
-
-	////----------------------------------------------------------------------
-	//// rgb shift
-
-	result.rgbShift = float3(0.0f, 0.0f, 0.0f);
-
-	
-	float2 rgbCoords;
-	rgbCoords.x = uv.x;
-	rgbCoords.y = uv.y -(rgbShift_offset / 1.5);
-
-	float intensity = 0.34f;
-
-	//rgbCoords.y -= rgbShift_offset / 1.5;
-
-	//// R
-	////rgbCoords.x -= rgbShift_offset / 2;
-	////rgbShift.r = texture(implicitInputSampler, rgbCoords).r * intensity;
-
-	// G
-	rgbCoords.x -= rgbShift_offset / 2;
-	result.rgbShift.g = tex2D(implicitInputSampler, rgbCoords).g * intensity;
-
-	// B
-	rgbCoords.x += rgbShift_offset;
-	result.rgbShift.b = tex2D(implicitInputSampler, rgbCoords).b * intensity;
-
-	////----------------------------------------------------------------------
-	//// noise
-
-	result.noise = makeNoise(uv) * noise_intensity;
-
-	////----------------------------------------------------------------------
-	// interlace
-
-	float width1 = 4.0;
-	float width2 = width1 / 2;
-
-	if ((trunc(screenSpace.y) % width1) < width2)
-		result.interlace = float3(0.0, 0.0, 0.0);
-	else
-		result.interlace = float3(1.0, 1.0, 1.0) * interlace_intensity;
-
-	////----------------------------------------------------------------------
-
-	return result;
-}
+//Effects makeEffects(float2 uv : TEXCOORD)
+//{
+//	Effects result;
+//
+//	result.blurredColor = float3(0.0f, 0.0f, 0.0f);
+//
+//		float2 uShift_h = float2(blur_radius / textureWidth, direction_h / textureHeight);
+//	//	float2 uShift_v = float2(direction_v / textureWidth, blur_radius / textureHeight);
+//
+//
+//	////----------------------------------------------------------------------
+//	//// blur / glow
+//
+//	float2 texCoord;
+//
+//	//// horizontal pass
+//		// 6.5f = float(gaussRadius / 2)
+//		texCoord = uv - 6.5f * uShift_h;
+//
+//	for (int i = 0; i < gaussRadius; i++)
+//	{
+//		float3 p = tex2D(implicitInputSampler, texCoord);
+//			result.blurredColor += gaussFilter[i] * p.xyz;
+//		texCoord += uShift_h;
+//	}
+//
+//	// vertical pass
+//	/*texCoord = uv - float(gaussRadius / 2) * uShift_v;
+//
+//	for (int i = 0; i < gaussRadius; i++)
+//	{
+//		float3 p = tex2D(implicitInputSampler, texCoord);
+//			result.blurredColor += gaussFilter[i] * p.xyz;
+//		texCoord += uShift_v;
+//	}*/
+//
+//	////----------------------------------------------------------------------
+//	//// rgb shift
+//
+//	result.rgbShift = float3(0.0f, 0.0f, 0.0f);
+//
+//	
+//	float2 rgbCoords;
+//	rgbCoords.x = uv.x;
+//	rgbCoords.y = uv.y -(rgbShift_offset / 1.5);
+//
+//	float intensity = 0.34f;
+//
+//	//rgbCoords.y -= rgbShift_offset / 1.5;
+//
+//	//// R
+//	////rgbCoords.x -= rgbShift_offset / 2;
+//	////rgbShift.r = texture(implicitInputSampler, rgbCoords).r * intensity;
+//
+//	// G
+//	rgbCoords.x -= rgbShift_offset / 2;
+//	result.rgbShift.g = tex2D(implicitInputSampler, rgbCoords).g * intensity;
+//
+//	// B
+//	rgbCoords.x += rgbShift_offset;
+//	result.rgbShift.b = tex2D(implicitInputSampler, rgbCoords).b * intensity;
+//
+//	////----------------------------------------------------------------------
+//	//// noise
+//
+//	result.noise = makeNoise(uv) * noise_intensity;
+//
+//	////----------------------------------------------------------------------
+//	// interlace
+//
+//	float width1 = 4.0;
+//	float width2 = width1 / 2;
+//
+//	if ((trunc(screenSpace.y) % width1) < width2)
+//		result.interlace = float3(0.0, 0.0, 0.0);
+//	else
+//		result.interlace = float3(1.0, 1.0, 1.0) * interlace_intensity;
+//
+//	////----------------------------------------------------------------------
+//
+//	return result;
+//}
 
 
 float4 main(float2 texCoord : TEXCOORD) : COLOR
@@ -230,11 +231,12 @@ float4 main(float2 texCoord : TEXCOORD) : COLOR
 	//Effects effect = makeEffects(texCoord);
 	
 	float2 uShift_h = float2(blur_radius / textureWidth, direction_h / textureHeight);
-	
-	float4 color = tex2D(implicitInputSampler, texCoord);
+
+		float4 color = tex2D(implicitInputSampler, texCoord);
 
 	//// horizontal pass
-	texCoord = texCoord - float(gaussRadius / 2) * uShift_h;
+	// 6.5f = float(gaussRadius / 2)
+	texCoord = texCoord - 6.5f * uShift_h;
 
 	for (int i = 0; i < gaussRadius; i++)
 	{
@@ -242,6 +244,9 @@ float4 main(float2 texCoord : TEXCOORD) : COLOR
 			effect.blurredColor += gaussFilter[i] * p.xyz;
 		texCoord += uShift_h;
 	}
+
+	if (!all(effect.blurredColor.rbg))
+		return  color; //float4(effect.blurredColor,1.0f); // 
 
 	/*// vertical pass
 	texCoord = texCoord - float(gaussRadius / 2) * uShift_v;
