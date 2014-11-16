@@ -5,9 +5,6 @@
     <Setting Name="TextFilter" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Hosts" Type="ArmaBrowser.Properties.HostConfigCollection" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="LastPlayedHost" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -33,6 +30,9 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="HostList" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="HostConfigs" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

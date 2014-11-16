@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+
+    <SolidColorBrush x:Key="BackroundNormalBrush" Color="Black"/>
+    <SolidColorBrush x:Key="ForegroundNormalBrush" Color="YellowGreen"/>
+    <SolidColorBrush x:Key="BorderNormalBrush" Color="#FF688CAF"/>
+
+    <Color x:Key="{x:Static SystemColors.WindowTextColorKey}" >#FF9ACD32</Color>
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#FF9ACD32"/>
+
+    <SolidColorBrush x:Key="ListingBackgroundBrush" Color="#FF363636"/>
+
+    <SolidColorBrush x:Key="{x:Static SystemColors.AppWorkspaceBrushKey}" Color="#FF363636"/>
+
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF484F19"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFBBBBBB"/>
+
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#FF484F19"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FFBBBBBB"/>
+    
+
+    <Style TargetType="{x:Type DataGrid}" >
+        <Setter Property="Foreground" Value="{StaticResource ForegroundNormalBrush}"/>
+    </Style>
+
+    <Style TargetType="ListBox" BasedOn="{StaticResource ResourceKey={x:Type ListBox}}">
+        <Setter Property="Background" Value="{x:Null}"   />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush"  Value="#FF688CAF"/>
+        <Setter Property="SnapsToDevicePixels"  Value="True"/>
+    </Style>
+
+</ResourceDictionary>

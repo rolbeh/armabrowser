@@ -28,9 +28,9 @@ namespace ArmaBrowser.Logic
             get { return _uiTaskScheduler; }
         }
 
-        public static void Run(Action action)
+        public static async Task Run(Action action)
         {
-            _uiTaskFactory.StartNew(action);
+            await _uiTaskFactory.StartNew(action);
         }
 
         public static void Run<T1>(Action<T1> action, T1 obj1)
@@ -81,6 +81,34 @@ namespace ArmaBrowser.Logic
         public static async Task<T> RunInUiAsync<T>(Func<T> function)
         {
             return await _uiTaskFactory.StartNew<T>(function); 
+        }
+
+        public static TResult Run<T1, TResult>(Func<T1, TResult> function, T1 arg1)
+        {
+            Tuple<Func<T1, TResult>, T1> tuple = new Tuple<Func<T1, TResult>, T1>(function, arg1);
+
+            var task = _uiTaskFactory.StartNew(obj => ((Tuple<Func<T1, TResult>, T1>)obj).Item1(((Tuple<Func<T1, TResult>, T1>)obj).Item2),
+                                                tuple);
+            task.Wait();
+            return task.Result;
+        }
+
+
+        public static Task<TResult> Run<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 arg1, T2 arg2)
+        {
+            Tuple<Func<T1, T2, TResult>, T1, T2> tuple = new Tuple<Func<T1, T2, TResult>, T1, T2>(function, arg1, arg2);
+
+            return _uiTaskFactory.StartNew(obj => ((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item1(((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item2, ((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item3),
+                                    tuple);
+
+        }
+
+        public static async Task<TResult> RunAsync<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 arg1, T2 arg2)
+        {
+            Tuple<Func<T1, T2, TResult>, T1, T2> tuple = new Tuple<Func<T1, T2, TResult>, T1, T2>(function, arg1, arg2);
+
+            return await _uiTaskFactory.StartNew(obj => ((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item1(((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item2, ((Tuple<Func<T1, T2, TResult>, T1, T2>)obj).Item3), 
+                tuple);
         }
     }
 }

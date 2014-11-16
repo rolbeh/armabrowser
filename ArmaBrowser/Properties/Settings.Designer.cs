@@ -37,17 +37,6 @@ namespace ArmaBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::ArmaBrowser.Properties.HostConfigCollection Hosts {
-            get {
-                return ((global::ArmaBrowser.Properties.HostConfigCollection)(this["Hosts"]));
-            }
-            set {
-                this["Hosts"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string LastPlayedHost {
             get {
@@ -151,6 +140,18 @@ namespace ArmaBrowser.Properties {
             }
             set {
                 this["HostList"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HostConfigs {
+            get {
+                return ((string)(this["HostConfigs"]));
+            }
+            set {
+                this["HostConfigs"] = value;
             }
         }
     }

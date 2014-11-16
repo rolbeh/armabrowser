@@ -33,8 +33,8 @@
     <SuiteName>ArmaBrowser</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>28</ApplicationRevision>
-    <ApplicationVersion>0.2.19.%2a</ApplicationVersion>
+    <ApplicationRevision>33</ApplicationRevision>
+    <ApplicationVersion>0.5.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -126,6 +126,7 @@
     <Compile Include="Data\Intf\IDataRepository.cs" />
     <Compile Include="Data\Intf\IServerList.cs" />
     <Compile Include="Data\Intf\IServerVo.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
     <Compile Include="Logic\DefaultImpl\LogicContext.cs" />
     <Compile Include="Logic\DefaultImpl\ServerItem.cs" />
@@ -135,10 +136,7 @@
     <Compile Include="Logic\LogicManager.cs" />
     <Compile Include="Logic\LogicModelBase.cs" />
     <Compile Include="Logic\UiTask.cs" />
-    <Compile Include="PreferencesWindow.xaml.cs">
-      <DependentUpon>PreferencesWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\HostConfigCollection.cs" />
+    <Compile Include="HostConfigCollection.cs" />
     <Compile Include="Shader\Glow.cs" />
     <Compile Include="Shader\multishader_frag.cs" />
     <Compile Include="Shader\Shader.cs" />
@@ -149,6 +147,9 @@
       <DependentUpon>AddonsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Commands.cs" />
+    <Compile Include="Views\PreferencesControl.xaml.cs">
+      <DependentUpon>PreferencesControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ServerListControl.xaml.cs">
       <DependentUpon>ServerListControl.xaml</DependentUpon>
     </Compile>
@@ -165,7 +166,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="PreferencesWindow.xaml">
+    <Page Include="Styles\Arma3.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -176,6 +177,10 @@
     <Page Include="Views\AddonsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\PreferencesControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ServerListControl.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -200,7 +205,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="ArmaBrowser_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">

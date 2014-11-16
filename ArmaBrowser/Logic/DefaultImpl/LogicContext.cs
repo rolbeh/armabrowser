@@ -14,7 +14,6 @@ namespace ArmaBrowser.Logic.DefaultImpl
     class LogicContext : LogicModelBase, ILogicContext
     {
         #region Fields
-//        private readonly LimitedConcurrencyLevelTaskScheduler _taskScheduler = new LimitedConcurrencyLevelTaskScheduler(25);
 
         private readonly Data.IArma3DataRepository _defaultDataRepository;
         private ObservableCollection<IPEndPoint> _favoritServerEndPoints;
@@ -85,6 +84,15 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
+        public void LookForArmaPath()
+        {
+            _armaPath = _defaultDataRepository.GetArma3Folder();
+            OnPropertyChanged("ArmaPath");
+            _armaVersion = null;
+            OnPropertyChanged("ArmaVersion");
+        }
+
+        public event EventHandler<string> LiveAction;
 
         #endregion Properties
 
@@ -158,15 +166,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        public void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToke)
+        public void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToken)
         {
-
-            //var hostEndpoints = _defaultServerRepository.GetServerEndPoints();
-
             var dest = ServerItems;
             try
             {
-                UiTask.Run(() => dest.Clear(), cancellationToke).Wait();
+                UiTask.Run(() => dest.Clear(), cancellationToken).Wait();
             }
 
             catch (OperationCanceledException)
@@ -175,7 +180,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 return;
             }
 
-            _serverIPListe = _defaultServerRepository.GetServerList();
+            _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
             if (lastAddresses.Count() > 0)
             {
                 var last = _serverIPListe.Join<Data.IServerVo, System.Net.IPEndPoint, object, Data.IServerVo>(lastAddresses,
@@ -184,26 +189,16 @@ namespace ArmaBrowser.Logic.DefaultImpl
                                                                                     (o, i) => o,
                                                                                     _comp.Default).ToArray();
 
-
+                //die EndPoints aus dem Argument lastAddresses aus der Gesamtliste zunächst entfernen
                 _serverIPListe = _serverIPListe.Except(last).ToArray();
-                //    //, o => (object)o, i => (object)i, (o, i) => o, _comp.Default)
-                //    /*
-                //    (from server in _serverIPListe
-                //            join lastAddress in lastAddresses on new { Host = server.Host.ToString(), server.QueryPort } equals new { Host = lastAddress.Address.ToString(), QueryPort = lastAddress.Port }
-                //            select server).ToArray();
-                //*/
-                //var nonlast = (from server in _serverIPListe
-                //               join lastAddress in lastAddresses on new { Host = server.Host.ToString(), server.QueryPort } equals new { Host = lastAddress.Address.ToString(), QueryPort = lastAddress.Port } into j
-                //               from lastAddress in j.DefaultIfEmpty()
-                //               where lastAddresses == null
-                //               select server).ToArray();
-
+                
+                // die EndPoints aus dem Argument lastAddresses vorn einreihen
                 _serverIPListe = last.Union(_serverIPListe).ToArray();
             }
 
-            cancellationToke.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             
-            var token = cancellationToke;
+            var token = cancellationToken;
 
             Parallel.ForEach(_serverIPListe, new ParallelOptions() { CancellationToken = token }, dataItem =>
                                 {
@@ -212,10 +207,14 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
                                     var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
 
+                                    if (LiveAction != null)
+                                    {
+                                        LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
+                                    }
 
                                     var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
 
-                                    if (cancellationToke.IsCancellationRequested || vo == null) 
+                                    if (cancellationToken.IsCancellationRequested || vo == null) 
                                         return;
                                     
                                             var item = new ServerItem();
@@ -224,6 +223,37 @@ namespace ArmaBrowser.Logic.DefaultImpl
                                     UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
                                 });
 
+        }
+
+        public void ReloadServerItem(System.Net.IPEndPoint iPEndPoint, CancellationToken cancellationToken)
+        {
+            var dest = ServerItems;
+            try
+            {
+                UiTask.Run(() => dest.Clear(), cancellationToken).Wait();
+            }
+
+            catch (OperationCanceledException)
+            {
+                System.Diagnostics.Debug.WriteLine("Reloading canceled");
+                return;
+            }
+
+            var vo = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(iPEndPoint.Address, iPEndPoint.Port+1));
+            if (cancellationToken.IsCancellationRequested || vo == null)
+                return;
+            var item = new ServerItem();
+            AssignProperties(item, vo);
+
+            UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
+        }
+         
+        private void OnServerGenerated(Data.IServerVo obj)
+        {
+            if (LiveAction != null)
+            {
+                LiveAction(this, new IPEndPoint(obj.Host, obj.QueryPort).ToString());
+            }
         }
 
         private async Task UpdateServerInfo(IServerItem server)

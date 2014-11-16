@@ -6,13 +6,12 @@
              xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
+             d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
     <Grid>
         <ListBox ItemsSource="{Binding Path=Addons}" 
-                 BorderBrush="{x:Null}"
-                 BorderThickness="0"
+                 BorderThickness="1" BorderBrush="#FF688CAF"
                  Foreground="{StaticResource ForegroundNormalBrush}"
-                 Background="{x:Null}"
+                 
                  FontSize="14"
                  SelectedItem="{Binding Path=SelectedAddon}"
                  MouseUp="ListBox_MouseUp" >
@@ -43,6 +42,18 @@
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ResourceKey={x:Type ListBoxItem}}">
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsActive}" Value="true">
+                            <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                            <Setter Property="BorderBrush" Value="Black"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
         </ListBox>
     </Grid>
 </UserControl>

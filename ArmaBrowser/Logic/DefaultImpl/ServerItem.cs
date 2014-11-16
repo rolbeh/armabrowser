@@ -22,6 +22,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
         private string _name;
         private string _mode;
         private Data.ISteamGameServerPlayer[] _currentPlayers;
+        private long _ping;
 
         #endregion Field
 
@@ -188,7 +189,16 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         public bool IsVersionOk { get; set; }
 
-        public long Ping { get; set; }
+        public long Ping
+        {
+            get { return _ping; }
+            internal set
+            {
+                if (_ping == value) return;
+                _ping = value;
+                OnPropertyChanged();
+            }
+        }
 
     }
 }

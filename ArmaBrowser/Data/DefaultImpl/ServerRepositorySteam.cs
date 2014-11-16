@@ -36,108 +36,128 @@ namespace ArmaBrowser.Data.DefaultImpl
             var roundtrips = 0;
             using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
             {
-                udp.Connect("208.64.200.52", 27011);
-                while (true)
+                var dnsEntry = System.Net.Dns.GetHostEntry("hl2master.steampowered.com");
+                //var ip = dnsEntry.AddressList.Length > 1 ? dnsEntry.AddressList[1] : dnsEntry.AddressList[0];
+                foreach (var ip in dnsEntry.AddressList)
                 {
+                    bufferList.Clear();
+                    var hasErros = false;
 
-                    string request = "1ÿ";
-                    request += lastEndPoint + "\0";
-                    request += "\\gamedir\\Arma3";
-                    //request += "\\empty\\0";
-
-                    request += "\0";
-
-                    var bytes = CharEncoding.GetBytes(request);
-
-                    //udp.Connect("146.66.155.8", 27019);
-                    IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
-                    udp.Client.ReceiveTimeout = 900;
-                    
-                    var sendlen = udp.Send(bytes, bytes.Length);
-
-                    
-                    byte[] buffer = null;
-                    try
+                    //udp.Connect("208.64.200.52", 27011);
+                    while (true)
                     {
-                        roundtrips++;
-                        Debug.WriteLine("RoundTrips " + roundtrips);
+                        udp.Connect(ip, 27011);
+                        string request = "1ÿ";
+                        request += lastEndPoint + "\0";
+                        request += "\\gamedir\\Arma3";
+                        //request += "\\empty\\0";
 
-                        buffer = udp.Receive(ref endp);
-                    }
-                    catch (System.Net.Sockets.SocketException soEx)
-                    {
-                        _excetion = soEx;
-                        break;
-                    }
-                    catch (TimeoutException timeEx)
-                    {
-                        _excetion = timeEx;
-                        break;
-                    }
-                    catch (ObjectDisposedException dispEx)
-                    {
-                        _excetion = dispEx;
-                        break;
-                    }
+                        request += "\0";
 
-                    using (var mem = new System.IO.MemoryStream(buffer, false))
-                    using (var br = new System.IO.BinaryReader(mem, Encoding.UTF8))
-                    {
-                        var i = br.ReadUInt32();
-                        i = br.ReadUInt16();
+                        var bytes = CharEncoding.GetBytes(request);
 
-                        while (mem.Position < mem.Length)
+                        //udp.Connect("146.66.155.8", 27019);
+                        IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
+                        udp.Client.ReceiveTimeout = 900;
+
+                        var sendlen = udp.Send(bytes, bytes.Length);
+#if DEBUG
+                    if (sendlen != bytes.Length)
+                        Debug.WriteLine("IServerRepository.GetServerList - sendlen != bytes.Length");
+#endif
+                        byte[] buffer = null;
+                        try
                         {
-
-                            addressBytes[0] = br.ReadByte();
-                            addressBytes[1] = br.ReadByte();
-                            addressBytes[2] = br.ReadByte();
-                            addressBytes[3] = br.ReadByte();
-
-                            portBytes[0] = br.ReadByte();
-                            portBytes[1] = br.ReadByte();
-
-                            port = portBytes[0] << 8 | portBytes[1];
-                            lastEndPoint = new IPEndPoint(new IPAddress(addressBytes), port);
-
-                            if (lastEndPoint.Address.GetAddressBytes().All(b => b == 0))
-                                break;
-                            var item = new ServerItem();
-                            item.Host = lastEndPoint.Address;
-                            item.QueryPort = lastEndPoint.Port;
-                            bufferList.Add(item);
-                            if (itemGenerated != null)
-                                itemGenerated(item);
+                            roundtrips++;
+                            buffer = udp.Receive(ref endp);
+                        }
+                        catch (System.Net.Sockets.SocketException soEx)
+                        {
+                            hasErros = true;
+                            _excetion = soEx;
+                            break;
+                        }
+                        catch (TimeoutException timeEx)
+                        {
+                            hasErros = true;
+                            _excetion = timeEx;
+                            break;
+                        }
+                        catch (ObjectDisposedException dispEx)
+                        {
+                            hasErros = true;
+                            _excetion = dispEx;
+                            break;
                         }
 
-                        if (lastEndPoint.Address.GetAddressBytes().All(b => b == 0))
-                            break;
+                        using (var mem = new System.IO.MemoryStream(buffer, false))
+                        using (var br = new System.IO.BinaryReader(mem, Encoding.UTF8))
+                        {
+                            var i = br.ReadUInt32();
+                            i = br.ReadUInt16();
+
+                            while (mem.Position < mem.Length)
+                            {
+
+                                addressBytes[0] = br.ReadByte();
+                                addressBytes[1] = br.ReadByte();
+                                addressBytes[2] = br.ReadByte();
+                                addressBytes[3] = br.ReadByte();
+
+                                portBytes[0] = br.ReadByte();
+                                portBytes[1] = br.ReadByte();
+
+                                port = portBytes[0] << 8 | portBytes[1];
+
+
+                                if (addressBytes.All(b => b == 0))
+                                    break;
+
+                                lastEndPoint = new IPEndPoint(new IPAddress(addressBytes), port);
+
+                                var item = new ServerItem();
+                                item.Host = lastEndPoint.Address;
+                                item.QueryPort = lastEndPoint.Port;
+                                bufferList.Add(item);
+                                if (itemGenerated != null)
+                                    itemGenerated(item);
+                            }
+
+                            Debug.WriteLine("RoundTrips {0} - {1}", roundtrips, lastEndPoint.ToString());
+
+                            if (addressBytes.All(b => b == 0))
+                            {
+                                break;
+                            }
+                        }
                     }
+                    if (!hasErros)
+                        break;
                 }
             }
 
             if (bufferList.Count == 0 || _excetion != null)
             {
-                bufferList.Clear();
+                //bufferList.Clear();
                 var file = Properties.Settings.Default.HostList;
                 if (!string.IsNullOrEmpty(file))
                 {
 
                 }
             }
-            else
-            {
-                var file = Path.GetTempFileName();
-                Properties.Settings.Default.HostList = file;
-                using(var fs = new FileStream(file, FileMode.OpenOrCreate))
-                using(var bw = new BinaryWriter(fs))
-                {
-                    while(fs.Position < fs.Length) 
-                    {
-                       // bufferList
-                    }
-                }
-            }
+            //else
+            //{
+            //    var file = Path.GetTempFileName();
+            //    Properties.Settings.Default.HostList = file;
+            //    using(var fs = new FileStream(file, FileMode.OpenOrCreate))
+            //    using(var bw = new BinaryWriter(fs))
+            //    {
+            //        while(fs.Position < fs.Length) 
+            //        {
+            //           // bufferList
+            //        }
+            //    }
+            //}
 
 
             return bufferList.ToArray();
@@ -258,7 +278,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                         // https://community.bistudio.com/wiki/STEAMWORKSquery
                     }
-                    
+
                     RequestRules(item, udp);
 
                     if (item.CurrentPlayerCount > 0)

@@ -18,6 +18,8 @@ namespace ArmaBrowser
 {
     using WinInterop = System.Windows.Interop;
     using System.Runtime.InteropServices;
+    using System.Xml.Serialization;
+    using System.IO;
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
@@ -34,12 +36,12 @@ namespace ArmaBrowser
                 this.Width = Properties.Settings.Default.MainWindowWidth;
                 this.Top = Properties.Settings.Default.MainWindowTop;
                 this.Left = Properties.Settings.Default.MainWindowLeft;
-
+                
             }
             try
             {
                 InitializeComponent();
-
+                TabListBox.SelectedIndex = 0;
                 Test.Freeze();
 
             }catch(Exception)
@@ -77,12 +79,14 @@ namespace ArmaBrowser
 
         private void OpenCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = MyViewModel.SelectedServerItem != null || MyViewModel.LaunchWithoutHost;
+            e.CanExecute = (MyViewModel.SelectedServerItem != null || MyViewModel.LaunchWithoutHost)
+                               && System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath);
         }
 
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             MyViewModel.OpenArma();
+            this.WindowState = System.Windows.WindowState.Minimized;
         }
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
@@ -120,11 +124,6 @@ namespace ArmaBrowser
             }
         }
 
-        private void PoweredBy_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            MyViewModel.TextFilter = "Armajunkies";
-        }
-
         private void PoweredByHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             System.Diagnostics.Process.Start(e.Uri.ToString());
@@ -137,7 +136,13 @@ namespace ArmaBrowser
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Properties.Settings.Default.Save();
+            XmlSerializer serializer = new XmlSerializer(typeof(HostConfigCollection));
+            using (System.IO.TextWriter textwr = new StringWriter())
+            {
+                serializer.Serialize(textwr, HostConfigCollection.Default);
+                Properties.Settings.Default.HostConfigs = textwr.ToString();
+                Properties.Settings.Default.Save();
+            }
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -152,6 +157,19 @@ namespace ArmaBrowser
             {
                 e.Accepted = item.IsActive;
             }
+        }
+
+        private void TextBlock_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath))
+                System.Diagnostics.Process.Start(Properties.Settings.Default.ArmaPath);
+            else
+                MessageBox.Show("Arma 3 installation not found");
+        }
+
+        private void AppbarSettings_OnClick(object sender, RoutedEventArgs e)
+        {
+            TabListBox.SelectedItem = "Arma III";
         }
     }
 }

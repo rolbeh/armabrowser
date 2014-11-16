@@ -15,45 +15,114 @@ namespace ArmaBrowser.Data.DefaultImpl
         public IServerVo[] GetServerList()
         {
             throw new NotImplementedException();
-                //const string url = "http://arma3.swec.se/server/list.xml";
-                //try
-                //{
-                //    using (var webClient = new WebClient())
-                //    {
-                //        var bytes = webClient.DownloadData(url);
-                //        using (var mem = new MemoryStream(bytes, false))
-                //        {
-                //            return ParseArmaSwecServerlist.GetServerList(mem);
-                //        }
-                //    }
-                //}
-                //catch
-                //{
-                //    if (File.Exists("Serverlist.xml"))
-                //    {
-                //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
-                //        {
-                //            return ParseArmaSwecServerlist.GetServerList(fs);
-                //        }
-                //    }
-                //    return new IServerVo[0];
-                //}
-            
+            //const string url = "http://arma3.swec.se/server/list.xml";
+            //try
+            //{
+            //    using (var webClient = new WebClient())
+            //    {
+            //        var bytes = webClient.DownloadData(url);
+            //        using (var mem = new MemoryStream(bytes, false))
+            //        {
+            //            return ParseArmaSwecServerlist.GetServerList(mem);
+            //        }
+            //    }
+            //}
+            //catch
+            //{
+            //    if (File.Exists("Serverlist.xml"))
+            //    {
+            //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
+            //        {
+            //            return ParseArmaSwecServerlist.GetServerList(fs);
+            //        }
+            //    }
+            //    return new IServerVo[0];
+            //}
+
 
         }
 
         public string GetArma3Folder()
         {
-            var steamFolder = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", "");
-            if (steamFolder != null)
+            try
             {
-                var steamPath = System.IO.Path.Combine(steamFolder.ToString(), "config", "config.vdf");
-                using (var reader = new SteamConfigReader(steamPath))
+                Logger.Default.Push(@"SteamPath - ");
+                var steamFolder = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", "");
+                if (steamFolder != null)
                 {
-                    return Path.Combine(reader.GetValueOf("\t\t\t\t\"BaseInstallFolder_1\""), "SteamApps", "common", "ARMA 3");
+                    Logger.Default.PushLine(@"found");
+
+                    // Test Standartinstallion
+                    {
+                        Logger.Default.Push(@"Arma 3 in default location - ");
+                        var testPath = Path.Combine(steamFolder.ToString(), "SteamApps", "common", "ARMA 3", "arma3.exe");
+                        if (File.Exists(testPath))
+                        {
+                            Logger.Default.PushLine(@"found");
+                            return Path.GetDirectoryName(testPath);
+                        }
+                        else
+                            Logger.Default.PushLine(@"not found");
+                    }
+
+
+
+                    // Multi-Locations 
+                    Logger.Default.Push(@"steam library config - ");
+                    var libraryConfigPath = System.IO.Path.Combine(steamFolder.ToString(), "SteamApps", "libraryfolders.vdf");
+                    if (File.Exists(libraryConfigPath))
+                    {
+                        Logger.Default.PushLine(@"found");
+                        using (var reader = new SteamConfigReader(libraryConfigPath))
+                        {
+                            var xml = reader.ToXml();
+                            Logger.Default.Push(@"Arma 3 in library location - ");
+                            foreach (var item in xml.DocumentElement.ChildNodes.Cast<XmlElement>())
+                            {
+                                var valueNode = item.ChildNodes.OfType<XmlText>().FirstOrDefault();
+                                if (valueNode != null)
+                                {
+                                    var folder = valueNode.Value.ToString();
+
+                                    var testPath = Path.Combine(folder, "SteamApps", "common", "ARMA 3", "arma3.exe");
+                                    if (File.Exists(testPath))
+                                    {
+                                        Logger.Default.PushLine(@"found");
+                                        return Path.GetDirectoryName(testPath);
+                                    }
+                                }
+                            }
+                            Logger.Default.PushLine(@"not found");
+
+                        }
+
+                    }
+                    else
+                        Logger.Default.PushLine(@"not found");
+
+                    //var steamPath = System.IO.Path.Combine(steamFolder.ToString(), "config", "config.vdf");
+                    //Logger.Default.Push(@"Steam config file "+ steamPath + " - ");
+                    //if (!File.Exists(steamPath))
+                    //{
+                    //    Logger.Default.PushLine(@"not found");
+                    //    return null;
+                    //}
+                    //Logger.Default.PushLine(@"found");
+                    //using (var reader = new SteamConfigReader(steamPath))
+                    //{
+                    //    var baseInstallFolder_1 = reader.GetValueOf("\t\t\t\t\"BaseInstallFolder_1\"");
+                    //    return Path.Combine(baseInstallFolder_1, "SteamApps", "common", "ARMA 3");
+                    //}
                 }
+                else
+                    Logger.Default.PushLine(@"not found");
+                return "";
             }
-            return null;
+            catch (Exception ex)
+            {
+                Logger.Default.PushLine(@":-( " + ex.GetType().Name );
+            }
+            return "";
         }
 
         public IArmaAddOn[] GetInstalledAddons(string baseFolder)

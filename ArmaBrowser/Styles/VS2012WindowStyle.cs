@@ -37,6 +37,27 @@ namespace ArmaBrowser.Styles
         }
     }
 
+    internal static class WindowTitle
+    {
+
+
+        public static FrameworkElement GetTitleToolbar(DependencyObject obj)
+        {
+            return (FrameworkElement)obj.GetValue(TitleToolbarProperty);
+        }
+
+        public static void SetTitleToolbar(DependencyObject obj, FrameworkElement value)
+        {
+            obj.SetValue(TitleToolbarProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for TitleToolbar.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TitleToolbarProperty =
+            DependencyProperty.RegisterAttached("TitleToolbar", typeof(FrameworkElement), typeof(WindowTitle), new PropertyMetadata(null));
+
+
+    }
+
     internal partial class VS2012WindowStyle
     {
         #region sizing event handlers

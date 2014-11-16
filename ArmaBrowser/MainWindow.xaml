@@ -7,6 +7,8 @@
         xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
+        xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
+        
         Title="ARMA III Server Browser (Community Project by Tackle armabrowser@gmx.net)" 
         Height="693" Width="1023" 
         UseLayoutRounding="False"
@@ -116,7 +118,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="259"/>
+                    <ColumnDefinition Width="259" MinWidth="259"/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
@@ -127,10 +129,10 @@
                             Foreground="Black"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}">
-                        <TextBlock Foreground="Black">Server aktualisieren</TextBlock>
+                        <TextBlock Foreground="Black">refresh server</TextBlock>
                     </Button>
                     <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <TextBlock x:Name="WaterMark" Text="Suche nach Server oder Missionen" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
+                        <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
                                    FontStyle="Italic"
                                    FontSize="18"
                                    IsHitTestVisible="False"
@@ -265,18 +267,36 @@
                             </Rectangle>
                         </Canvas>
 
-                        <TextBox x:Name="SearchText" Background="{x:Null}"
+                        <TextBox x:Name="SearchText" Background="{x:Null}" Foreground="Black"
                     		     Text="{Binding TextFilter, Mode=TwoWay, Delay=600, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="18"
                     		     BorderThickness="0" Margin="30,0,0,0"
-                         />
+                         >
+                            <FrameworkElement.ToolTip>
+                                <ToolTip>
+                                    <TextBlock>
+                                        <Run>This is a full text search. You can combine your conditions separate with a space.</Run>
+                                        <LineBreak/>
+                                        <Run>&quot;altis&quot; - Filters for servername / missions / modes</Run> <Run FontWeight="Bold">with</Run> <Run>the substring Altis</Run>
+                                        <LineBreak/>
+                                        <Run>&quot;-live&quot; - Filters for servername / missions / modes</Run> <Run FontWeight="Bold">without</Run> <Run>the substring Live</Run>
+                                        <LineBreak/>
+                                        <Run>&quot;&gt;10&quot; - Filters for server with more the 10 players</Run>
+                                        <LineBreak/>
+                                        <Run>&quot;IPAddress:GamePort&quot; - Do only a request for that particular server</Run>
+                                        <LineBreak/>
+                                        <Run>Some character doesnt work with the filter!</Run>
+                                    </TextBlock>
+                                </ToolTip>
+                            </FrameworkElement.ToolTip>
+                        </TextBox>
                     </Grid>
                 </Grid>
 
                 <Grid Grid.Row="1" Background="Black" >
                     <Grid.RowDefinitions>
                         <RowDefinition/>
-                        <RowDefinition Height="auto"  MaxHeight="150"/>
+                        <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
 
                     <Image  Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False">
@@ -293,10 +313,20 @@
                         </UIElement.Effect>
                     </Image>
 
-                    <views:ServerListControl/>
+                    <ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
+                                  Opacity="0.8"
+                                  ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="viewModel:LogEntry">
+                                <TextBlock Width="110" Height="18" Text="{Binding Text}"
+                                           Foreground="#FFC9744D"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <views:ServerListControl />
 
                     <!--  ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}" -->
-                    <ListBox Grid.Row="1" MaxHeight="150" Height="auto" MinHeight="18" BorderThickness="1,0,1,1" BorderBrush="#FF688CAF"
+                    <ListBox Grid.Row="1" Height="171" MinHeight="18" BorderThickness="1,0,1,1" BorderBrush="#FF688CAF"
                              Foreground="{StaticResource ForegroundNormalBrush}"
                             ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}"
                              Background="Transparent"  
@@ -305,7 +335,7 @@
                              >
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Vertical" IsItemsHost="True" ItemHeight="14" ItemWidth="161" />
+                                <WrapPanel Orientation="Vertical" IsItemsHost="True" ItemWidth="161" />
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                         <ListBox.ItemTemplate>
@@ -343,34 +373,150 @@
                                 <sys:String>ActivationOrder</sys:String>
                             </CollectionViewSource.LiveSortingProperties>
                             <CollectionViewSource.SortDescriptions>
-                                <ComponentModel:SortDescription PropertyName="ActivationOrder"/>
+                                <ComponentModel:SortDescription PropertyName="ActivationOrder" Direction="Ascending"/>
                             </CollectionViewSource.SortDescriptions>
                         </CollectionViewSource>
                     </Grid.Resources>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="32"/>
                         <RowDefinition/>
-                        <RowDefinition Height="180"/>
                     </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Text="Installierte Addons"
-                               Foreground="{StaticResource ForegroundNormalBrush}"
-                               Margin="0,4,4,4" FontSize="18"
+                    <ListBox ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                             x:Name="TabListBox"
+                             BorderThickness="0"
+                             SelectedIndex="1"
+                             Background="{x:Null}" Margin="0,0,29,0" 
+                             OverridesDefaultStyle="True">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Foreground="{StaticResource ForegroundNormalBrush}"
+                               Margin="0,4,4,0" FontSize="18"
                                
                                Padding="2"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                                <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                                <Setter Property="Padding" Value="2,0,0,0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                            <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                                </Trigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="IsSelected" Value="True"/>
+                                                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                                                </MultiTrigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <sys:String>Addons</sys:String>
+                        <sys:String>Arma III</sys:String>
+                    </ListBox>
+                    <!--<TextBlock Grid.Row="0" Text="installed addons"
+                               Foreground="{StaticResource ForegroundNormalBrush}"
+                               Margin="0,4,4,0" FontSize="18"
+                               
+                               Padding="2" PreviewMouseUp="TextBlock_PreviewMouseUp"/>-->
 
-                    <Rectangle Grid.Row="1" Fill="#FF1D1D1D"/>
+                    <TextBlock Grid.Row="0" Text="..."
+                               Foreground="{StaticResource ForegroundNormalBrush}"
+                               HorizontalAlignment="Right"
+                               Margin="0,4,4,0" FontSize="18"
+                               Padding="2" PreviewMouseUp="TextBlock_PreviewMouseUp">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="true">
+                                        <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
                     <Grid Grid.Row="1">
-                        <views:AddonsControl Width="258"   />
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="205"/>
+                        </Grid.RowDefinitions>
+
+                        <!--<Rectangle Grid.Row="1" Fill="{StaticResource ListingBackgroundBrush}"/>-->
+                        <Grid Grid.Row="0" Background="{StaticResource ListingBackgroundBrush}">
+                            <views:AddonsControl/>
+                        </Grid>
+
+                        <TextBlock Grid.Row="2" Text="selected addons"
+                               Foreground="{StaticResource ForegroundNormalBrush}"
+                               Margin="0,8,4,4" FontSize="18"
+                               
+                               Padding="2"/>
+                        
+                        <ListBox Grid.Row="2" Margin="0,33,0,0" DisplayMemberPath="DisplayText"
+                             Background="{StaticResource ListingBackgroundBrush}"
+                             Height="125" VerticalAlignment="Top" 
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ItemsSource="{Binding Source={StaticResource CvsSelectedAddons}}"
+                             Foreground="{StaticResource ForegroundNormalBrush}"
+                             FontSize="14"
+                             />
+                        <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom" Height="40">
+                            <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="start Arma without Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
+                            <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="as Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
+                        </StackPanel>
+
+                        <Grid.Style>
+                            <Style TargetType="Grid" >
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Addons">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        
                     </Grid>
-                    <ListBox Grid.Row="2" Margin="0,5,0,0" DisplayMemberPath="DisplayText" Height="133" VerticalAlignment="Top" ItemsSource="{Binding Source={StaticResource CvsSelectedAddons}}" />
-                    <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom">
-                        <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="Ohne Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
-                        <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="Als Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
-
-                    </StackPanel>
-
+                    <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}">
+                        <views:PreferencesControl />
+                        <Grid.Style>
+                            <Style TargetType="Grid" >
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Arma III">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                    </Grid>
                 </Grid>
+                    
             </Grid>
             <Grid Grid.Row="1">
                 <FrameworkElement.Resources>
@@ -380,33 +526,39 @@
                 </FrameworkElement.Resources>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="264"/>
+                    <ColumnDefinition Width="49"/>
+                    <ColumnDefinition Width="221"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock HorizontalAlignment="Left" Width="309" Margin="0,0,0,27">
                     <Run Text="{Binding ServerItemsView.Count, StringFormat=Server: {0}, Mode=OneWay}"/>
-                    <Run Text="{Binding ServerItems.Count, StringFormat=' von {0}', Mode=OneWay}"  FontFamily="Segoe UI Symbol"/>
+                    <Run Text="{Binding ServerItems.Count, StringFormat='/ {0}', Mode=OneWay}"  FontFamily="Segoe UI Symbol"/>
                 </TextBlock>
-                <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right" VerticalAlignment="Top">
-                    <TextBlock Text="{Binding SelectedServerItem.Name, FallbackValue='Kein Server ausgewählt'}" Height="15" Margin="10,0"/>
+                <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right" VerticalAlignment="Top" Height="15">
+                    <TextBlock Text="{Binding SelectedServerItem.Name, FallbackValue='no server selected'}" Height="15" Margin="10,0"/>
                     <TextBlock Text="{Binding SelectedServerItem.Version, FallbackValue=Version : 0.0.0.0, StringFormat=Version :\{0\}}" Height="15"/>
                 </StackPanel>
-                <TextBlock Text="{Binding SelectedServerItem.ModsText, StringFormat=Addons :{0}, FallbackValue='Addons : Arma 3'}" HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap" />
-                <Button Grid.Column="1" 
+                <TextBlock Text="{Binding SelectedServerItem.ModsText, StringFormat=Addons :{0}, FallbackValue='Addons : Arma 3'}" 
+                           HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap"/>
+
+                <Button Grid.Column="2" 
                         Width="102"  
                         HorizontalAlignment="Center" 
                         Command="Open"
                         CommandParameter="{Binding Path=SelectedServerItem}"
                         FontSize="22"
-                        FontWeight="ExtraBlack"
+                        FontWeight="ExtraBlack" Margin="36,3,83,3"
                         >
-                    Spielen
+                    Play
                 </Button>
                 <TextBox Text="{Binding SelectedServerItem.Endpoint, FallbackValue='', Mode=OneWay}" HorizontalAlignment="Left" Width="128" 
                          IsReadOnly="True"
                          BorderThickness="0" Background="Transparent" 
                          Foreground="{StaticResource ForegroundNormalBrush}"
                          Margin="0,15,0,12"/>
+                <Rectangle Grid.Column="1" HorizontalAlignment="Left" 
+                           Fill="#FF688CAF"
+                           Width="1"/>
             </Grid>
 
         </Grid>
@@ -455,4 +607,20 @@
             </BeginStoryboard>
         </EventTrigger>
     </FrameworkElement.Triggers>
+    <!--<WStyle:WindowTitle.TitleToolbar>
+        <StackPanel Orientation="Horizontal">
+            <Button Background="{x:Null}"  x:Name="appbar_settings"
+                    Click="AppbarSettings_OnClick"
+                    ToolTip="Preferences"
+                    BorderThickness="0">
+                <Viewbox Height="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor,AncestorLevel=1,AncestorType=Button}}" Width="30">
+                    <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
+                        <Path Width="38.9239" Height="38.9239" Canvas.Left="18.538" Canvas.Top="18.5381" 
+                              Stretch="Fill" Fill="#FFFFFFFF" 
+                              Data="F1 M 38,23.5C 38.8643,23.5 39.7109,23.5756 40.5337,23.7206L 42.6275,18.5381L 48.1901,20.787L 46.0964,25.9692C 47.6473,27.0149 48.9851,28.3527 50.0308,29.9036L 55.213,27.8099L 57.4619,33.3725L 52.2794,35.4664C 52.4244,36.2891 52.5,37.1357 52.5,38C 52.5,38.8643 52.4244,39.7109 52.2794,40.5337L 57.4619,42.6275L 55.213,48.1901L 50.0308,46.0964C 49.0795,47.5073 47.8865,48.7418 46.5112,49.7405L 48.7844,54.8462L 43.3041,57.2891L 41.0307,52.1828C 40.0533,52.3906 39.0394,52.5 38,52.5C 37.1357,52.5 36.2891,52.4244 35.4664,52.2794L 33.3725,57.462L 27.8099,55.213L 29.9036,50.0309C 28.3527,48.9851 27.0149,47.6473 25.9691,46.0964L 20.787,48.1901L 18.538,42.6275L 23.7206,40.5336C 23.5756,39.7109 23.5,38.8643 23.5,38C 23.5,37.1357 23.5756,36.2891 23.7206,35.4664L 18.538,33.3725L 20.787,27.8099L 25.9691,29.9036C 26.9205,28.4927 28.1135,27.2582 29.4889,26.2594L 27.2157,21.1537L 32.6959,18.7109L 34.9694,23.8172C 35.9468,23.6094 36.9606,23.5 38,23.5 Z M 38,28C 32.4771,28 28,32.4772 28,38C 28,43.5229 32.4771,48 38,48C 43.5228,48 48,43.5229 48,38C 48,32.4772 43.5228,28 38,28 Z "/>
+                    </Canvas>
+                </Viewbox>
+            </Button>
+        </StackPanel>
+    </WStyle:WindowTitle.TitleToolbar>-->
 </Window>

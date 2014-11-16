@@ -7,16 +7,10 @@
 
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Arma3.xaml" />
                 <ResourceDictionary Source="Styles/VS2012WindowStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
-            <SolidColorBrush x:Key="BackroundNormalBrush" Color="Black"/>
-            <SolidColorBrush x:Key="ForegroundNormalBrush" Color="YellowGreen"/>
-            <SolidColorBrush x:Key="BorderNormalBrush" Color="#FF688CAF"/>
 
-            <Style TargetType="{x:Type DataGrid}" >
-                <Setter Property="Foreground" Value="{StaticResource ForegroundNormalBrush}"/>
-            </Style>
 
             <Style x:Key="CloseButton" TargetType="{x:Type Button}">
                 <Style.BasedOn>

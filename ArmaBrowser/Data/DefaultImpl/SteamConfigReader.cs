@@ -5,13 +5,15 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    class SteamConfigReader : IDisposable
+    internal class SteamConfigReader : IDisposable
     {
         readonly System.IO.Stream _file;
         bool _disposed;
@@ -59,6 +61,125 @@ namespace ArmaBrowser.Data.DefaultImpl
                 }
                 return string.Empty;
             }
+        }
+
+        public XmlDocument ToXml()
+        {
+            var doc = new XmlDocument();
+            XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            XmlElement root = doc.DocumentElement;
+            doc.InsertBefore(xmlDeclaration, root);
+            using (var reader = new System.IO.StreamReader(_file, Encoding.ASCII, false, 1024 * 1024, true))
+            {
+                root = ReadNextElements(reader, doc) as XmlElement;
+                doc.AppendChild(root);
+            }
+
+
+            return doc;
+        }
+
+        XmlElement ReadNextElements(TextReader reader, XmlNode parent)
+        {
+            var doc = parent.OwnerDocument ?? ((XmlDocument)parent);
+            var charbuffer = new char[1];
+            if (reader.Read(charbuffer, 0, 1) == 0) return null;
+            while (charbuffer[0] == 9/*Tabulator*/
+                    || charbuffer[0] == ' '
+                    || char.IsControl(charbuffer[0])
+            )
+            {
+                if (reader.Read(charbuffer, 0, 1) == 0) break;
+            }
+            var token = charbuffer[0];
+            if (token == '"')
+            {
+                var s = ReadUntilNextQuota(reader);
+                var element = doc.CreateElement("Node");
+                var att = element.OwnerDocument.CreateAttribute("Name");
+                att.Value = s;
+                element.Attributes.Append(att);
+                while (ReadElementContent(reader, element))
+                {
+
+                }
+                return element;
+            }
+
+            throw new Exception("unexpect char '" + token + "'");
+        }
+
+        private bool ReadElementContent(TextReader reader, XmlElement element)
+        {
+            var charbuffer = new char[1];
+            do
+            {
+                if (reader.Read(charbuffer, 0, 1) == 0) return false;
+            }
+            while (charbuffer[0] == ' ' || char.IsControl(charbuffer[0]));
+
+            var token = charbuffer[0];
+            if (token == '"')
+            {
+                var s = ReadUntilNextQuota(reader);
+                element.AppendChild(element.OwnerDocument.CreateTextNode(s));
+                return true;
+            }
+
+            if (token == '{')
+            {
+                while (ReadNextElement(reader, element))
+                {
+
+                }
+                return true;
+            }
+            if (token == '}')
+            {
+                return false;
+            }
+
+            throw new Exception("unexpect char '" + token + "'");
+        }
+
+        private bool ReadNextElement(TextReader reader, XmlElement element)
+        {
+            var token = MoveToNextStop(reader);
+            if (token == '}') return false;
+            if (token == 0) return false;
+            if (token != '"') throw new Exception("unexpect char '" + token + "'");
+
+            var s = ReadUntilNextQuota(reader);
+            var child = element.OwnerDocument.CreateElement("Node");
+            var att = element.OwnerDocument.CreateAttribute("Name");
+            att.Value = s;
+            child.Attributes.Append(att);
+            element.AppendChild(child);
+            return ReadElementContent(reader, child);
+        }
+
+        private char MoveToNextStop(TextReader reader)
+        {
+            var charbuffer = new char[1];
+            do
+            {
+                if (reader.Read(charbuffer, 0, 1) == 0) return (char)0;
+            }
+            while (!(charbuffer[0] == '"' || charbuffer[0] == '}'));
+            return charbuffer[0];
+        }
+
+        private string ReadUntilNextQuota(TextReader reader)
+        {
+            var sb = new StringBuilder(255);
+            var charbuffer = new char[1];
+            if (reader.Read(charbuffer, 0, 1) == 0) return null;
+            while (charbuffer[0] != '"')
+            {
+                sb.Append(charbuffer[0]);
+                if (reader.Read(charbuffer, 0, 1) == 0) break;
+            }
+            return sb.ToString();
         }
 
 
