@@ -13,43 +13,43 @@ namespace ArmaBrowser.Data.DefaultImpl
     {
         public void Test()
         {
-            var item = new TestData
-            {
-                Field1 = "Data 1",
-                Field2 = "Data 2",
-                Field3 = "Data 3",
-                Field4 = "Data 4"
-            };
+            //var item = new TestData
+            //{
+            //    Field1 = "Data 1",
+            //    Field2 = "Data 2",
+            //    Field3 = "Data 3",
+            //    Field4 = "Data 4"
+            //};
 
-            var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(item);
-
-
-            System.Diagnostics.Debug.WriteLine(jsonString);
-
-            const string url = @"http://192.168.20.98/json2mysql/";
-
-            using (HttpClient client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(url);
+            ////var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(item);
 
 
-                var requestContent = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
-                                    {
-                                        new KeyValuePair<string, string>("data", jsonString)
-                                    }
-                    );
+            ////System.Diagnostics.Debug.WriteLine(jsonString);
 
-                var httpTask = client.PostAsync("data.php", requestContent);
-                httpTask.Wait();
+            //const string url = @"http://192.168.20.98/json2mysql/";
 
-                var contentTask = httpTask.Result.Content.ReadAsStringAsync();
-                contentTask.Wait();
+            //using (HttpClient client = new HttpClient())
+            //{
+            //    client.BaseAddress = new Uri(url);
 
-                var content = contentTask.Result;
 
-                System.Diagnostics.Debug.WriteLine(content);
-                System.Diagnostics.Debug.WriteLine("");
-            }
+            //    var requestContent = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+            //                        {
+            //                            new KeyValuePair<string, string>("data", jsonString)
+            //                        }
+            //        );
+
+            //    var httpTask = client.PostAsync("data.php", requestContent);
+            //    httpTask.Wait();
+
+            //    var contentTask = httpTask.Result.Content.ReadAsStringAsync();
+            //    contentTask.Wait();
+
+            //    var content = contentTask.Result;
+
+            //    System.Diagnostics.Debug.WriteLine(content);
+            //    System.Diagnostics.Debug.WriteLine("");
+            //}
 
         }
 

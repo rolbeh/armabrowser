@@ -1,0 +1,8 @@
+﻿ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.Controls.TextBlock.$Content,Text,True,False,Trademark,
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.Controls.TextBlock.Text,Text,True,True,,Suche nach Missionen und Servern
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.Controls.TextBlock.Foreground,None,False,True,,\#FFE0E0E0
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.FrameworkElement.VerticalAlignment,None,False,True,,Center
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.Controls.TextBlock.FontStyle,None,True,True,,Italic
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.Controls.TextBlock.FontSize,None,True,True,Trademark font size,18
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.UIElement.IsHitTestVisible,None,False,True,,False
+ArmaBrowser.g.en-US.resources:mainwindow.baml,SeachTextWatermark:System.Windows.FrameworkElement.Margin,None,False,True,,"30,1,3,1"
