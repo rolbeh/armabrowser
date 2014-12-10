@@ -46,37 +46,37 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             try
             {
-                Logger.Default.Push(@"SteamPath - ");
+                Helper.Logger.Default.Push(@"SteamPath - ");
                 var steamFolder = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", "");
                 if (steamFolder != null)
                 {
-                    Logger.Default.PushLine(@"found");
+                    Helper.Logger.Default.PushLine(@"found");
 
                     // Test Standartinstallion
                     {
-                        Logger.Default.Push(@"Arma 3 in default location - ");
+                        Helper.Logger.Default.Push(@"Arma 3 in default location - ");
                         var testPath = Path.Combine(steamFolder.ToString(), "SteamApps", "common", "ARMA 3", "arma3.exe");
                         if (File.Exists(testPath))
                         {
-                            Logger.Default.PushLine(@"found");
+                            Helper.Logger.Default.PushLine(@"found");
                             return Path.GetDirectoryName(testPath);
                         }
                         else
-                            Logger.Default.PushLine(@"not found");
+                            Helper.Logger.Default.PushLine(@"not found");
                     }
 
 
 
                     // Multi-Locations 
-                    Logger.Default.Push(@"steam library config - ");
+                    Helper.Logger.Default.Push(@"steam library config - ");
                     var libraryConfigPath = System.IO.Path.Combine(steamFolder.ToString(), "SteamApps", "libraryfolders.vdf");
                     if (File.Exists(libraryConfigPath))
                     {
-                        Logger.Default.PushLine(@"found");
+                        Helper.Logger.Default.PushLine(@"found");
                         using (var reader = new SteamConfigReader(libraryConfigPath))
                         {
                             var xml = reader.ToXml();
-                            Logger.Default.Push(@"Arma 3 in library location - ");
+                            Helper.Logger.Default.Push(@"Arma 3 in library location - ");
                             foreach (var item in xml.DocumentElement.ChildNodes.Cast<XmlElement>())
                             {
                                 var valueNode = item.ChildNodes.OfType<XmlText>().FirstOrDefault();
@@ -87,24 +87,24 @@ namespace ArmaBrowser.Data.DefaultImpl
                                     var testPath = Path.Combine(folder, "SteamApps", "common", "ARMA 3", "arma3.exe");
                                     if (File.Exists(testPath))
                                     {
-                                        Logger.Default.PushLine(@"found");
+                                        Helper.Logger.Default.PushLine(@"found");
                                         return Path.GetDirectoryName(testPath);
                                     }
                                 }
                             }
-                            Logger.Default.PushLine(@"not found");
+                            Helper.Logger.Default.PushLine(@"not found");
 
                         }
 
                     }
                     else
-                        Logger.Default.PushLine(@"not found");
+                        Helper.Logger.Default.PushLine(@"not found");
 
                     //var steamPath = System.IO.Path.Combine(steamFolder.ToString(), "config", "config.vdf");
                     //Logger.Default.Push(@"Steam config file "+ steamPath + " - ");
                     //if (!File.Exists(steamPath))
                     //{
-                    //    Logger.Default.PushLine(@"not found");
+                    //    Helper.Logger.Default.PushLine(@"not found");
                     //    return null;
                     //}
                     //Logger.Default.PushLine(@"found");
@@ -115,12 +115,12 @@ namespace ArmaBrowser.Data.DefaultImpl
                     //}
                 }
                 else
-                    Logger.Default.PushLine(@"not found");
+                    Helper.Logger.Default.PushLine(@"not found");
                 return "";
             }
             catch (Exception ex)
             {
-                Logger.Default.PushLine(@":-( " + ex.GetType().Name );
+                Helper.Logger.Default.PushLine(@":-( " + ex.GetType().Name);
             }
             return "";
         }

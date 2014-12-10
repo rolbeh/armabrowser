@@ -33,7 +33,7 @@ namespace ArmaBrowser.Views
             if (true.Equals(e.NewValue))
             {
                 LoggerTextBox.Clear();
-                using (  Logger.Default.Subscribe(new TextBoxLoggerApender(LoggerTextBox)))
+                using (Helper.Logger.Default.Subscribe(new Helper.TextBoxLoggerApender(LoggerTextBox)))
                 {
                     ((ServerListViewModel)DataContext).LookForInstallation();
                 }

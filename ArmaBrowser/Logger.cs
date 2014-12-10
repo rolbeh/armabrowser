@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace ArmaBrowser
+namespace ArmaBrowser.Helper
 {
     internal  class Logger : IObservable<string>
     {

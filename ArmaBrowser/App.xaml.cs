@@ -25,16 +25,7 @@ namespace ArmaBrowser
         
         protected override void OnStartup(StartupEventArgs e)
         {
-            try
-            {
                 base.OnStartup(e);
-            }
-            catch (Exception ex)
-            {
-                
-                throw;
-            }
-            
         }
 
 
