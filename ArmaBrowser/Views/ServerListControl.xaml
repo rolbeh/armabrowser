@@ -119,7 +119,7 @@
                                 Width="50"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn Header="Spieler"
+            <DataGridTextColumn Header="Player"
                                 Width="60"
                                 SortMemberPath="CurrentPlayerCount"
                                 SortDirection="Descending"
