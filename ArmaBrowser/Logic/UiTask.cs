@@ -33,6 +33,11 @@ namespace ArmaBrowser.Logic
             await _uiTaskFactory.StartNew(action);
         }
 
+        public static async Task<T> Run<T>(Func<T> func)
+        {
+            return await _uiTaskFactory.StartNew(func);
+        }
+
         public static void Run<T1>(Action<T1> action, T1 obj1)
         {
             Tuple<Action<T1>, T1> tuple = new Tuple<Action<T1>, T1>(action, obj1);

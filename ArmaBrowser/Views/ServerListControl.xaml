@@ -4,13 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
+             xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             mc:Ignorable="d" 
+             xmlns:design="clr-namespace:ArmaBrowser.Design"
+             mc:Ignorable="d design"
              d:DesignHeight="300" d:DesignWidth="700" 
-             d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}"
+             d:DataContext="{d:DesignInstance Type=design:ServerListViewModel, IsDesignTimeCreatable=True}"
              >
     <FrameworkElement.Resources>
 
+        <BitmapImage x:Key="Recently"  UriSource="/Img/recently16.png"/>
+        
         <Storyboard x:Key="DataRowAnimationHeight" AutoReverse="False" >
             <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
         </Storyboard>
@@ -19,7 +23,7 @@
             <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
                              Duration="0:0:0:0.300"/>
         </Storyboard>
-        
+
         <EventTrigger x:Key="LoadedEvent" RoutedEvent="Loaded">
             <BeginStoryboard >
                 <Storyboard  AutoReverse="False" >
@@ -33,7 +37,7 @@
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
-        
+
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
             <!--<Setter Property="Height" Value="18"/>-->
             <Setter Property="Opacity" Value="1"/>
@@ -63,9 +67,36 @@
                 </EventTrigger>
             </Style.Triggers>-->
         </Style>
-        
+
     </FrameworkElement.Resources>
-    <DataGrid Grid.Row="1" x:Name="ServerDatagrid" 
+    <Grid>
+        <!--<ListView Name="lstProducts" Background="{x:Null}" ItemsSource="{Binding Path=ServerItemsView}" IsSynchronizedWithCurrentItem="False">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel VirtualizingPanel.IsVirtualizing="True"   />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Server" DisplayMemberBinding="{Binding Name}" Width="400"/>
+                    <GridViewColumn Header="Mission" DisplayMemberBinding="{Binding Path=Mission}" Width="auto" />
+                    <GridViewColumn Header="Map" DisplayMemberBinding="{Binding Path=Island}"/>
+                    <GridViewColumn Header="Mode" DisplayMemberBinding="{Binding Path=Mode}"/>
+                    <GridViewColumn Header="Player" DisplayMemberBinding="{Binding Path=CurrentPlayerCount}"/>
+                </GridView>
+            </ListView.View>
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+        </ListView>-->
+
+        <DataGrid Grid.Row="1" x:Name="ServerDatagrid" 
               AutoGenerateColumns="False"
               Background="{x:Null}"
               RowHeaderWidth="0"
@@ -75,21 +106,59 @@
               IsSynchronizedWithCurrentItem="False"
               SelectedItem="{Binding Path=SelectedServerItem}"
               SelectionMode="Single"
-            
+                
               FontSize="14" MouseDoubleClick="ServerDatagrid_MouseDoubleClick" SelectionChanged="ServerDatagrid_SelectionChanged"
-              RowStyle="{StaticResource DataGridRowStyle}" >
-        <!--<DataGrid.InputBindings>  RowBackground="{x:Null}"
-            <MouseBinding MouseAction="LeftDoubleClick" Command="ApplicationCommands.Open" />
-        </DataGrid.InputBindings>-->
-
-        <DataGrid.Columns>
-            <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
-                <DataGridTemplateColumn.Header>
-                    <TextBlock Text="&#x1f511;" IsHitTestVisible="False" FontSize="12"/>
-                </DataGridTemplateColumn.Header>
-                <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate>
-                        <TextBlock>
+              RowStyle="{StaticResource DataGridRowStyle}" 
+              
+              EnableColumnVirtualization = "True"
+              EnableRowVirtualization = "True"
+              MaxWidth="2560"
+              MaxHeight="1600"
+              VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560"  >
+             <!--<ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical"  VirtualizingPanel.IsVirtualizing="False"   />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>-->
+            <!--<DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.Panel>
+                        <ItemsPanelTemplate>
+                            <DataGridRowsPresenter/>
+                        </ItemsPanelTemplate>
+                    </GroupStyle.Panel>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Margin" Value="0,0,0,0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander IsExpanded="True" BorderThickness="0"  MaxWidth="2560" MaxHeight="1600">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock FontWeight="Bold" Text="{Binding Path=Name}"  Width="100"/>
+                                                    <TextBlock FontWeight="Bold" Text="{Binding Path=ItemCount}"/>
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <Expander.Content>
+                                                <ItemsPresenter MaxWidth="2560" MaxHeight="1600" VirtualizingStackPanel.IsVirtualizing="True" />
+                                            </Expander.Content>
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>-->
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock Text="&#x1f511;" IsHitTestVisible="False" FontSize="12"/>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
                             <FrameworkElement.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Text" Value="{x:Static sys:String.Empty}"/>
@@ -100,71 +169,104 @@
                                     </Style.Triggers>
                                     </Style>
                             </FrameworkElement.Style>
-                        </TextBlock>
-                    </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>
-            <DataGridTextColumn Header="Server"
-                                Binding="{Binding Name}"
-                                Width="400"
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Server"                                
+                                Width="350"
                                 IsReadOnly="True"
-                                />
-            <DataGridTextColumn Header="Mission"
+                                >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                             <Grid >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Column="0"  SnapsToDevicePixels="True" Height="18" Stretch="None" HorizontalAlignment="Left" >
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Source" Value="{x:Null}"/>
+                                            <Setter Property="Width" Value="0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
+                                                    <Setter Property="Source" Value="{StaticResource Recently}"/>
+                                                    <Setter Property="Width" Value="23"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                
+                                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+                            </Grid> 
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Mission"
                                 Binding="{Binding Mission}" 
                                 Width="*"
+                                MaxWidth="2560"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn  Header="Mode"
+                <DataGridTextColumn Header="Map"
+                                Binding="{Binding Island}" 
+                                Width="50"
+                                IsReadOnly="True"
+                                />
+                <DataGridTextColumn  Header="Mode"
                                 Binding="{Binding Mode}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 />
-            <DataGridTextColumn Header="Player"
+                <DataGridTextColumn Header="Player"
                                 Width="60"
                                 SortMemberPath="CurrentPlayerCount"
                                 SortDirection="Descending"
                                 IsReadOnly="True"
                                 >
-                <DataGridTextColumn.Binding>
-                    <MultiBinding StringFormat="{}{0,3} /{1,3}">
-                        <Binding Path="CurrentPlayerCount"/>
-                        <Binding Path="MaxPlayers"/>
-                    </MultiBinding>
-                </DataGridTextColumn.Binding>
-                <DataGridTextColumn.ElementStyle>
-                    <Style   >
-                        <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
-                     </Style>
-                </DataGridTextColumn.ElementStyle>
-                <DataGridTextColumn.CellStyle>
-                    <Style>
-                        <Setter Property="TextBlock.TextAlignment" Value="Right" />
-                        <Setter Property="TextBlock.FontFamily" Value="Lucida Consolas" />
-                    </Style>
-                </DataGridTextColumn.CellStyle>
-            </DataGridTextColumn>
-            <DataGridTextColumn  Header="Ping"
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0,3} /{1,3}">
+                            <Binding Path="CurrentPlayerCount"/>
+                            <Binding Path="MaxPlayers"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style   >
+                            <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                    <DataGridTextColumn.CellStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                            <Setter Property="TextBlock.FontFamily" Value="Lucida Consolas" />
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn  Header="Ping"
                                 Binding="{Binding Path=Ping}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 >
-                <DataGridTextColumn.ElementStyle>
-                    <Style   >
-                        <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
-                    </Style>
-                </DataGridTextColumn.ElementStyle>
-                <DataGridTextColumn.CellStyle>
-                    <Style>
-                        <Setter Property="TextBlock.TextAlignment" Value="Right" />
-                    </Style>
-                </DataGridTextColumn.CellStyle>
-            </DataGridTextColumn>
-        </DataGrid.Columns>
-        <DataGrid.ColumnHeaderStyle>
-            <Style TargetType="{x:Type DataGridColumnHeader}">
-                <Setter Property="Background" Value="Black"/>
-                <Setter Property="Foreground" Value="WhiteSmoke"/>
-            </Style>
-        </DataGrid.ColumnHeaderStyle>
-    </DataGrid>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style   >
+                            <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                    <DataGridTextColumn.CellStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="Background" Value="Black"/>
+                    <Setter Property="Foreground" Value="WhiteSmoke"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+        </DataGrid>
+    </Grid>
 </UserControl>

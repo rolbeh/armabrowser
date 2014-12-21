@@ -13,6 +13,6 @@ namespace ArmaBrowser.Data
 
         IServerVo[] GetServerList(Action<IServerVo> itemGenerated = null);
 
-        IServerVo GetServerInfo(IPEndPoint gameServer);
+        IServerVo GetServerInfo(IPEndPoint gameServerQueryEndpoint);
     }
 }

@@ -1,4 +1,5 @@
 ﻿
+using ArmaBrowser.Data.DefaultImpl;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,13 +20,22 @@ namespace ArmaBrowser.Logic.DefaultImpl
         private ObservableCollection<IPEndPoint> _favoritServerEndPoints;
         private ObservableCollection<IServerItem> _serverItems;
         private ObservableCollection<IAddon> _addons;
-        private Data.IServerRepository _defaultServerRepository;
-        private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
+        private ServerRepositorySteam _defaultServerRepository;
+        //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
         private string _armaPath = null;
         private string _armaVersion = null;
         private Data.IServerVo[] _serverIPListe;
 
         #endregion Fields
+
+        public LogicContext()
+        {
+            _defaultDataRepository = Data.DataManager.CreateNewDataRepository();
+
+            _defaultServerRepository = Data.DataManager.CreateNewServerRepository();
+
+            //_defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
+        }
 
         #region Properties
 
@@ -65,10 +75,10 @@ namespace ArmaBrowser.Logic.DefaultImpl
                     if (!string.IsNullOrEmpty(folder) && System.IO.File.Exists(Path.Combine(folder, "arma3.exe")))
                     {
                         var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(folder, "arma3.exe"));
-                        _armaVersion = string.Format("{0}.{1}.{2:000}{3}", version.FileMajorPart, version.FileMinorPart, version.FilePrivatePart, version.FileBuildPart);  
+                        _armaVersion = string.Format("{0}.{1}.{2:000}{3}", version.FileMajorPart, version.FileMinorPart, version.FileBuildPart, version.FilePrivatePart);
                     }
                     else
-                        _armaVersion = "";
+                        _armaVersion = "unkown";
                 }
                 return _armaVersion;
             }
@@ -96,44 +106,6 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         #endregion Properties
 
-        public LogicContext()
-        {
-            _defaultDataRepository = Data.DataManager.CreateNewDataRepository();
-            _defaultServerRepository = Data.DataManager.CreateNewServerRepository();
-            _defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
-        }
-
-
-        /*public void ReloadServerItems()
-        {
-            var dataItems = _defaultDataRepository.GetServerList();
-            var dest = ServerItems;
-            UiTask.RunInUiAsync(() => dest.Clear()).Wait();
-
-            foreach (var dataItem in dataItems)
-            {
-                var dest2 = dest;
-                var item = new ServerItem
-                {
-                    Country = dataItem.Country,
-                    Gamename = dataItem.Gamename,
-                    Host = dataItem.Host,
-                    Island = dataItem.Island,
-                    Mission = dataItem.Mission,
-                    Mode = dataItem.Mode,
-                    Modhashs = dataItem.Modhashs,
-                    ModsText = dataItem.Mods,
-                    Name = dataItem.Name,
-                    Players = dataItem.Players,
-                    Port = dataItem.Port,
-                    Signatures = dataItem.Signatures,
-                    Version = dataItem.Version,
-                    Passworded = dataItem.Passworded
-                };
-                UiTask.RunInUi((d, i) => d.Add(i), dest2, item);
-            }
-        }*/
-
         class _comp : System.Collections.Generic.IEqualityComparer<object>
         {
             internal static _comp Default = new _comp();
@@ -143,10 +115,20 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 if (x == null || y == null)
                     return false;
 
+                if (x is Data.IServerQueryAddress)
+                {
+                    var addr = (Data.IServerQueryAddress)x;
+                    var xAddr = (Data.IServerQueryAddress)y;
+
+                    return (addr.Host.ToString() + " " + addr.QueryPort) == (xAddr.Host.ToString() + " " + xAddr.QueryPort);
+                }
+
+
                 var ip = (System.Net.IPEndPoint)x;
-                var server = (Data.IServerVo)y;
+                var server = (Data.IServerQueryAddress)y;
 
                 return (ip.Address.ToString() + " " + ip.Port) == (server.Host.ToString() + " " + server.QueryPort);
+
 
             }
 
@@ -157,7 +139,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 {
                     return (ip.Address.ToString() + " " + ip.Port).GetHashCode();
                 }
-                var server = obj as Data.IServerVo;
+                var server = obj as Data.IServerQueryAddress;
                 if (server != null)
                 {
                     return (server.Host.ToString() + " " + server.QueryPort).GetHashCode();
@@ -169,16 +151,26 @@ namespace ArmaBrowser.Logic.DefaultImpl
         public void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToken)
         {
             var dest = ServerItems;
+            var recently = dest.Where(srv => srv.LastPlayed.HasValue).ToArray(); //.Select(srv => new System.Net.IPEndPoint(srv.Host, srv.Port))
+
             try
             {
                 UiTask.Run(() => dest.Clear(), cancellationToken).Wait();
             }
-
             catch (OperationCanceledException)
             {
                 System.Diagnostics.Debug.WriteLine("Reloading canceled");
                 return;
             }
+
+            RefreshServerInfoAsync(recently)
+                    .ContinueWith(t =>
+                    {
+                        foreach (var recentlyItem in recently)
+                            dest.Add(recentlyItem);
+
+                    }, UiTask.TaskScheduler);
+
 
             _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
             if (lastAddresses.Count() > 0)
@@ -191,18 +183,29 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
                 //die EndPoints aus dem Argument lastAddresses aus der Gesamtliste zunächst entfernen
                 _serverIPListe = _serverIPListe.Except(last).ToArray();
-                
+
                 // die EndPoints aus dem Argument lastAddresses vorn einreihen
                 _serverIPListe = last.Union(_serverIPListe).ToArray();
             }
 
+            if (recently.Length > 0)
+            {
+                var recentlyData = _serverIPListe.Join<Data.IServerVo, IServerItem, object, Data.IServerVo>(recently,
+                                                                                    o => (object)o,
+                                                                                    i => i,
+                                                                                    (o, i) => o,
+                                                                                    _comp.Default).ToArray();
+
+                _serverIPListe = _serverIPListe.Except(recentlyData).ToArray();
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var token = cancellationToken;
 
             Parallel.ForEach(_serverIPListe, new ParallelOptions() { CancellationToken = token }, dataItem =>
                                 {
-                                    if (token.IsCancellationRequested) 
+                                    if (token.IsCancellationRequested)
                                         return;
 
                                     var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
@@ -214,12 +217,21 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
                                     var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
 
-                                    if (cancellationToken.IsCancellationRequested || vo == null) 
+                                    if (cancellationToken.IsCancellationRequested)
                                         return;
-                                    
-                                            var item = new ServerItem();
-                                            AssignProperties(item,vo);
-                                           
+
+                                    var item = new ServerItem();
+                                    if (vo != null)
+                                    {
+                                        AssignProperties(item, vo);
+                                    }
+                                    else
+                                    {
+                                        item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
+                                        item.Host = serverQueryEndpoint.Address;
+                                        item.QueryPort = serverQueryEndpoint.Port;
+                                    }
+
                                     UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
                                 });
 
@@ -239,7 +251,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 return;
             }
 
-            var vo = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(iPEndPoint.Address, iPEndPoint.Port+1));
+            var vo = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(iPEndPoint.Address, iPEndPoint.Port + 1));
             if (cancellationToken.IsCancellationRequested || vo == null)
                 return;
             var item = new ServerItem();
@@ -247,7 +259,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
             UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
         }
-         
+
         private void OnServerGenerated(Data.IServerVo obj)
         {
             if (LiveAction != null)
@@ -256,30 +268,31 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        private async Task UpdateServerInfo(IServerItem server)
+        private async Task UpdateServerInfo(IServerItem[] serverItems)
         {
             await Task.Run(() =>
             {
-                var serverItem = server as ServerItem;
-                if (serverItem == null) return; 
-                if (server.Host == null) return;
-                if (server.QueryPort == 0) return;
-                
-
-                Data.IServerVo dataItem = null;
-                try
+                foreach (ServerItem serverItem in serverItems)
                 {
-                    dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(server.Host, server.QueryPort));
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex);
-                }
-                if (dataItem == null)
-                    return;
+                    if (serverItem == null) return;
+                    if (serverItem.Host == null) return;
+                    if (serverItem.QueryPort == 0) return;
 
-                UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
 
+                    Data.IServerVo dataItem = null;
+                    try
+                    {
+                        dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(serverItem.Host, serverItem.QueryPort));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(ex);
+                    }
+                    if (dataItem == null)
+                        return;
+
+                    UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+                }
 
             });
         }
@@ -306,7 +319,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.Passworded;
             item.Ping = vo.Ping;
             item.CurrentPlayersText = string.Join(", ", vo.Players.Select(p => p.Name).OrderBy(s => s));
-            item.CurrentPlayers = vo.Players.OrderBy(p => p.Name).ToArray() ;
+            item.CurrentPlayers = vo.Players.OrderBy(p => p.Name).ToArray();
         }
 
 
@@ -358,9 +371,10 @@ namespace ArmaBrowser.Logic.DefaultImpl
             if (runAsAdmin)
                 psInfo.Verb = "runsas";
 
+            System.Diagnostics.Process ps = null;
             try
             {
-                var ps = System.Diagnostics.Process.Start(psInfo);
+                ps = System.Diagnostics.Process.Start(psInfo);
                 ps.EnableRaisingEvents = true;
                 ps.Exited += ps_Exited;
             }
@@ -371,27 +385,48 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         }
 
-        public void TestJson()
-        {
-            _defaultBrowserServerRepository.Test();
-        }
+        //public void TestJson()
+        //{
+        //    _defaultBrowserServerRepository.Test();
+        //}
 
         void ps_Exited(object sender, EventArgs e)
         {
-
+            UiTask.Run(() =>
+            {
+                App.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
+                App.Current.MainWindow.Activate();
+            });
         }
 
 
-        public void RefreshServerInfo(IServerItem item)
+        public void RefreshServerInfo(IServerItem[] items)
         {
-            if (item == null) return;
-            UpdateServerInfo(item).Wait();
+            if (items == null) return;
+            UpdateServerInfo(items).Wait();
         }
 
-        public Task RefreshServerInfoAsync(IServerItem item)
+        public Task RefreshServerInfoAsync(IServerItem[] items)
         {
-            return UpdateServerInfo(item);
+            return UpdateServerInfo(items);
         }
 
+
+        internal IServerItem[] AddServerItems(IEnumerable<string> hostQueryAddresses)
+        {
+            var result = new List<IServerItem>(hostQueryAddresses.Count());
+            foreach (var hostQueryAddress in hostQueryAddresses)
+            {
+                var pos = hostQueryAddress.IndexOf(':');
+                var addr = hostQueryAddress.Substring(0, pos);
+                int port = 0;
+                int.TryParse(hostQueryAddress.Substring(pos + 1), out port);
+
+                var serverItem = new ServerItem() { Host = System.Net.IPAddress.Parse(addr), QueryPort = port, Name = addr };
+                ServerItems.Add(serverItem);
+                result.Add(serverItem);
+            }
+            return result.ToArray();
+        }
     }
 }

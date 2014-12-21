@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    class ServerItem : IServerVo
+    class ServerItem : IServerVo, IServerQueryAddress
     {
 
         internal ServerItem()

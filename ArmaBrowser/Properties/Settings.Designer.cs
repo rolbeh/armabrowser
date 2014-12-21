@@ -154,5 +154,29 @@ namespace ArmaBrowser.Properties {
                 this["HostConfigs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RecentlyHosts {
+            get {
+                return ((string)(this["RecentlyHosts"]));
+            }
+            set {
+                this["RecentlyHosts"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Favorits {
+            get {
+                return ((string)(this["Favorits"]));
+            }
+            set {
+                this["Favorits"] = value;
+            }
+        }
     }
 }

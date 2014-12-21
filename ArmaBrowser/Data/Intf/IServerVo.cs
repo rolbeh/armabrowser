@@ -40,6 +40,12 @@ namespace ArmaBrowser.Data
         string Keywords { get; } 
     }
 
+    interface IServerQueryAddress
+    {
+        System.Net.IPAddress Host { get; }
+        int QueryPort { get; }
+    }
+
     internal interface ISteamGameServerPlayer
     {
         byte Idx {get;}

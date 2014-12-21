@@ -24,12 +24,14 @@ namespace ArmaBrowser.Logic
 
         void Open(IServerItem _selectedServerItem, IAddon[] addon, bool runAsAdmin = false);
 
-        void RefreshServerInfo(IServerItem item);
+        void RefreshServerInfo(IServerItem[] items);
 
-        Task RefreshServerInfoAsync(IServerItem item);
+        Task RefreshServerInfoAsync(IServerItem[] items);
 
-        void TestJson();
+        //void TestJson();
 
         event EventHandler<string> LiveAction;
+
+        string ArmaVersion { get; }
     }
 }

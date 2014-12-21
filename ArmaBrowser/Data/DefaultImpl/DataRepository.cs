@@ -42,6 +42,11 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         }
 
+        /// <summary>
+        /// Get the path of installation of Arma3
+        /// </summary>
+        /// <remarks>For the determination the Steam config files will used.</remarks>
+        /// <returns>The path of the installation of Arma3, or an emty string</returns>
         public string GetArma3Folder()
         {
             try

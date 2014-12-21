@@ -36,7 +36,6 @@ namespace ArmaBrowser
                 this.Width = Properties.Settings.Default.MainWindowWidth;
                 this.Top = Properties.Settings.Default.MainWindowTop;
                 this.Left = Properties.Settings.Default.MainWindowLeft;
-                
             }
             try
             {
@@ -44,7 +43,7 @@ namespace ArmaBrowser
                 TabListBox.SelectedIndex = 0;
                 Test.Freeze();
 
-            }catch(Exception)
+            }catch(Exception ex)
             {
                 throw;
             }
@@ -79,7 +78,7 @@ namespace ArmaBrowser
 
         private void OpenCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (MyViewModel.SelectedServerItem != null || MyViewModel.LaunchWithoutHost)
+            e.CanExecute = ((MyViewModel.SelectedServerItem != null && MyViewModel.SelectedServerItem.Port > 0) || MyViewModel.LaunchWithoutHost)
                                && System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath);
         }
 

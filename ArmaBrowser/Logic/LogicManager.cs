@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Logic
 {
-    internal static class LogicManager
-    {
-        public static ILogicContext CreateNewLogicContext()
-        {
-            return new LogicContext();
-        }
-    }
+    //internal static class LogicManager
+    //{
+    //    public static LogicContext CreateNewLogicContext()
+    //    {
+    //        return new LogicContext();
+    //    }
+    //}
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Logic.DefaultImpl
 {
-    class ServerItem : LogicModelBase, IServerItem
+    class ServerItem : LogicModelBase, IServerItem, ArmaBrowser.Data.IServerQueryAddress
     {
         //const string imageUrl = "http://arma3.swec.se/images/flags/png/{0}.png";
         #region Fields
@@ -23,8 +23,44 @@ namespace ArmaBrowser.Logic.DefaultImpl
         private string _mode;
         private Data.ISteamGameServerPlayer[] _currentPlayers;
         private long _ping;
+        private DateTime? _lastPlayed;
+        private bool _isFavorite;
 
         #endregion Field
+
+        public bool IsFavorite
+        {
+            get { return _isFavorite; }
+            set
+            {
+                _isFavorite = value;
+                OnPropertyChanged();
+                GroupName = ServerItemGroup.Recently;
+            }
+        }
+
+        public DateTime? LastPlayed  
+        {
+            get { return _lastPlayed; }
+            set
+            {
+                _lastPlayed = value;
+                GroupName = ServerItemGroup.Recently;
+                OnPropertyChanged();
+            }
+        }
+
+        public ServerItemGroup GroupName
+        {
+            get 
+            {
+                if (_isFavorite) return  ServerItemGroup.Favorite;
+                if (LastPlayed.HasValue) return ServerItemGroup.Recently;
+                if (Port > 0) return ServerItemGroup.Found;
+                return ServerItemGroup.NoResponse;
+            }
+            private set { OnPropertyChanged(); }
+        }
 
         internal ServerItem()
         {
@@ -180,7 +216,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         public string FullText
         {
-            get { return string.Format("{0} {1}", Name, Mission); }
+            get { return string.Format("{0} {1} {2}", Name, Mission, Island); }
         }
 
         public string _modsText { get; set; }
@@ -201,4 +237,5 @@ namespace ArmaBrowser.Logic.DefaultImpl
         }
 
     }
+
 }

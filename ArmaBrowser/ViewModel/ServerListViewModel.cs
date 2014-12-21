@@ -1,11 +1,14 @@
 ﻿using ArmaBrowser.Logic;
+using ArmaBrowser.Logic.DefaultImpl;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 
 namespace ArmaBrowser.ViewModel
@@ -14,7 +17,7 @@ namespace ArmaBrowser.ViewModel
     {
         #region Fields
 
-        private ILogicContext _context;
+        private LogicContext _context;
         private ListCollectionView _serverItemsView;
         private string _textFilter = string.Empty;
         private System.Net.IPEndPoint _ipEndPointFilter = null;
@@ -22,7 +25,6 @@ namespace ArmaBrowser.ViewModel
         private readonly ObservableCollection<IAddon> _useAddons = new ObservableCollection<IAddon>();
         private IAddon _selectedAddon;
         private uint _loadingBusy;
-        private string _armaPath;
         private string _selectedEndPoint;
         private bool _runAsAdmin;
         private bool _launchWithoutHost;
@@ -66,7 +68,12 @@ namespace ArmaBrowser.ViewModel
         {
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
 
+            // Sorting
+            _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "GroupName", Direction = System.ComponentModel.ListSortDirection.Ascending });
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "CurrentPlayerCount", Direction = System.ComponentModel.ListSortDirection.Descending });
+            
+            // Grouping           
+            _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
 
             return _serverItemsView;
         }
@@ -104,13 +111,13 @@ namespace ArmaBrowser.ViewModel
                 OnPropertyChanged();
 
                 Properties.Settings.Default.TextFilter = _textFilter;
-                ServerItemsViewRefresh();
+                ServerItemsView.Refresh();
+                RememberLastVisiblyItems();
             }
         }
 
-        private void ServerItemsViewRefresh()
+        private void RememberLastVisiblyItems()
         {
-            ServerItemsView.Refresh();
             _lastItems = ServerItemsView.Cast<IServerItem>().Take(50).Select(i => { return new System.Net.IPEndPoint(i.Host, i.QueryPort); }).ToArray();
 
         }
@@ -135,7 +142,7 @@ namespace ArmaBrowser.ViewModel
                 if (_selectedServerItem == value) return;
                 _selectedServerItem = value;
                 _selectedEndPoint = _selectedServerItem == null ? string.Empty : string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
-                _context.RefreshServerInfoAsync(item: _selectedServerItem)
+                _context.RefreshServerInfoAsync(items: new[] { _selectedServerItem })
                     .ContinueWith(t => RefreshUseAddons());
                 RefreshUseAddons();
                 OnPropertyChanged();
@@ -162,7 +169,7 @@ namespace ArmaBrowser.ViewModel
 
 
             UiTask.Initialize();
-            _context = LogicManager.CreateNewLogicContext();
+            _context = new LogicContext();
             _context.LiveAction += _context_LiveAction;
 
             TextFilter = Properties.Settings.Default.TextFilter;
@@ -170,6 +177,17 @@ namespace ArmaBrowser.ViewModel
 
             LookForInstallation();
 
+            var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
+            var serverItems = _context.AddServerItems(recentlyHosts);
+            foreach (var item in serverItems)
+            {
+                item.LastPlayed = DateTime.Now;
+            }
+            _context.RefreshServerInfoAsync(serverItems)
+                .ContinueWith(t => 
+                    {
+                        ServerItemsView.Refresh();
+                    }, UiTask.TaskScheduler);
 
             Task.Run((Action)EndlessRefreshSelecteItem);
         }
@@ -215,6 +233,8 @@ namespace ArmaBrowser.ViewModel
                     //{
                     //    SelectedServerItem = ServerItems.FirstOrDefault(s => string.Format("{0}:{1}", s.Host, s.Port) == lastSelected);
                     //}
+                    if (t.Status == TaskStatus.RanToCompletion)
+                        RememberLastVisiblyItems();
                     EndLoading();
 
                 })
@@ -272,6 +292,8 @@ namespace ArmaBrowser.ViewModel
 
                 foreach (var s in strs)
                 {
+                    if (s == string.Empty) continue;
+
                     if (!result)
                         break;
 
@@ -353,13 +375,14 @@ namespace ArmaBrowser.ViewModel
                         }
                     }
                 }
-                
+
             }
 
             // Ausgewählt Addons in die Liste für die Anzeige hinzufügen
-            UiTask.Run((list, selectedMods) => {
+            UiTask.Run((list, selectedMods) =>
+            {
                 list.Clear();
-                foreach(var mod in selectedMods.Where(m => m.mod.IsActive).OrderBy(m => m.Sortnr))
+                foreach (var mod in selectedMods.Where(m => m.mod.IsActive).OrderBy(m => m.Sortnr))
                     list.Add(mod.mod);
             }, _useAddons, mods);
 
@@ -369,9 +392,18 @@ namespace ArmaBrowser.ViewModel
         {
             get
             {
-                return _armaPath;
+                return _context.ArmaPath;
             }
         }
+
+        public string ArmaVersion
+        {
+            get
+            {
+                return _context.ArmaVersion;
+            }
+        }
+
 
         public bool LaunchWithoutHost
         {
@@ -388,6 +420,10 @@ namespace ArmaBrowser.ViewModel
             var host = _selectedServerItem;
             if (_launchWithoutHost)
                 host = null;
+
+            if (host != null && host.Port <= System.Net.IPEndPoint.MinPort)
+                return;
+
             var endpoint = host != null ? string.Format("{0}:{1}", host.Host, host.Port) : string.Empty;
             var usedAddons = Addons.Where(a => a.IsActive).OrderBy(a => a.ActivationOrder).ToArray();
             var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>().FirstOrDefault(h => h.EndPoint == endpoint);
@@ -403,25 +439,60 @@ namespace ArmaBrowser.ViewModel
             hostCfgItem.PossibleAddons = string.Join(";", usedAddons.OrderBy(a => a.ActivationOrder).Select(a => a.ModName).ToArray());
 
 
+
             Properties.Settings.Default.LastPlayedHost = endpoint;
-            Properties.Settings.Default.Save();
+            SaveHistory();
 
             _context.Open(host, usedAddons.ToArray());
         }
 
-        internal void TestJson()
+        private void SaveHistory()
         {
-            _context.TestJson();
+            _selectedServerItem.LastPlayed = DateTime.Now;
+
+            // limit addresses to 10 entries
+            {
+                var items = _context.ServerItems.Where(srv => srv.LastPlayed.HasValue).OrderByDescending(srv => srv.LastPlayed).Skip(10);
+                foreach (var item in items)
+                {
+                    item.LastPlayed = null;
+                }
+            }
+
+            // Save histroy addresses
+            {
+                var items = _context.ServerItems.Where(srv => srv.LastPlayed.HasValue).OrderByDescending(srv => srv.LastPlayed).Select(srv => string.Format("{0}:{1}", srv.Host, srv.QueryPort)).ToArray();
+                Properties.Settings.Default.RecentlyHosts = string.Join(" ", items);
+            }
+
+
+            // Save favorits
+            {
+                var items = _context.ServerItems.Where(srv => srv.IsFavorite).Select(srv => string.Format("{0}:{1}", srv.Host, srv.QueryPort)).ToArray();
+                Properties.Settings.Default.Favorits = string.Join(" ", items);
+            }
+
+            Properties.Settings.Default.Save();
         }
+
+        //internal void TestJson()
+        //{
+        //    _context.TestJson();
+        //}
 
         private async void EndlessRefreshSelecteItem()
         {
             while (true)
             {
-                var item = SelectedServerItem;
-                if (item != null)
+                var task = UiTask.Run(() => App.Current.MainWindow.WindowState != WindowState.Minimized);
+                task.Wait();
+                if (task.IsCompleted && task.Result)
                 {
-                    _context.RefreshServerInfo(item);
+                    var item = SelectedServerItem;
+                    if (item != null)
+                    {
+                        _context.RefreshServerInfo(new[] { item });
+                    }
                 }
                 await Task.Delay(3000);
             }
@@ -430,8 +501,14 @@ namespace ArmaBrowser.ViewModel
         internal void LookForInstallation()
         {
             _context.LookForArmaPath();
-            _armaPath = _context.ArmaPath;
-            Properties.Settings.Default.ArmaPath = _armaPath;
+            OnPropertyChanged("ArmaPath");
+            OnPropertyChanged("ArmaVersion");
+            Properties.Settings.Default.ArmaPath = _context.ArmaPath;
+        }
+
+        internal void SaveFavorits()
+        {
+
         }
     }
 

@@ -10,11 +10,8 @@
              Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
              IsVisibleChanged="UserControl_IsVisibleChanged">
     <Grid>
-        <GroupBox Margin="10" VerticalAlignment="Top">
-            <GroupBox.Header>
-                <TextBlock Text="Install folder" FontWeight="Bold"/>
-            </GroupBox.Header>
-            <Grid>
+        
+            <Grid Margin="10" VerticalAlignment="Top">
                 <FrameworkElement.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Padding" Value="4"/>
@@ -34,8 +31,14 @@
                     <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=ArmaPath, Source={x:Static Member=properties:Settings.Default}}" 
                               Foreground="Black"/>
                 </StackPanel>
-            </Grid>
-        </GroupBox>
+                
+                <!-- Version -->
+                <StackPanel Grid.Row="1" Orientation="Vertical">
+                    <TextBlock Text="Arma 3 Version" Padding="4" />
+                <TextBox Text="{Binding Path=ArmaVersion, Mode=OneWay}" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True"/>
+            </StackPanel>
+        </Grid>
+         
 
         <TextBox x:Name="LoggerTextBox" IsReadOnly="True" VerticalAlignment="Bottom"
                  Margin="5"

@@ -24,18 +24,20 @@
     <UpdateInterval>1</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
+    <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://armabrowser.eventscan.de/app/asb/win/public/once/</InstallUrl>
+    <InstallUrl>http://get.armabrowser.org/asb/win/public/once/</InstallUrl>
+    <UpdateUrl>http://get.armabrowser.org/asb/win/public/once/</UpdateUrl>
     <SupportUrl>http://armabrowser.org/</SupportUrl>
     <TargetCulture>en</TargetCulture>
     <ProductName>ArmaBrowser</ProductName>
     <PublisherName>ArmaBrowser</PublisherName>
     <SuiteName>ArmaBrowser</SuiteName>
+    <MinimumRequiredVersion>0.5.5.69</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>66</ApplicationRevision>
-    <ApplicationVersion>0.5.4.%2a</ApplicationVersion>
+    <ApplicationRevision>70</ApplicationRevision>
+    <ApplicationVersion>0.5.5.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -122,10 +124,8 @@
     <Compile Include="ArmaBrowserCommands.cs" />
     <Compile Include="Data\DataManager.cs" />
     <Compile Include="Data\DefaultImpl\ArmaAddOn.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaBrowserServerRepository.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaServerInfo\Helpers.cs" />
+    <Compile Include="Data\DefaultImpl\ArmaBrowserServerJsonRepository.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
-    <Compile Include="Data\DefaultImpl\ParseArmaSwecServerlist.cs" />
     <Compile Include="Data\DefaultImpl\ServerItem.cs" />
     <Compile Include="Data\DefaultImpl\ServerRepositorySteam.cs" />
     <Compile Include="Data\DefaultImpl\SteamConfigReader.cs" />
@@ -135,6 +135,8 @@
     <Compile Include="Data\Intf\IDataRepository.cs" />
     <Compile Include="Data\Intf\IServerList.cs" />
     <Compile Include="Data\Intf\IServerVo.cs" />
+    <Compile Include="Design\ServerItem.cs" />
+    <Compile Include="Design\ServerListViewModel.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
     <Compile Include="Logic\DefaultImpl\LogicContext.cs" />
@@ -142,13 +144,15 @@
     <Compile Include="Logic\Intf\IAddon.cs" />
     <Compile Include="Logic\Intf\ILogicContext.cs" />
     <Compile Include="Logic\Intf\IServerItem.cs" />
+    <Compile Include="Logic\Intf\ServerItemGroup.cs" />
     <Compile Include="Logic\LogicManager.cs" />
     <Compile Include="Logic\LogicModelBase.cs" />
     <Compile Include="Logic\UiTask.cs" />
     <Compile Include="HostConfigCollection.cs" />
-    <Compile Include="Shader\Glow.cs" />
+    <Resource Include="Img\recently16.png" />
+    <Content Include="Shader\Glow.cs" />
     <Compile Include="Shader\multishader_frag.cs" />
-    <Compile Include="Shader\Shader.cs" />
+    <Content Include="Shader\Shader.cs" />
     <Compile Include="Shader\ShaderHelper.cs" />
     <Compile Include="Styles\VS2012WindowStyle.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
@@ -247,10 +251,10 @@
     <Resource Include="Img\ArmaBrowser32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Effect Include="Shader\Shader.fx" />
+    <None Include="Shader\Shader.fx" />
   </ItemGroup>
   <ItemGroup>
-    <Effect Include="Shader\Glow.fx" />
+    <None Include="Shader\Glow.fx" />
   </ItemGroup>
   <ItemGroup>
     <Effect Include="Shader\multishader_frag.fx" />

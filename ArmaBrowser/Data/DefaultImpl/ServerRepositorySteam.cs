@@ -11,15 +11,19 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     sealed class ServerRepositorySteam : IServerRepository
     {
+        public static string SteamGameNameFilter = "Arma3";
+
         static Encoding CharEncoding = Encoding.GetEncoding(1252);
         private System.Exception _excetion;
 
-        IPEndPoint[] IServerRepository.GetServerEndPoints()
+        #region IServerRepository
+
+        public IPEndPoint[] GetServerEndPoints()
         {
             throw new NotSupportedException();
         }
 
-        IServerVo[] IServerRepository.GetServerList(Action<IServerVo> itemGenerated)
+        public IServerVo[] GetServerList(Action<IServerVo> itemGenerated)
         {
             // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
 
@@ -34,11 +38,12 @@ namespace ArmaBrowser.Data.DefaultImpl
 
 
             var roundtrips = 0;
-            using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
+
+            var dnsEntry = System.Net.Dns.GetHostEntry("hl2master.steampowered.com");
+            //var ip = dnsEntry.AddressList.Length > 1 ? dnsEntry.AddressList[1] : dnsEntry.AddressList[0];
+            foreach (var ip in dnsEntry.AddressList)
             {
-                var dnsEntry = System.Net.Dns.GetHostEntry("hl2master.steampowered.com");
-                //var ip = dnsEntry.AddressList.Length > 1 ? dnsEntry.AddressList[1] : dnsEntry.AddressList[0];
-                foreach (var ip in dnsEntry.AddressList)
+                using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
                 {
                     bufferList.Clear();
                     var hasErros = false;
@@ -46,28 +51,29 @@ namespace ArmaBrowser.Data.DefaultImpl
                     //udp.Connect("208.64.200.52", 27011);
                     while (true)
                     {
-                        udp.Connect(ip, 27011);
-                        string request = "1ÿ";
-                        request += lastEndPoint + "\0";
-                        request += "\\gamedir\\Arma3";
-                        //request += "\\empty\\0";
-
-                        request += "\0";
-
-                        var bytes = CharEncoding.GetBytes(request);
-
-                        //udp.Connect("146.66.155.8", 27019);
-                        IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
-                        udp.Client.ReceiveTimeout = 900;
-
-                        var sendlen = udp.Send(bytes, bytes.Length);
-#if DEBUG
-                    if (sendlen != bytes.Length)
-                        Debug.WriteLine("IServerRepository.GetServerList - sendlen != bytes.Length");
-#endif
                         byte[] buffer = null;
                         try
                         {
+                            udp.Connect(ip, 27011);
+                            string request = "1ÿ";
+                            request += lastEndPoint + "\0";
+                            request += "\\gamedir\\" + SteamGameNameFilter;
+                            //request += "\\empty\\0";
+
+                            request += "\0";
+
+                            var bytes = CharEncoding.GetBytes(request);
+
+                            //udp.Connect("146.66.155.8", 27019);
+                            IPEndPoint endp = udp.Client.RemoteEndPoint as IPEndPoint;
+                            udp.Client.ReceiveTimeout = 900;
+
+                            var sendlen = udp.Send(bytes, bytes.Length);
+#if DEBUG
+                            if (sendlen != bytes.Length)
+                                Debug.WriteLine("IServerRepository.GetServerList - sendlen != bytes.Length");
+#endif
+
                             roundtrips++;
                             buffer = udp.Receive(ref endp);
                         }
@@ -163,7 +169,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             return bufferList.ToArray();
         }
 
-        IServerVo IServerRepository.GetServerInfo(IPEndPoint gameServerEndpoint)
+        public IServerVo GetServerInfo(IPEndPoint gameServerQueryEndpoint)
         {
 
             byte[] startBytes = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
@@ -181,7 +187,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             var buffer = new byte[2048];
             using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
             {
-                udp.Connect(gameServerEndpoint);
+                udp.Connect(gameServerQueryEndpoint);
 
                 udp.AllowNatTraversal(true);
                 udp.Client.ReceiveTimeout = 300;
@@ -301,10 +307,11 @@ namespace ArmaBrowser.Data.DefaultImpl
             return item != null
                         ? new ServerItem
                         {
-                            Host = gameServerEndpoint.Address,
-                            QueryPort = gameServerEndpoint.Port,
+                            Host = gameServerQueryEndpoint.Address,
+                            QueryPort = gameServerQueryEndpoint.Port,
                             Name = item.GameServerName,
-                            Gamename = "Arma3",
+                            Gamename = SteamGameNameFilter,
+                            Map = item.Map,
                             Mission = item.Game,
                             MaxPlayers = item.MaxPlayerCount,
                             CurrentPlayerCount = item.CurrentPlayerCount,
@@ -322,6 +329,8 @@ namespace ArmaBrowser.Data.DefaultImpl
 
 
         }
+
+        #endregion IServerRepository
 
         private static void RequestRules(ServerQueryRequest item, System.Net.Sockets.UdpClient udp)
         {

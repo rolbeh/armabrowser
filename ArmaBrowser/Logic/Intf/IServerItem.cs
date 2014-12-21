@@ -8,6 +8,10 @@ namespace ArmaBrowser.Logic
 {
     interface IServerItem
     {
+        bool IsFavorite { get; set; }
+
+        DateTime? LastPlayed { get; set; }
+
         /// <summary>
         /// Arma3
         /// </summary>

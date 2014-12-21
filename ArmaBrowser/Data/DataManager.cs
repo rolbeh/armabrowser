@@ -18,17 +18,15 @@ namespace ArmaBrowser.Data
             return new DataRepository();
         }
 
-        public static IServerRepository CreateNewServerRepository()
+        public static ServerRepositorySteam CreateNewServerRepository()
         {
-            //return new ServerRepositoryHtml();
-            //return new ServerRepositoryFromFile();
             return new ServerRepositorySteam();
         }
 
-        public static IArmaBrowserServerRepository CreateNewArmaBrowserServerRepository()
-        {
-            return new ArmaBrowserServerJsonRepository();
-        }
+        //public static IArmaBrowserServerRepository CreateNewArmaBrowserServerRepository()
+        //{
+        //    return new ArmaBrowserServerJsonRepository();
+        //}
     }
 }
 
