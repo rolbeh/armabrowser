@@ -27,6 +27,8 @@ namespace ArmaBrowser
     {
         public MainWindow()
         {
+            
+
             this.SourceInitialized += new EventHandler(win_SourceInitialized);
 
             this.IsVisibleChanged += MainWindow_IsVisibleChanged;
@@ -42,6 +44,11 @@ namespace ArmaBrowser
                 InitializeComponent();
                 TabListBox.SelectedIndex = 0;
                 Test.Freeze();
+
+                var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+                string version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+                VersionTextBlock.Text = "Version " + version;
+
 
             }catch(Exception ex)
             {
@@ -84,6 +91,9 @@ namespace ArmaBrowser
 
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            AutoJoinView.Visibility = System.Windows.Visibility.Visible;
+            AutoJoinView.DataContext = MyViewModel.SelectedServerItem;
+            //AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
             MyViewModel.OpenArma();
             this.WindowState = System.Windows.WindowState.Minimized;
         }

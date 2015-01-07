@@ -32,6 +32,7 @@ namespace ArmaBrowser.ViewModel
 
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
         private readonly ObservableCollection<LogEntry> _actionLog = new ObservableCollection<LogEntry>();
+        private bool _isJoining;
 
 
         #endregion Fields
@@ -71,7 +72,7 @@ namespace ArmaBrowser.ViewModel
             // Sorting
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "GroupName", Direction = System.ComponentModel.ListSortDirection.Ascending });
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "CurrentPlayerCount", Direction = System.ComponentModel.ListSortDirection.Descending });
-            
+
             // Grouping           
             _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
 
@@ -184,7 +185,7 @@ namespace ArmaBrowser.ViewModel
                 item.LastPlayed = DateTime.Now;
             }
             _context.RefreshServerInfoAsync(serverItems)
-                .ContinueWith(t => 
+                .ContinueWith(t =>
                     {
                         ServerItemsView.Refresh();
                     }, UiTask.TaskScheduler);
@@ -404,6 +405,16 @@ namespace ArmaBrowser.ViewModel
             }
         }
 
+        public bool IsJoinig
+        {
+            get { return _isJoining; }
+            set
+            {
+                _isJoining = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public bool LaunchWithoutHost
         {
@@ -484,17 +495,27 @@ namespace ArmaBrowser.ViewModel
         {
             while (true)
             {
-                var task = UiTask.Run(() => App.Current.MainWindow.WindowState != WindowState.Minimized);
-                task.Wait();
-                if (task.IsCompleted && task.Result)
+                var mainwin = UiTask.Run(() => App.Current.MainWindow);
+                mainwin.Wait();
+                if (mainwin == null) break;
+                try
                 {
-                    var item = SelectedServerItem;
-                    if (item != null)
+                    var task = UiTask.Run(() => App.Current.MainWindow.WindowState != WindowState.Minimized);
+                    task.Wait();
+                    if (task.IsCompleted && task.Result && !_isJoining)
                     {
-                        _context.RefreshServerInfo(new[] { item });
+                        var item = SelectedServerItem;
+                        if (item != null)
+                        {
+                            _context.RefreshServerInfo(new[] { item });
+                        }
                     }
+                    await Task.Delay(3000);
                 }
-                await Task.Delay(3000);
+                catch
+                {
+
+                }
             }
         }
 

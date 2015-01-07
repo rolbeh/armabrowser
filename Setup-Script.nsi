@@ -10,6 +10,7 @@
 ; The name of the installer
 Name "ArmaBrowser"
 
+
 ; The file to write
 OutFile "ArmaBrowser-Setup.exe"
 
@@ -35,7 +36,7 @@ VIAddVersionKey OriginalFilename "ArmaBrowser-Setup.exe"
 
 
 ; Request application privileges for Windows Vista
-RequestExecutionLevel admin
+RequestExecutionLevel user
 
 ;--------------------------------
 
