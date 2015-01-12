@@ -9,7 +9,7 @@
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         
-        Title="ARMA III Server Browser (Community Project by Tackle mail@armabrowser.org)" 
+        Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" 
         UseLayoutRounding="False"
         Foreground="White"
