@@ -16,7 +16,7 @@
     <WarningLevel>4</WarningLevel>
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetFrameworkProfile />
-    <PublishUrl>ftp://armabrowser.org/app/asb/win/public/once/</PublishUrl>
+    <PublishUrl>ftp://armabrowser.org/app/asb/win/dev/once/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -26,8 +26,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://get.armabrowser.org/asb/win/public/once/</InstallUrl>
-    <UpdateUrl>http://get.armabrowser.org/asb/win/public/once/</UpdateUrl>
+    <InstallUrl>http://get.armabrowser.org/asb/win/dev/once/</InstallUrl>
     <SupportUrl>http://armabrowser.org/</SupportUrl>
     <TargetCulture>en</TargetCulture>
     <ProductName>ArmaBrowser</ProductName>
@@ -36,8 +35,8 @@
     <MinimumRequiredVersion>0.5.5.69</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>70</ApplicationRevision>
-    <ApplicationVersion>0.5.5.%2a</ApplicationVersion>
+    <ApplicationRevision>71</ApplicationRevision>
+    <ApplicationVersion>0.5.6.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
