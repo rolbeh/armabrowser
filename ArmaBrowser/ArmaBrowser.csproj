@@ -149,6 +149,10 @@
     <Compile Include="Logic\LogicModelBase.cs" />
     <Compile Include="Logic\UiTask.cs" />
     <Compile Include="HostConfigCollection.cs" />
+    <Page Include="Views\View\AutoJoinControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Resource Include="Img\recently16.png" />
     <Content Include="Shader\Glow.cs" />
     <Compile Include="Shader\multishader_frag.cs" />
@@ -165,6 +169,9 @@
     </Compile>
     <Compile Include="Views\ServerListControl.xaml.cs">
       <DependentUpon>ServerListControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\View\AutoJoinControl.xaml.cs">
+      <DependentUpon>AutoJoinControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Win32.cs" />
     <Page Include="MainWindow.xaml">

@@ -80,6 +80,11 @@ namespace ArmaBrowser.Logic
         int MaxPlayers { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        bool IsPlayerSlotsFull { get; }
+
+        /// <summary>
         /// Karte
         /// </summary>
         string Island { get; }

@@ -300,9 +300,9 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             }
 
-            var modName = GetValue("modNames", item.KeyValues);
+            //var modName = GetValue("modNames", item.KeyValues);
 
-            var modHashs = GetValue("modHashes", item.KeyValues);
+            //var modHashs = GetValue("modHashes", item.KeyValues);
 
             return item != null
                         ? new ServerItem
@@ -322,12 +322,10 @@ namespace ArmaBrowser.Data.DefaultImpl
                             CurrentPlayers = new string[0],
                             Ping = item.Ping,
                             Players = item.Players.Cast<ISteamGameServerPlayer>().ToArray(),
-                            Mods = modName,
-                            Modhashs = modHashs
+                            Mods = GetValue("modNames", item.KeyValues),
+                            Modhashs = GetValue("modHashes", item.KeyValues)
                         }
                         : null;
-
-
         }
 
         #endregion IServerRepository

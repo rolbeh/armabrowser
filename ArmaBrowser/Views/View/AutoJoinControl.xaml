@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="ArmaBrowser.Views.View.AutoJoinControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:viewmodel="clr-namespace:ArmaBrowser.Logic.DefaultImpl"
+             d:DataContext="{d:DesignInstance Type=viewmodel:ServerItem}"
+             Background="{StaticResource BackroundNormalBrush}"
+             d:DesignHeight="158" d:DesignWidth="347">
+    <FrameworkElement.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </FrameworkElement.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock FontSize="18" Text="Joining Server" TextAlignment="Center" Foreground="{StaticResource TitleBarForegroundBrush}" Background="{StaticResource TitleBarBackgroundBrush}"/>
+        <StackPanel Grid.Row="1" Margin="50,0">
+            <TextBlock Margin="5" FontSize="18" Text="{Binding Path=Name}"/>
+            <TextBlock Margin="5" FontSize="16" Text="{Binding Path=Mission}"/>
+        </StackPanel>
+        <TextBlock Grid.Row="2" Margin="50,0" FontSize="16" Text="{Binding Path=PlayersState, StringFormat=Player {0}, FallbackValue='Player ???'}" TextAlignment="Center"/>
+        <Border Grid.Row="3" Background="{StaticResource TitleBarBackgroundBrush}">
+            <Button Foreground="Black" Content="Cancel" Height="30" Width="93" Click="Button_Click"/>
+        </Border>
+    </Grid>
+</UserControl>

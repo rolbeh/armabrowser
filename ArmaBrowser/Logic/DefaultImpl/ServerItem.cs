@@ -159,6 +159,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             set
             {
                 _playersNum = value;
+                OnPropertyChanged("IsPlayerSlotsFull");
                 OnPropertyChanged("PlayersState");
                 OnPropertyChanged();
             }
@@ -170,6 +171,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             set
             {
                 _maxPlayers = value;
+                OnPropertyChanged("IsPlayerSlotsFull");
                 OnPropertyChanged("PlayersState");
                 OnPropertyChanged();
             }
@@ -189,6 +191,11 @@ namespace ArmaBrowser.Logic.DefaultImpl
                     _currentPlayers = value;
                 OnPropertyChanged();
             }
+        }
+
+        public bool IsPlayerSlotsFull
+        {
+            get { return _maxPlayers == _playersNum; }
         }
 
         public string CurrentPlayersText
