@@ -24,5 +24,13 @@ namespace ArmaBrowser.Views.View
         {
             InitializeComponent();
         }
+
+        public event RoutedEventHandler Canceled;
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (Canceled != null)
+                Canceled(this, new RoutedEventArgs());
+        }
     }
 }

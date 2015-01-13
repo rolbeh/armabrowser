@@ -11,6 +11,10 @@
 Name "ArmaBrowser"
 
 
+!getdllversion "ArmaBrowser\bin\Release\ArmaBrowser.exe" expv_
+
+Var version ;Declare the variable
+
 ; The file to write
 OutFile "ArmaBrowser-Setup.exe"
 
@@ -21,19 +25,18 @@ InstallDir $LOCALAPPDATA\ArmaBrowser
 ; overwrite the old one automatically)
 InstallDirRegKey HKLM "Software\ArmaBrowser" "Install_Dir"
 
-
-VIProductVersion                 "0.5.3.50"
+!echo "version = $version"
+VIProductVersion                 "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
 VIAddVersionKey ProductName      "ArmaBrowser"
 VIAddVersionKey Comments         ""
 VIAddVersionKey CompanyName      "armabrowser.org"
-VIAddVersionKey LegalCopyright   "2024"
+VIAddVersionKey LegalCopyright   "2015"
 VIAddVersionKey FileDescription  ""
-VIAddVersionKey FileVersion      "0.5.3.50"
-VIAddVersionKey ProductVersion   "0.5.3.50"
+VIAddVersionKey FileVersion      "$version"
+VIAddVersionKey ProductVersion   "$version"
 VIAddVersionKey InternalName     "ArmaBrowser"
 VIAddVersionKey LegalTrademarks  ""
 VIAddVersionKey OriginalFilename "ArmaBrowser-Setup.exe"
-
 
 ; Request application privileges for Windows Vista
 RequestExecutionLevel user
@@ -54,6 +57,8 @@ UninstPage instfiles
 ; The stuff to install
 Section "ArmaBrowser"
 
+  StrCpy $version "${expv_1}.${expv_2}.${expv_3}.${expv_4}"  
+
   SectionIn RO
   
   ; Set output path to the installation directory.
@@ -65,17 +70,17 @@ Section "ArmaBrowser"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\armabrowser" "Install_Dir" "$INSTDIR"
-  WriteRegStr HKLM "Software\armabrowser" "DisplayVersion" "0.5.3"
+  WriteRegStr HKLM "Software\armabrowser" "DisplayVersion" "$version"
   WriteRegStr HKLM "Software\armabrowser" "Publisher" "armabrowser.org"
   WriteRegStr HKLM "Software\armabrowser" "DisplayIcon" '"$INSTDIR\ArmaBrowser.exe"'
   
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "DisplayName" "ArmaBrowser"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "DisplayVersion" "0.5.3"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "DisplayVersion" "$version"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "Publisher" "armabrowser.org"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "DisplayIcon" '"$INSTDIR\ArmaBrowser.exe"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "URLInfoAbout" "http://armabrowser.org"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "URLInfoAbout" "http://www.armabrowser.org"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
@@ -118,3 +123,6 @@ Section "Uninstall"
   RMDir "$INSTDIR"
 
 SectionEnd
+
+!echo ""
+!echo "ArmaBrowser.exe version is ${expv_1}.${expv_2}.${expv_3}.${expv_4}"

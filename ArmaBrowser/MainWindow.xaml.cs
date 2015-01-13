@@ -20,15 +20,17 @@ namespace ArmaBrowser
     using System.Runtime.InteropServices;
     using System.Xml.Serialization;
     using System.IO;
+    using System.Threading;
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
     partial class MainWindow : Window
     {
+        private CancellationTokenSource _joinServerCancellationTokenSrc;
         public MainWindow()
         {
-            
 
+            _joinServerCancellationTokenSrc = new CancellationTokenSource();
             this.SourceInitialized += new EventHandler(win_SourceInitialized);
 
             this.IsVisibleChanged += MainWindow_IsVisibleChanged;
@@ -50,7 +52,8 @@ namespace ArmaBrowser
                 VersionTextBlock.Text = "Version " + version;
 
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw;
             }
@@ -91,11 +94,54 @@ namespace ArmaBrowser
 
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            JoinServer();
+        }
+
+        void CancelJoiningServer()
+        {
+            var old = _joinServerCancellationTokenSrc;
+            _joinServerCancellationTokenSrc = new CancellationTokenSource();
+            old.Cancel();
+            old.Dispose();
+        }
+
+        async void JoinServer()
+        {
             AutoJoinView.Visibility = System.Windows.Visibility.Visible;
-            AutoJoinView.DataContext = MyViewModel.SelectedServerItem;
-            //AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
-            MyViewModel.OpenArma();
-            this.WindowState = System.Windows.WindowState.Minimized;
+            try
+            {
+                AutoJoinView.DataContext = MyViewModel.SelectedServerItem;
+                CancelJoiningServer();
+                var canJoinServer = await WaitForSlotAsync(_joinServerCancellationTokenSrc.Token);
+
+                if (canJoinServer)
+                {
+                    MyViewModel.OpenArma();
+                    this.WindowState = System.Windows.WindowState.Minimized;
+                }
+            }
+            finally
+            {
+                AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
+            }
+
+        }
+
+        async Task<bool> WaitForSlotAsync(CancellationToken token)
+        {
+            return await Task.Run(() =>
+            {
+                Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
+                while (MyViewModel.SelectedServerItem != null
+                    && MyViewModel.SelectedServerItem.IsPlayerSlotsFull)
+                {
+                    if (token.IsCancellationRequested)
+                        return false;
+                    Thread.Sleep(1000);
+                }
+
+                return true;
+            });
         }
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
@@ -180,5 +226,11 @@ namespace ArmaBrowser
         {
             TabListBox.SelectedItem = "Arma III";
         }
+
+        private void AutoJoinControl_Canceled(object sender, RoutedEventArgs e)
+        {
+            CancelJoiningServer();
+        }
+
     }
 }

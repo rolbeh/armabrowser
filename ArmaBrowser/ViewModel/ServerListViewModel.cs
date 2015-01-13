@@ -331,7 +331,7 @@ namespace ArmaBrowser.ViewModel
         private void RefreshUseAddons()
         {
             var t = UiTask.Run(_useAddons.Clear);
-            if (_selectedServerItem == null)
+            if (_selectedServerItem == null || _selectedServerItem.Mods == null)
             {
                 return;
             }

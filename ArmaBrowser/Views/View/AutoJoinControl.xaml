@@ -27,7 +27,7 @@
         </StackPanel>
         <TextBlock Grid.Row="2" Margin="50,0" FontSize="16" Text="{Binding Path=PlayersState, StringFormat=Player {0}, FallbackValue='Player ???'}" TextAlignment="Center"/>
         <Border Grid.Row="3" Background="{StaticResource TitleBarBackgroundBrush}">
-            <Button Foreground="Black" Content="Cancel" Height="30" Width="93"/>
+            <Button Foreground="Black" Content="Cancel" Height="30" Width="93" Click="Button_Click"/>
         </Border>
     </Grid>
 </UserControl>

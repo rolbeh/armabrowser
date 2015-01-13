@@ -10,7 +10,7 @@
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         
-        Title="ARMA III Server Browser (Community Project by Tackle mail@armabrowser.org)" 
+        Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" 
         UseLayoutRounding="False"
         Foreground="White"
@@ -543,14 +543,23 @@
                            HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap"/>
 
                 <Button Grid.Column="2" 
-                        Width="102"  
+                        Width="120"  
                         HorizontalAlignment="Center" 
                         Command="Open"
                         CommandParameter="{Binding Path=SelectedServerItem}"
                         FontSize="22"
-                        FontWeight="ExtraBlack" Margin="36,3,83,3"
+                        FontWeight="ExtraBlack" Margin="0,3"
                         >
-                    Play
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value="Play"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedServerItem.IsPlayerSlotsFull, FallbackValue=False}" Value="True">
+                                    <Setter Property="Content" Value="auto join"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
                 </Button>
                 <TextBox Text="{Binding SelectedServerItem.Endpoint, FallbackValue='', Mode=OneWay}" HorizontalAlignment="Left" Width="128" 
                          IsReadOnly="True"
@@ -568,7 +577,7 @@
             <Border VerticalAlignment="Center" HorizontalAlignment="Center" Width="300" Background="Black" 
                     BorderBrush="AliceBlue"
                     BorderThickness="2">
-                <view:AutoJoinControl></view:AutoJoinControl>
+                <view:AutoJoinControl Canceled="AutoJoinControl_Canceled"></view:AutoJoinControl>
             </Border>
         </Grid>
     </Grid>
@@ -618,6 +627,12 @@
     </FrameworkElement.Triggers>
     <WStyle:WindowTitle.TitleToolbar>
         <StackPanel Orientation="Horizontal" Height="30">
+            <TextBlock Margin="5,5,0,0" Height="30">
+                    <Hyperlink NavigateUri="https://plus.google.com/+ArmabrowserOrgofficial/posts" 
+                               Foreground="#FFCDE2F3"
+                               RequestNavigate="PoweredByHyperlink_RequestNavigate"
+                               >Google+</Hyperlink>
+            </TextBlock>
             <TextBlock x:Name="VersionTextBlock" Margin="5,5,0,0" Height="30" />
             <!--<Button Background="{x:Null}"  x:Name="appbar_settings"
                     Click="AppbarSettings_OnClick"

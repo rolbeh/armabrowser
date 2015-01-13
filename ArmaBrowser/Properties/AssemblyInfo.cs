@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ArmaBrowser")]
 [assembly: AssemblyProduct("ArmaBrowser")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -51,8 +51,8 @@ using System.Windows;
 // Sie können alle Werte angeben oder die standardmäßigen Build- und Revisionsnummern 
 // übernehmen, indem Sie "*" eingeben:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.5.5.45")]
-[assembly: AssemblyFileVersion("0.5.5.45")]
+[assembly: AssemblyVersion("0.5.5.1")]
+[assembly: AssemblyFileVersion("0.5.5.1")]
 
 
 //[assembly: InternalsVisibleTo("UnitTestProject1")]

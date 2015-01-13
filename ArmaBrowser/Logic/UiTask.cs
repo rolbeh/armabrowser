@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ArmaBrowser.Logic
 {
+    [DebuggerNonUserCode]
     static class UiTask
     {
         #region Fields
@@ -51,6 +53,7 @@ namespace ArmaBrowser.Logic
 
         //    _uiTaskFactory.StartNew(t => ((Tuple<Action<T1, T2>, T1, T2>)t).Item1(((Tuple<Action<T1, T2>, T1, T2>)t).Item2, ((Tuple<Action<T1, T2>, T1, T2>)t).Item3), tuple);
         //}
+
 
         public static Task Run<T1, T2>(Action<T1, T2> action, T1 obj1, T2 obj2)
         {
