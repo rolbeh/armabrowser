@@ -200,42 +200,110 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 _serverIPListe = _serverIPListe.Except(recentlyData).ToArray();
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+                return;
 
             var token = cancellationToken;
 
-            Parallel.ForEach(_serverIPListe, new ParallelOptions() { CancellationToken = token, MaxDegreeOfParallelism = 30, TaskScheduler = PriorityScheduler.BelowNormal }, dataItem =>
-                                {
-                                    if (token.IsCancellationRequested)
-                                        return;
+            var threadCount = 30;
 
-                                    var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
+            var blockCount = Convert.ToInt32( Math.Floor(_serverIPListe.Length / (30*1d)));
+            
+            if (_serverIPListe.Length == 0) return;
 
-                                    if (LiveAction != null)
-                                    {
-                                        LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
-                                    }
+            var waitArray = new ManualResetEventSlim[threadCount + 1];
 
-                                    var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
+            for (int i = 0; i < threadCount; i++)
+            {
+                var reset = new ManualResetEventSlim(false);
+                waitArray[i] = reset; 
+                (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset });
+            }
+            // den Rest als extra Thread starten
+            var lastreset = new ManualResetEventSlim(false);
+            waitArray[waitArray.Length-1] = lastreset;
+            (new Thread(Run) { IsBackground = true }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
 
-                                    if (cancellationToken.IsCancellationRequested)
-                                        return;
+            WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
-                                    var item = new ServerItem();
-                                    if (vo != null)
-                                    {
-                                        AssignProperties(item, vo);
-                                    }
-                                    else
-                                    {
-                                        item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
-                                        item.Host = serverQueryEndpoint.Address;
-                                        item.QueryPort = serverQueryEndpoint.Port;
-                                    }
 
-                                    UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
-                                });
+            //Parallel.ForEach(_serverIPListe, new ParallelOptions() { MaxDegreeOfParallelism=50, CancellationToken = token, TaskScheduler = PriorityScheduler.BelowNormal }, dataItem =>
+            //                    {
+            //                        if (token.IsCancellationRequested)
+            //                            return;
 
+            //                        var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
+
+            //                        if (LiveAction != null)
+            //                        {
+            //                            LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
+            //                        }
+
+            //                        var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
+
+            //                        if (cancellationToken.IsCancellationRequested)
+            //                            return;
+
+            //                        var item = new ServerItem();
+            //                        if (vo != null)
+            //                        {
+            //                            AssignProperties(item, vo);
+            //                        }
+            //                        else
+            //                        {
+            //                            item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
+            //                            item.Host = serverQueryEndpoint.Address;
+            //                            item.QueryPort = serverQueryEndpoint.Port;
+            //                        }
+
+            //                        var t = UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
+            //                    });
+
+        }
+
+        class RunState
+        {
+            public IEnumerable<Data.IServerVo> ips { get; set; }
+            public Collection<IServerItem> dest { get; set; }
+            public CancellationToken token { get; set; }
+            public ManualResetEventSlim Reset { get; set; }
+        }
+
+        void Run(object runState)
+        {
+            var state = (RunState)runState;
+            foreach (var dataItem in state.ips)
+            {
+                if (state.token.IsCancellationRequested)
+                    break;
+
+                var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
+
+                if (LiveAction != null)
+                {
+                    LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
+                }
+
+                var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
+
+                if (state.token.IsCancellationRequested)
+                    break;
+
+                var item = new ServerItem();
+                if (vo != null)
+                {
+                    AssignProperties(item, vo);
+                }
+                else
+                {
+                    item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
+                    item.Host = serverQueryEndpoint.Address;
+                    item.QueryPort = serverQueryEndpoint.Port;
+                }
+
+                var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.dest, item);
+            }
+            state.Reset.Set();
         }
 
         public void ReloadServerItem(System.Net.IPEndPoint iPEndPoint, CancellationToken cancellationToken)
