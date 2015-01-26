@@ -207,8 +207,8 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
             var threadCount = 30;
 
-            var blockCount = Convert.ToInt32( Math.Floor(_serverIPListe.Length / (30*1d)));
-            
+            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (30 * 1d)));
+
             if (_serverIPListe.Length == 0) return;
 
             var waitArray = new ManualResetEventSlim[threadCount + 1];
@@ -216,12 +216,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
             for (int i = 0; i < threadCount; i++)
             {
                 var reset = new ManualResetEventSlim(false);
-                waitArray[i] = reset; 
+                waitArray[i] = reset;
                 (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
-            waitArray[waitArray.Length-1] = lastreset;
+            waitArray[waitArray.Length - 1] = lastreset;
             (new Thread(Run) { IsBackground = true }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
 
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
@@ -337,33 +337,34 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        private async Task UpdateServerInfo(IServerItem[] serverItems)
+        private async Task UpdateServerInfoAsync(IServerItem[] serverItems)
         {
-            await Task.Run(() =>
+            await Task.Run(() => UpdateServerInfo(serverItems));
+        }
+
+        private void UpdateServerInfo(IServerItem[] serverItems)
+        {
+            foreach (ServerItem serverItem in serverItems)
             {
-                foreach (ServerItem serverItem in serverItems)
+                if (serverItem == null) return;
+                if (serverItem.Host == null) return;
+                if (serverItem.QueryPort == 0) return;
+
+
+                Data.IServerVo dataItem = null;
+                try
                 {
-                    if (serverItem == null) return;
-                    if (serverItem.Host == null) return;
-                    if (serverItem.QueryPort == 0) return;
-
-
-                    Data.IServerVo dataItem = null;
-                    try
-                    {
-                        dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(serverItem.Host, serverItem.QueryPort));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex);
-                    }
-                    if (dataItem == null)
-                        return;
-
-                    UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+                    dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(serverItem.Host, serverItem.QueryPort));
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+                if (dataItem == null)
+                    continue;
 
-            });
+                UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+            }
         }
 
         void AssignProperties(ServerItem item, Data.IServerVo vo)
@@ -473,12 +474,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
         public void RefreshServerInfo(IServerItem[] items)
         {
             if (items == null) return;
-            UpdateServerInfo(items).Wait();
+            UpdateServerInfoAsync(items).Wait();
         }
 
         public Task RefreshServerInfoAsync(IServerItem[] items)
         {
-            return UpdateServerInfo(items);
+            return UpdateServerInfoAsync(items);
         }
 
 
