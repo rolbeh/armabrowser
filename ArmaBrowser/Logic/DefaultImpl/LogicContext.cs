@@ -337,33 +337,34 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        private async Task UpdateServerInfo(IServerItem[] serverItems)
+        private async Task UpdateServerInfoAsync(IServerItem[] serverItems)
         {
-            await Task.Run(() =>
+            await Task.Run(() => UpdateServerInfo(serverItems));
+        }
+
+        private void UpdateServerInfo(IServerItem[] serverItems)
+        {
+            foreach (ServerItem serverItem in serverItems)
             {
-                foreach (ServerItem serverItem in serverItems)
+                if (serverItem == null) return;
+                if (serverItem.Host == null) return;
+                if (serverItem.QueryPort == 0) return;
+
+
+                Data.IServerVo dataItem = null;
+                try
                 {
-                    if (serverItem == null) return;
-                    if (serverItem.Host == null) return;
-                    if (serverItem.QueryPort == 0) return;
-
-
-                    Data.IServerVo dataItem = null;
-                    try
-                    {
-                        dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(serverItem.Host, serverItem.QueryPort));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex);
-                    }
-                    if (dataItem == null)
-                        return;
-
-                    UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+                    dataItem = _defaultServerRepository.GetServerInfo(new System.Net.IPEndPoint(serverItem.Host, serverItem.QueryPort));
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+                if (dataItem == null)
+                    continue;
 
-            });
+                UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+            }
         }
 
         void AssignProperties(ServerItem item, Data.IServerVo vo)
@@ -473,12 +474,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
         public void RefreshServerInfo(IServerItem[] items)
         {
             if (items == null) return;
-            UpdateServerInfo(items).Wait();
+            UpdateServerInfoAsync(items).Wait();
         }
 
         public Task RefreshServerInfoAsync(IServerItem[] items)
         {
-            return UpdateServerInfo(items);
+            return UpdateServerInfoAsync(items);
         }
 
 
