@@ -44,6 +44,7 @@ namespace ArmaBrowser
             try
             {
                 InitializeComponent();
+                AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
                 TabListBox.SelectedIndex = 0;
                 Test.Freeze();
 

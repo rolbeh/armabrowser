@@ -575,19 +575,26 @@
 
         </Grid>
 
-        <Grid Grid.RowSpan="2" Background="#AA000000" x:Name="AutoJoinView" Visibility="Collapsed">
+        <Grid Grid.RowSpan="2" Background="#7CA9A9A9" x:Name="AutoJoinView" Visibility="Visible">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="4*" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="1" VerticalAlignment="Center" Background="Black"
+                <Border Grid.Column="1" VerticalAlignment="Center"
                     BorderBrush="AliceBlue"
                     BorderThickness="2">
-                    <view:AutoJoinControl Canceled="AutoJoinControl_Canceled"></view:AutoJoinControl>
+                    <view:AutoJoinControl Canceled="AutoJoinControl_Canceled">
+                        
+                    </view:AutoJoinControl>
+                    <FrameworkElement.Effect>
+                        
+                            <DropShadowEffect BlurRadius="25" ShadowDepth="13"/>
+                        </FrameworkElement.Effect>
                 </Border>
             </Grid>
+
         </Grid>
     </Grid>
     <FrameworkElement.Triggers>
