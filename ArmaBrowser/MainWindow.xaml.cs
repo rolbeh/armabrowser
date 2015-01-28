@@ -81,7 +81,7 @@ namespace ArmaBrowser
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void RefrshServerlist_Click(object sender, RoutedEventArgs e)
         {
             MyViewModel.Reload();
         }
@@ -197,6 +197,13 @@ namespace ArmaBrowser
                 serializer.Serialize(textwr, HostConfigCollection.Default);
                 Properties.Settings.Default.HostConfigs = textwr.ToString();
                 Properties.Settings.Default.Save();
+            }
+            try
+            {
+                MyViewModel.StopAll();
+            }
+            catch
+            {
             }
         }
 

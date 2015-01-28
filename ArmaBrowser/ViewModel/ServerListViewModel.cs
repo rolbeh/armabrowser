@@ -171,6 +171,7 @@ namespace ArmaBrowser.ViewModel
 
             UiTask.Initialize();
             _context = new LogicContext();
+            _context.PropertyChanged += Context_PropertyChanged;
             _context.LiveAction += _context_LiveAction;
 
             TextFilter = Properties.Settings.Default.TextFilter;
@@ -191,6 +192,18 @@ namespace ArmaBrowser.ViewModel
                     }, UiTask.TaskScheduler);
 
             Task.Run((Action)EndlessRefreshSelecteItem);
+        }
+
+        void Context_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "ArmaVersion": //_context.ArmaVersion
+                    OnPropertyChanged("ArmaVersion");
+                    break;
+                default:
+                    break;
+            }
         }
 
         void _context_LiveAction(object sender, string e)
@@ -446,12 +459,11 @@ namespace ArmaBrowser.ViewModel
                     PossibleAddons = string.Empty
                 };
                 HostConfigCollection.Default.Add(hostCfgItem);
+                Properties.Settings.Default.LastPlayedHost = endpoint;
             }
             hostCfgItem.PossibleAddons = string.Join(";", usedAddons.OrderBy(a => a.ActivationOrder).Select(a => a.ModName).ToArray());
 
-
-
-            Properties.Settings.Default.LastPlayedHost = endpoint;
+            
             SaveHistory();
 
             _context.Open(host, usedAddons.ToArray());
@@ -459,6 +471,8 @@ namespace ArmaBrowser.ViewModel
 
         private void SaveHistory()
         {
+            if (_selectedServerItem == null) return;
+
             _selectedServerItem.LastPlayed = DateTime.Now;
 
             // limit addresses to 10 entries
@@ -530,6 +544,13 @@ namespace ArmaBrowser.ViewModel
         internal void SaveFavorits()
         {
 
+        }
+
+        internal void StopAll()
+        {
+            _reloadingCts.Cancel();
+            var oldsrc = _reloadingCts;
+            _reloadingCts = new System.Threading.CancellationTokenSource();
         }
     }
 

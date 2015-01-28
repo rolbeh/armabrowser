@@ -205,7 +205,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
             var token = cancellationToken;
 
-            var threadCount = 30;
+            var threadCount = System.Environment.ProcessorCount * 4;
 
             var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (30 * 1d)));
 
@@ -217,12 +217,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset });
+                (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
             waitArray[waitArray.Length - 1] = lastreset;
-            (new Thread(Run) { IsBackground = true }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
+            (new Thread(Run) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
 
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
