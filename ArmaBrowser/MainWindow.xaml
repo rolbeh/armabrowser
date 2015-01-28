@@ -11,7 +11,7 @@
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
-        Height="693" Width="1023" 
+        Height="693" Width="1023" MinWidth="660" MinHeight="600"
         UseLayoutRounding="False"
         Foreground="White"
         RenderOptions.BitmapScalingMode="NearestNeighbor"
@@ -126,7 +126,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1"  Click="Button_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
+                    <Button Grid.Column="1"  Click="RefrshServerlist_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
                             Foreground="Black"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}">
@@ -319,7 +319,9 @@
                                   ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="viewModel:LogEntry">
-                                <TextBlock Width="110" Height="18" Text="{Binding Text}"
+                                <TextBlock Width="108" Height="18" 
+                                           Text="{Binding Text}"
+                                           FontFamily="Consolas"
                                            Foreground="#FFC9744D"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -385,7 +387,7 @@
                     <ListBox ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              x:Name="TabListBox"
                              BorderThickness="0"
-                             SelectedIndex="1"
+                             SelectedIndex="0"
                              Background="{x:Null}" Margin="0,0,29,0" 
                              OverridesDefaultStyle="True">
                         <ListBox.ItemsPanel>
@@ -574,11 +576,18 @@
         </Grid>
 
         <Grid Grid.RowSpan="2" Background="#AA000000" x:Name="AutoJoinView" Visibility="Collapsed">
-            <Border VerticalAlignment="Center" HorizontalAlignment="Center" Width="300" Background="Black" 
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="4*" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="1" VerticalAlignment="Center" Background="Black"
                     BorderBrush="AliceBlue"
                     BorderThickness="2">
-                <view:AutoJoinControl Canceled="AutoJoinControl_Canceled"></view:AutoJoinControl>
-            </Border>
+                    <view:AutoJoinControl Canceled="AutoJoinControl_Canceled"></view:AutoJoinControl>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
     <FrameworkElement.Triggers>

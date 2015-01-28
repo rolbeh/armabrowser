@@ -22,8 +22,8 @@
         </Grid.RowDefinitions>
         <TextBlock FontSize="18" Text="Joining Server" TextAlignment="Center" Foreground="{StaticResource TitleBarForegroundBrush}" Background="{StaticResource TitleBarBackgroundBrush}"/>
         <StackPanel Grid.Row="1" Margin="50,0">
-            <TextBlock Margin="5" FontSize="18" Text="{Binding Path=Name}"/>
-            <TextBlock Margin="5" FontSize="16" Text="{Binding Path=Mission}"/>
+            <TextBlock Margin="5" FontSize="18" Text="{Binding Path=Name}" TextAlignment="Center"/>
+            <TextBlock Margin="5" FontSize="16" Text="{Binding Path=Mission}" TextAlignment="Center"/>
         </StackPanel>
         <TextBlock Grid.Row="2" Margin="50,0" FontSize="16" Text="{Binding Path=PlayersState, StringFormat=Player {0}, FallbackValue='Player ???'}" TextAlignment="Center"/>
         <Border Grid.Row="3" Background="{StaticResource TitleBarBackgroundBrush}">
