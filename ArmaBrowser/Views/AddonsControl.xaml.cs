@@ -23,6 +23,7 @@ namespace ArmaBrowser.Views
         public AddonsControl()
         {
             InitializeComponent();
+            AddonsListBox.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("DisplayText", System.ComponentModel.ListSortDirection.Ascending));
         }
 
         private void ListBox_MouseUp(object sender, MouseButtonEventArgs e)

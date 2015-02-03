@@ -575,7 +575,7 @@
 
         </Grid>
 
-        <Grid Grid.RowSpan="2" Background="#7CA9A9A9" x:Name="AutoJoinView" Visibility="Visible">
+        <Grid Grid.RowSpan="2" Background="#7CA9A9A9" x:Name="AutoJoinView" Visibility="Collapsed">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />

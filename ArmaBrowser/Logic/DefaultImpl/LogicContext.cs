@@ -401,24 +401,32 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 {
                     _addons = new ObservableCollection<IAddon>();
                     var armaPath = Properties.Settings.Default.ArmaPath;
-                    if (!string.IsNullOrEmpty(armaPath))
-                    {
-                        var items = _defaultDataRepository.GetInstalledAddons(armaPath);
-                        foreach (var item in items)
-                        {
-                            _addons.Add(new Addon
-                                        {
-                                            Name = item.Name,
-                                            DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
-                                            ModName = item.ModName,
-                                            Version = item.Version,
-                                            KeyNames = item.KeyNames
-                                        });
-                        }
-                    }
+                    ReloadAddons(armaPath);
+                    ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify)+
+                                    System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
                 }
 
                 return _addons;
+            }
+        }
+
+        private void ReloadAddons(string path)
+        {
+            
+            if (!string.IsNullOrEmpty(path))
+            {
+                var items = _defaultDataRepository.GetInstalledAddons(path);
+                foreach (var item in items)
+                {
+                    _addons.Add(new Addon
+                    {
+                        Name = item.Name,
+                        DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+                        ModName = item.ModName,
+                        Version = item.Version,
+                        KeyNames = item.KeyNames
+                    });
+                }
             }
         }
 
