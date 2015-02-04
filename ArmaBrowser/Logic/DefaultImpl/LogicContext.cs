@@ -421,7 +421,11 @@ namespace ArmaBrowser.Logic.DefaultImpl
                     _addons.Add(new Addon
                     {
                         Name = item.Name,
+#if DEBUG
+                        DisplayText = string.Format("{0} ({1}) [{2}]", item.DisplayText, item.Name, string.Join(",",item.KeyNames)),
+#else
                         DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+#endif
                         ModName = item.ModName,
                         Version = item.Version,
                         KeyNames = item.KeyNames

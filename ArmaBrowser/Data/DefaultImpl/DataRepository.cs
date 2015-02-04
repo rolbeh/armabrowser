@@ -164,12 +164,43 @@ namespace ArmaBrowser.Data.DefaultImpl
                     }
                 }
 
-                var addonKeyFolder = addonFolder; // Path.Combine(addonFolder, "keys");
-                if (Directory.Exists(addonKeyFolder))
+                // reading bisign files
+                var addonFileFolder = Path.Combine(addonFolder, "addons");
+                var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
+                var keys = new List<string>(200);
+                var sb = new StringBuilder();
+                foreach (var bisignPath in bisignPaths)
                 {
-                    var addonKeyFiles = Directory.EnumerateFiles(addonKeyFolder, "*.bikey", SearchOption.AllDirectories).ToArray();
-                    item.KeyNames = addonKeyFiles.Select(f => Path.GetFileNameWithoutExtension(Path.GetFileName(f))).ToArray();
+                    if (File.Exists(bisignPath))
+                    {
+                        try
+                        {
+                            using (var bisignStream = new FileStream(bisignPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 10))
+                            using (var br = new BinaryReader(bisignStream, Encoding.ASCII, false))
+                            {
+                                sb.Clear();
+                                while (bisignStream.Position < bisignStream.Length && br.PeekChar() > 0)
+                                {
+                                    sb.Append(br.ReadChar());
+                                }
+                                keys.Add(sb.ToString());
+                            }
+                        }
+                        catch
+                        {
+                            // ignore all erros
+                        }
+                    }
                 }
+                if (keys.Count > 0)
+                    item.KeyNames = keys.Distinct().ToArray();
+
+                //var addonKeyFolder = addonFolder; // Path.Combine(addonFolder, "keys");
+                //if (Directory.Exists(addonKeyFolder))
+                //{
+                //    var addonKeyFiles = Directory.EnumerateFiles(addonKeyFolder, "*.bikey", SearchOption.AllDirectories).ToArray();
+                //    item.KeyNames = addonKeyFiles.Select(f => Path.GetFileNameWithoutExtension(Path.GetFileName(f))).ToArray();
+                //}
                 //addonKeyFolder = Path.Combine(addonFolder, "key");
                 //if (Directory.Exists(addonKeyFolder))
                 //{

@@ -323,7 +323,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                             Ping = item.Ping,
                             Players = item.Players.Cast<ISteamGameServerPlayer>().ToArray(),
                             Mods = GetValue("modNames", item.KeyValues),
-                            Modhashs = GetValue("modHashes", item.KeyValues)
+                            Modhashs = GetValue("modHashes", item.KeyValues),
+                            Signatures = GetValue("sigNames", item.KeyValues)
                         }
                         : null;
         }
@@ -373,9 +374,9 @@ namespace ArmaBrowser.Data.DefaultImpl
 
 
             }
-            catch
+            catch (Exception ex)
             {
-
+                Debug.WriteLine(ex);
             }
         }
 

@@ -348,26 +348,29 @@ namespace ArmaBrowser.ViewModel
             {
                 return;
             }
-            var sortNr = 1;
-            var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
+            //if (_selectedServerItem.Mods != null)
+            //{
+                var sortNr = 1;
+                var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
 
-            var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
-            var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>().FirstOrDefault(h => h.EndPoint == endpoint);
+                var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
+                var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>().FirstOrDefault(h => h.EndPoint == endpoint);
 
-            if (hostCfgItem != null)
-            {
-                sortNr = 1;
-                hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
+                if (hostCfgItem != null)
+                {
+                    sortNr = 1;
+                    hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
 
-            }
+                }
 
-            var mods = (from mod in Addons
-                        join selectedMod in hostAddons on mod.ModName equals selectedMod.ModName into selectedMods
-                        from selectedMod in selectedMods.DefaultIfEmpty()
-                        let Sortnr = selectedMod == null ? 0 : selectedMod.SortNr
-                        let selectedModName = selectedMod == null ? null : selectedMod.ModName
-                        orderby Sortnr
-                        select new { mod, selectedMod = selectedModName, Sortnr }).ToArray();
+                var mods = (from mod in Addons
+                            join selectedMod in hostAddons on mod.ModName equals selectedMod.ModName into selectedMods
+                            from selectedMod in selectedMods.DefaultIfEmpty()
+                            let Sortnr = selectedMod == null ? 0 : selectedMod.SortNr
+                            let selectedModName = selectedMod == null ? null : selectedMod.ModName
+                            orderby Sortnr
+                            select new { mod, selectedMod = selectedModName, Sortnr }).ToArray();
+            //}
 
             var s = _selectedServerItem.Signatures ?? string.Empty;
             var hostAddonKeys = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
@@ -376,19 +379,21 @@ namespace ArmaBrowser.ViewModel
             foreach (var item in mods)
             {
                 item.mod.IsActive = !string.IsNullOrWhiteSpace(item.selectedMod);
-                Thread.Sleep(1);
-                item.mod.CanActived = false;
+                //Thread.Sleep(1);
+                var canActive = false;
                 if (hostAddonKeys.Any())
                 {
                     foreach (var addonKey in item.mod.KeyNames)
                     {
                         if (hostAddonKeys.Contains(addonKey))
                         {
-                            item.mod.CanActived = true;
+                            canActive = true;
                             break;
                         }
                     }
                 }
+                item.mod.CanActived = canActive;
+                item.mod.IsActive = canActive;
 
             }
 
