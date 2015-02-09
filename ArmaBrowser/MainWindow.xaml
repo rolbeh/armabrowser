@@ -9,7 +9,7 @@
         xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
-        
+        xmlns:logic="clr-namespace:ArmaBrowser.Logic"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" MinWidth="660" MinHeight="600"
         UseLayoutRounding="False"
@@ -22,7 +22,28 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
+        <DataTemplate x:Key="SelectAddonsDataTemplate">
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Source="/Img/cert24.png" Stretch="Uniform" Margin="0,2,0,0"
+                       VerticalAlignment="Top" Height="17" StretchDirection="DownOnly">
+                    <FrameworkElement.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </FrameworkElement.Style>
+                </Image>
+                <TextBlock Grid.Column="1" Text="{Binding Path=DisplayText}"/>
+            </Grid>
+        </DataTemplate>
 
     </Window.Resources>
 
@@ -480,7 +501,7 @@
                                
                                Padding="2"/>
 
-                        <ListBox Grid.Row="2" Margin="0,33,0,0" DisplayMemberPath="DisplayText"
+                        <ListBox Grid.Row="2" Margin="0,33,0,0" ItemTemplate="{DynamicResource SelectAddonsDataTemplate}"
                              Background="{StaticResource ListingBackgroundBrush}"
                              Height="125" VerticalAlignment="Top" 
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"

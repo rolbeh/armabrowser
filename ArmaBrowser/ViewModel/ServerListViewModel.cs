@@ -171,27 +171,30 @@ namespace ArmaBrowser.ViewModel
 
             UiTask.Initialize();
             _context = new LogicContext();
-            _context.PropertyChanged += Context_PropertyChanged;
-            _context.LiveAction += _context_LiveAction;
-
-            TextFilter = Properties.Settings.Default.TextFilter;
-            _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
-
-            LookForInstallation();
-
-            var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
-            var serverItems = _context.AddServerItems(recentlyHosts);
-            foreach (var item in serverItems)
+            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
-                item.LastPlayed = DateTime.Now;
-            }
-            _context.RefreshServerInfoAsync(serverItems)
-                .ContinueWith(t =>
-                    {
-                        ServerItemsView.Refresh();
-                    }, UiTask.TaskScheduler);
+                _context.PropertyChanged += Context_PropertyChanged;
+                _context.LiveAction += _context_LiveAction;
 
-            Task.Run((Action)EndlessRefreshSelecteItem);
+                TextFilter = Properties.Settings.Default.TextFilter;
+                _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
+
+                LookForInstallation();
+
+                var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
+                var serverItems = _context.AddServerItems(recentlyHosts);
+                foreach (var item in serverItems)
+                {
+                    item.LastPlayed = DateTime.Now;
+                }
+                _context.RefreshServerInfoAsync(serverItems)
+                    .ContinueWith(t =>
+                        {
+                            ServerItemsView.Refresh();
+                        }, UiTask.TaskScheduler);
+
+                Task.Run((Action)EndlessRefreshSelecteItem);
+            }
         }
 
         void Context_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -393,7 +396,8 @@ namespace ArmaBrowser.ViewModel
                     }
                 }
                 item.mod.CanActived = canActive;
-                item.mod.IsActive = canActive;
+                if (Properties.Settings.Default.SelectAllAceptedAddons)
+                    item.mod.IsActive = canActive;
 
             }
 
@@ -514,12 +518,12 @@ namespace ArmaBrowser.ViewModel
         {
             while (true)
             {
-                var mainwin = UiTask.Run(() => App.Current.MainWindow);
-                mainwin.Wait();
+                var mainwin = await UiTask.Run(() => App.Current.MainWindow);
+                
                 if (mainwin == null) break;
                 try
                 {
-                    var task = UiTask.Run(() => App.Current.MainWindow.WindowState != WindowState.Minimized);
+                    var task = UiTask.Run(() => mainwin.WindowState != WindowState.Minimized);
                     task.Wait();
                     if (task.IsCompleted && task.Result && !_isJoining)
                     {

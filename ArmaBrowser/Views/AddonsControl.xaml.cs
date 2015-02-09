@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArmaBrowser.Logic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,18 @@ namespace ArmaBrowser.Views
             if (e.OriginalSource is ScrollViewer)
             {
                 ((ListBox)sender).SelectedIndex = -1;
+            }
+        }
+
+        private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (!this.IsInitialized) return;
+
+            var items = AddonsListBox.Items.Cast<IAddon>();
+            foreach (var item in items)
+            {
+                if (item.CanActived && !item.IsActive)
+                    item.IsActive = true;
             }
         }
  

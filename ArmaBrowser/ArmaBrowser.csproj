@@ -161,6 +161,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Resource Include="Img\recently16.png" />
+    <Resource Include="Img\cert24.png" />
     <Content Include="Shader\Glow.cs" />
     <Compile Include="Shader\multishader_frag.cs" />
     <Content Include="Shader\Shader.cs" />

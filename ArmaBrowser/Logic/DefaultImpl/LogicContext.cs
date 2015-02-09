@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -401,9 +402,43 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 {
                     _addons = new ObservableCollection<IAddon>();
                     var armaPath = Properties.Settings.Default.ArmaPath;
-                    ReloadAddons(armaPath);
-                    ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify)+
-                                    System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
+
+                    if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+                    {
+                        _addons.Add(new Addon
+                        {
+                            Name = "no Sign",
+#if DEBUG
+                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
+#else
+                            DisplayText = string.Format("{0} ({1})", "DisplayText CannotActived", "Name"),
+#endif
+                            ModName = "@modename",
+                            Version = "000.00.0",
+                            KeyNames = new []{ "key"}
+                        });
+
+                        _addons.Add(new Addon
+                        {
+                            Name = "new Sign",
+#if DEBUG
+                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
+#else
+                            DisplayText = string.Format("{0} ({1})", "DisplayText CanActived", "Name"),
+#endif
+                            ModName = "@modename",
+                            Version = "000.00.0",
+                            KeyNames = new[] { "key" },
+                            CanActived = true
+                        });
+                    }
+                    else
+                    {
+
+                        ReloadAddons(armaPath);
+                        ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+                                        System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
+                    }
                 }
 
                 return _addons;

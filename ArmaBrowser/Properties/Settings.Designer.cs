@@ -178,5 +178,17 @@ namespace ArmaBrowser.Properties {
                 this["Favorits"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SelectAllAceptedAddons {
+            get {
+                return ((bool)(this["SelectAllAceptedAddons"]));
+            }
+            set {
+                this["SelectAllAceptedAddons"] = value;
+            }
+        }
     }
 }
