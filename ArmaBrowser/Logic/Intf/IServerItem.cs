@@ -89,6 +89,7 @@ namespace ArmaBrowser.Logic
         /// </summary>
         string Island { get; }
 
+        bool VerifySignatures { get; }
 
         string Signatures { get; }
 

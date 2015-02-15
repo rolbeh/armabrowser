@@ -37,24 +37,9 @@ namespace ArmaBrowser.Data
 
         IEnumerable<ISteamGameServerPlayer> Players { get; }
 
-        string Keywords { get; } 
+        string Keywords { get; }
+
+        bool VerifySignatures { get; }
     }
 
-    interface IServerQueryAddress
-    {
-        System.Net.IPAddress Host { get; }
-        int QueryPort { get; }
-    }
-
-    internal interface ISteamGameServerPlayer
-    {
-        byte Idx {get;}
-
-        string Name { get; }
-
-        Int32 Score { get; }
-
-        TimeSpan OnlineTime { get; }
-
-    }
 }

@@ -85,5 +85,7 @@ namespace ArmaBrowser.Data.DefaultImpl
         public IEnumerable<ISteamGameServerPlayer> Players { get; set; }
 
         public string Keywords { get; set; }
+
+        public bool VerifySignatures { get; set; }
     }
 }

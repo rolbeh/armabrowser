@@ -218,51 +218,18 @@ namespace ArmaBrowser.Logic.DefaultImpl
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+                (new Thread(LoadingServerList)).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
             waitArray[waitArray.Length - 1] = lastreset;
-            (new Thread(Run) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
+            (new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
 
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
-
-            //Parallel.ForEach(_serverIPListe, new ParallelOptions() { MaxDegreeOfParallelism=50, CancellationToken = token, TaskScheduler = PriorityScheduler.BelowNormal }, dataItem =>
-            //                    {
-            //                        if (token.IsCancellationRequested)
-            //                            return;
-
-            //                        var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
-
-            //                        if (LiveAction != null)
-            //                        {
-            //                            LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
-            //                        }
-
-            //                        var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
-
-            //                        if (cancellationToken.IsCancellationRequested)
-            //                            return;
-
-            //                        var item = new ServerItem();
-            //                        if (vo != null)
-            //                        {
-            //                            AssignProperties(item, vo);
-            //                        }
-            //                        else
-            //                        {
-            //                            item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
-            //                            item.Host = serverQueryEndpoint.Address;
-            //                            item.QueryPort = serverQueryEndpoint.Port;
-            //                        }
-
-            //                        var t = UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
-            //                    });
-
         }
 
-        class RunState
+        class LoadingServerListContext
         {
             public IEnumerable<Data.IServerVo> ips { get; set; }
             public Collection<IServerItem> dest { get; set; }
@@ -270,9 +237,9 @@ namespace ArmaBrowser.Logic.DefaultImpl
             public ManualResetEventSlim Reset { get; set; }
         }
 
-        void Run(object runState)
+        void LoadingServerList(object loadingServerListContext)
         {
-            var state = (RunState)runState;
+            var state = (LoadingServerListContext)loadingServerListContext;
             foreach (var dataItem in state.ips)
             {
                 if (state.token.IsCancellationRequested)
@@ -386,6 +353,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             item.Port = vo.Port;
             item.QueryPort = vo.QueryPort;
             item.Signatures = vo.Signatures;
+            item.VerifySignatures = vo.VerifySignatures;
             item.Version = vo.Version;
             item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.Passworded;
             item.Ping = vo.Ping;

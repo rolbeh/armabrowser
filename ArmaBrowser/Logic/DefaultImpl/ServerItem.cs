@@ -242,6 +242,8 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
+
+        public bool VerifySignatures { get; set; }
     }
 
 }

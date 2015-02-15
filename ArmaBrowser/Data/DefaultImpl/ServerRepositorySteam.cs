@@ -228,6 +228,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                         count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
                         item.Map = enconding.GetString(br.ReadBytes(count));
                         br.ReadByte(); // null-byte
+                        //item.Map = ReadStringNullTerminated(br, enconding);
 
                         count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
                         item.Folder = enconding.GetString(br.ReadBytes(count));
@@ -247,7 +248,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                         item.ServerType = (ServerQueryRequestType)br.ReadByte();
 
-                        item.Passwort = br.ReadByte() == 1;
+                        item.Password = br.ReadByte() == 1;
 
                         item.VAC = br.ReadByte() == 1;
 
@@ -315,7 +316,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                             Mission = item.Game,
                             MaxPlayers = item.MaxPlayerCount,
                             CurrentPlayerCount = item.CurrentPlayerCount,
-                            Passworded = item.Passwort,
+                            Passworded = item.Password,
                             Port = item.GamePort,
                             Version = item.Version,
                             Keywords = item.Keywords,
@@ -324,12 +325,39 @@ namespace ArmaBrowser.Data.DefaultImpl
                             Players = item.Players.Cast<ISteamGameServerPlayer>().ToArray(),
                             Mods = GetValue("modNames", item.KeyValues),
                             Modhashs = GetValue("modHashes", item.KeyValues),
-                            Signatures = GetValue("sigNames", item.KeyValues)
+                            Signatures = GetValue("sigNames", item.KeyValues),
+                            VerifySignatures = item.Keywords.Contains(",vt,")
                         }
                         : null;
         }
 
         #endregion IServerRepository
+
+
+        static string ReadStringNullTerminated(BinaryReader reader, Encoding encoding)
+        {
+            var result = new byte[80];
+            var i = -1;
+            while (reader.PeekChar() != 0)
+            {
+                i++;
+                if (i >= result.Length)
+                    Array.Resize(ref result, result.Length + 80);
+                result[i] = reader.ReadByte();
+            }
+
+            if ((reader.PeekChar() == 0))
+                reader.ReadByte();
+
+            if (i == -1)
+                return string.Empty;
+
+            return encoding.GetString(result, 0, i);
+
+            //count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
+            //item.Map = enconding.GetString(br.ReadBytes(count));
+            //br.ReadByte(); // null-byte
+        }
 
         private static void RequestRules(ServerQueryRequest item, System.Net.Sockets.UdpClient udp)
         {
@@ -487,7 +515,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             public byte MaxPlayerCount;
             public byte CurrentBotsCount;
             public ServerQueryRequestType ServerType;
-            public bool Passwort;
+            public bool Password;
 
             public bool VAC;
             public bool Mode;

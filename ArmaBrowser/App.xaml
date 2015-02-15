@@ -13,6 +13,8 @@
             </ResourceDictionary.MergedDictionaries>
 
 
+            <BitmapImage x:Key="RecentlyBitmapImage"  UriSource="/Img/recently16.png"/>
+            
             <Style x:Key="CloseButton" TargetType="{x:Type Button}">
                 <Style.BasedOn>
                     <Style TargetType="{x:Type ButtonBase}">

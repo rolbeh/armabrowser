@@ -133,7 +133,9 @@
     <Compile Include="Data\Intf\IArmaBrowserServerRepository.cs" />
     <Compile Include="Data\Intf\IDataRepository.cs" />
     <Compile Include="Data\Intf\IServerList.cs" />
+    <Compile Include="Data\Intf\IServerQueryAddress.cs" />
     <Compile Include="Data\Intf\IServerVo.cs" />
+    <Compile Include="Data\Intf\ISteamGameServerPlayer.cs" />
     <Compile Include="Design\ServerItem.cs" />
     <Compile Include="Design\ServerListViewModel.cs" />
     <Compile Include="Logger.cs" />
