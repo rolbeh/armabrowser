@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using ArmaBrowser.Data.DefaultImpl;
+using ArmaBrowser.Data.Intf;
 
 namespace ArmaBrowser.Data
 {
@@ -23,10 +24,10 @@ namespace ArmaBrowser.Data
             return new ServerRepositorySteam();
         }
 
-        //public static IArmaBrowserServerRepository CreateNewArmaBrowserServerRepository()
-        //{
-        //    return new ArmaBrowserServerJsonRepository();
-        //}
+        public static IAddonWebApi CreateNewArmaBrowserServerRepository()
+        {
+            return new AddonWebApi();
+        }
     }
 }
 

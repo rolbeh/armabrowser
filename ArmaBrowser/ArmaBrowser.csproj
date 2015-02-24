@@ -89,7 +89,7 @@
     <StartupObject>ArmaBrowser.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>rbsoftware.pfx</AssemblyOriginatorKeyFile>
@@ -100,7 +100,14 @@
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
@@ -128,9 +135,10 @@
     <Compile Include="Data\DefaultImpl\ServerItem.cs" />
     <Compile Include="Data\DefaultImpl\ServerRepositorySteam.cs" />
     <Compile Include="Data\DefaultImpl\SteamConfigReader.cs" />
+    <Compile Include="Data\DefaultImpl\AddonWebApi.cs" />
     <Compile Include="Data\Intf\Asb\IHostItem.cs" />
+    <Compile Include="Data\Intf\IAddonWebApi.cs" />
     <Compile Include="Data\Intf\IArmaAddOn.cs" />
-    <Compile Include="Data\Intf\IArmaBrowserServerRepository.cs" />
     <Compile Include="Data\Intf\IDataRepository.cs" />
     <Compile Include="Data\Intf\IServerList.cs" />
     <Compile Include="Data\Intf\IServerQueryAddress.cs" />
@@ -138,6 +146,7 @@
     <Compile Include="Data\Intf\ISteamGameServerPlayer.cs" />
     <Compile Include="Design\ServerItem.cs" />
     <Compile Include="Design\ServerListViewModel.cs" />
+    <Compile Include="Helper\SystemExtention.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
     <Compile Include="Logic\DefaultImpl\LogicContext.cs" />
@@ -165,6 +174,11 @@
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
     <Content Include="Shader\Glow.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Shader\multishader_frag.cs" />
     <Content Include="Shader\Shader.cs" />
     <Compile Include="Shader\ShaderHelper.cs" />
@@ -275,6 +289,12 @@
   </ItemGroup>
   <ItemGroup>
     <Effect Include="Shader\multishader_frag.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

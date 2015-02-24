@@ -36,6 +36,9 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
             _defaultServerRepository = Data.DataManager.CreateNewServerRepository();
 
+            var test = Data.DataManager.CreateNewArmaBrowserServerRepository();
+            test.PostInstalledAddonsKeysAsync();
+
             //_defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
         }
 
