@@ -36,9 +36,6 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
             _defaultServerRepository = Data.DataManager.CreateNewServerRepository();
 
-            var test = Data.DataManager.CreateNewArmaBrowserServerRepository();
-            test.PostInstalledAddonsKeysAsync();
-
             //_defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
         }
 
@@ -409,7 +406,12 @@ namespace ArmaBrowser.Logic.DefaultImpl
                         ReloadAddons(armaPath);
                         ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
                                         System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
+
                     }
+
+                    var test = new AddonWebApi();
+                    test.PostInstalledAddonsKeysAsync(_addons);
+
                 }
 
                 return _addons;
