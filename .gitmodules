@@ -1,3 +1,0 @@
-[submodule "Includes/RestSharp"]
-	path = Includes/RestSharp
-	url = https://github.com/restsharp/RestSharp.git
