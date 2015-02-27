@@ -41,23 +41,19 @@ namespace ArmaBrowser
                 this.Top = Properties.Settings.Default.MainWindowTop;
                 this.Left = Properties.Settings.Default.MainWindowLeft;
             }
-            try
-            {
-                InitializeComponent();
-                AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
-                TabListBox.SelectedIndex = 0;
-                Test.Freeze();
 
-                var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-                string version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
-                VersionTextBlock.Text = "Version " + version;
+            InitializeComponent();
+            AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
+            TabListBox.SelectedIndex = 0;
+            Test.Freeze();
+
+            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+            string version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            VersionTextBlock.Text = "Version " + version;
 
 
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+
+
 
         }
 

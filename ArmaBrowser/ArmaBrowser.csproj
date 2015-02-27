@@ -89,7 +89,7 @@
     <StartupObject>ArmaBrowser.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>rbsoftware.pfx</AssemblyOriginatorKeyFile>
@@ -169,14 +169,14 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
-    <Content Include="Shader\Glow.cs" />
+    <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Shader\multishader_frag.cs" />
-    <Content Include="Shader\Shader.cs" />
+    <None Include="Shader\notused\Shader.cs" />
     <Compile Include="Shader\ShaderHelper.cs" />
     <Compile Include="Styles\VS2012WindowStyle.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
@@ -277,10 +277,10 @@
     <Resource Include="Img\ArmaBrowser32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Shader.fx" />
+    <None Include="Shader\notused\Shader.fx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Glow.fx" />
+    <None Include="Shader\notused\Glow.fx" />
   </ItemGroup>
   <ItemGroup>
     <Effect Include="Shader\multishader_frag.fx" />
@@ -290,6 +290,15 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RestSharp\RestSharp\RestSharp.csproj">
+      <Project>{2ececfbf-5f3e-40ee-a963-72336dc7abe2}</Project>
+      <Name>RestSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\DefaultImpl\Rest\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

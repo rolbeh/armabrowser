@@ -19,6 +19,7 @@ namespace ArmaBrowser.Data.DefaultImpl
     class AddonWebApi : IAddonWebApi
     {
         const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        private RestClient _client;
         //const string BaseUrl = @"http://armabrowser.org/addons/";
 
         
@@ -48,23 +49,31 @@ namespace ArmaBrowser.Data.DefaultImpl
             return result.ToString();
         }
 
+        RestClient RestClient 
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    _client = new RestClient(BaseUrl);
+#if DEBUG
+                    _client.AddDefaultParameter(new Parameter() { Name = "XDEBUG_SESSION_START", Value = "3B978CA5", Type = ParameterType.QueryString });
+#endif
+                    _client.AddDefaultParameter(new Parameter() { Name = "Accept", Value = "application/json", Type = ParameterType.HttpHeader });
+                    _client.AddDefaultParameter(new Parameter() { Name = "Accept-Encoding", Value = "gzip,deflate,text/plain", Type = ParameterType.HttpHeader }); 
+                }
+                return _client;
+            }
+        }
 
 
         public void PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
         {
-            
-            var client = new RestClient(BaseUrl);
-            client.AddDefaultParameter(new Parameter() { Name = "XDEBUG_SESSION_START", Value = "3B978CA5", Type = ParameterType.QueryString });
-            client.AddDefaultParameter(new Parameter() { Name = "Accept", Value = "application/json", Type = ParameterType.HttpHeader });
-            client.AddDefaultParameter(new Parameter() { Name = "Accept-Encoding", Value = "gzip,deflate,text/plain", Type = ParameterType.HttpHeader });
-
-            //Debug.WriteLine(GenerateByteArraCode());
-
-            var request = new RestRequest("/Addons", Method.POST).htua();
+            var request = new RestRequest("/Addons", Method.POST).htua(TimeSpan.FromMinutes(50));
             
             request.AddJsonBody(addons);
 
-            var queryResult = client.Execute(request);
+            var queryResult = RestClient.Execute(request);
 
             if (queryResult.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -73,7 +82,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                 offset =  TimeSpan.FromMinutes(Math.Truncate(offset.TotalMinutes));
                 request = request.htua(offset);
 
-                queryResult = client.Execute(request);
+                
+                queryResult = _client.Execute(request);
             }
 
             if (queryResult.StatusCode == HttpStatusCode.OK)
@@ -147,8 +157,14 @@ namespace ArmaBrowser.Data.DefaultImpl
                 appkey = Convert.ToBase64String(rsa.Encrypt(Encoding.ASCII.GetBytes(A + " " + time.ToUniversalTime().ToString("r") + " " + V), false));
             }
 
+            var param = request.Parameters.FirstOrDefault(p => p.Name == AhK);
+            if (param == null)
+            {
+                param = new Parameter(){Name = AhK, Type =  ParameterType.HttpHeader};
+                request.AddParameter(param);
+            }
+            param.Value = appkey;
 
-            request.AddHeader(AhK, appkey);
             return request;
         }
     }

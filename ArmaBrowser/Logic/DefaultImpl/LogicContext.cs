@@ -11,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ArmaBrowser.Logic.DefaultImpl
 {
@@ -483,10 +484,10 @@ namespace ArmaBrowser.Logic.DefaultImpl
         void ps_Exited(object sender, EventArgs e)
         {
             //Todo Move to ViewModel Code
-            UiTask.Run(() =>
+            var t =UiTask.Run(() =>
             {
-                App.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
-                App.Current.MainWindow.Activate();
+                Application.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
+                Application.Current.MainWindow.Activate();
             });
         }
 
