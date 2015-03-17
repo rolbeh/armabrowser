@@ -23,5 +23,29 @@ namespace System
             DateTime dtUnix = new DateTime(unixYear0.Ticks + unixTimeStampInTicks);
             return dtUnix;
         }
+
+
+        public static string ToHexString(this IEnumerable<byte> bytes)
+        {
+            StringBuilder hex = new StringBuilder(bytes.Count() * 2);
+            foreach (byte b in bytes)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
+        }
+
+        public static byte[] FromHexString(this String hexstring)
+        {
+            int NumberChars = hexstring.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hexstring.Substring(i, 2), 16);
+            return bytes;
+        }
+
+
+        public static string ToBase64(this byte[] bytes)
+        {
+            return Convert.ToBase64String(bytes);
+        }
     }
 }

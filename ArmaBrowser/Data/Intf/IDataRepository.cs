@@ -10,7 +10,7 @@ namespace ArmaBrowser.Data
     {
         string GetArma3Folder();
 
-        IArmaAddOn[] GetInstalledAddons(string baseFolder);
+        IArmaAddon[] GetInstalledAddons(string baseFolder);
 
         //IServerRepository ServerListManager();
     }

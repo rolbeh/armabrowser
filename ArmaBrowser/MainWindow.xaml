@@ -670,7 +670,7 @@
                                RequestNavigate="PoweredByHyperlink_RequestNavigate"
                                >Google+</Hyperlink>
             </TextBlock>
-            <TextBlock x:Name="VersionTextBlock" Margin="5,5,0,0" Height="30" />
+            <TextBlock Margin="5,5,0,0" Height="30" Text="{Binding Version, StringFormat='Version {0}'}" />
             <!--<Button Background="{x:Null}"  x:Name="appbar_settings"
                     Click="AppbarSettings_OnClick"
                     ToolTip="Preferences"

@@ -190,5 +190,17 @@ namespace ArmaBrowser.Properties {
                 this["SelectAllAceptedAddons"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string Id {
+            get {
+                return ((string)(this["Id"]));
+            }
+            set {
+                this["Id"] = value;
+            }
+        }
     }
 }

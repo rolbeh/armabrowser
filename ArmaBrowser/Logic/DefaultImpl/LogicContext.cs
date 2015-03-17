@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using ArmaBrowser.Data;
 
 namespace ArmaBrowser.Logic.DefaultImpl
 {
@@ -384,7 +385,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 #endif
                             ModName = "@modename",
                             Version = "000.00.0",
-                            KeyNames = new []{ "key"}
+                            KeyNames = new[] { new AddonKey() { Name = "key" } }
                         });
 
                         _addons.Add(new Addon
@@ -397,7 +398,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 #endif
                             ModName = "@modename",
                             Version = "000.00.0",
-                            KeyNames = new[] { "key" },
+                            KeyNames = new[] { new AddonKey(){Name = "key" }},
                             CanActived = true
                         });
                     }

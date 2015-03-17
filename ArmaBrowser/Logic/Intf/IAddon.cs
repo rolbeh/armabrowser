@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ArmaBrowser.Data;
 
 namespace ArmaBrowser.Logic
 {
@@ -15,6 +16,6 @@ namespace ArmaBrowser.Logic
         bool IsActive { get; set; }
         bool CanActived { get; set; }
         long ActivationOrder { get;}
-        IEnumerable<string> KeyNames { get; }
+        IEnumerable<AddonKey> KeyNames { get; }
     }
 }

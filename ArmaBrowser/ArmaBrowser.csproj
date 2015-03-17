@@ -101,7 +101,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <DelaySign>true</DelaySign>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -128,6 +128,7 @@
     <Compile Include="Data\DefaultImpl\ArmaAddOn.cs" />
     <Compile Include="Data\DefaultImpl\ArmaBrowserServerJsonRepository.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
+    <Compile Include="Data\DefaultImpl\Rest\RestAddon.cs" />
     <Compile Include="Data\DefaultImpl\ServerItem.cs" />
     <Compile Include="Data\DefaultImpl\ServerRepositorySteam.cs" />
     <Compile Include="Data\DefaultImpl\SteamConfigReader.cs" />
@@ -170,6 +171,7 @@
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
     <None Include="Shader\notused\Glow.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -292,13 +294,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RestSharp\RestSharp\RestSharp.csproj">
-      <Project>{2ececfbf-5f3e-40ee-a963-72336dc7abe2}</Project>
-      <Name>RestSharp</Name>
-    </ProjectReference>
+    <Content Include="HTMLPage1.html" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\DefaultImpl\Rest\" />
+    <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
+      <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
+      <Name>RestSharp.Net4.Signed</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

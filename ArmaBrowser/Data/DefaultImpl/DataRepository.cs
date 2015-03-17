@@ -130,12 +130,12 @@ namespace ArmaBrowser.Data.DefaultImpl
             return "";
         }
 
-        public IArmaAddOn[] GetInstalledAddons(string baseFolder)
+        public IArmaAddon[] GetInstalledAddons(string baseFolder)
         {
-            if (string.IsNullOrWhiteSpace(baseFolder)) return new IArmaAddOn[0];
+            if (string.IsNullOrWhiteSpace(baseFolder)) return new IArmaAddon[0];
 
             var addonFolders = Directory.EnumerateDirectories(baseFolder, "@*");
-            var result = new List<IArmaAddOn>(addonFolders.Count());
+            var result = new List<IArmaAddon>(addonFolders.Count());
             foreach (var addonFolder in addonFolders)
             {
                 var item = new ArmaAddOn
@@ -167,7 +167,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                 // reading bisign files
                 var addonFileFolder = Path.Combine(addonFolder, "addons");
                 var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
-                var keys = new List<string>(200);
+                var keys = new List<AddonKey>(200);
                 var sb = new StringBuilder();
                 foreach (var bisignPath in bisignPaths)
                 {
@@ -183,7 +183,12 @@ namespace ArmaBrowser.Data.DefaultImpl
                                 {
                                     sb.Append(br.ReadChar());
                                 }
-                                keys.Add(sb.ToString());
+
+                                var keyLen = br.ReadInt32();
+                                var bytes = br.ReadBytes(keyLen);
+
+                                keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
+                                break;
                             }
                         }
                         catch

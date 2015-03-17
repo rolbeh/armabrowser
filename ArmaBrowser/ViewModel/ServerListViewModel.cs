@@ -33,7 +33,7 @@ namespace ArmaBrowser.ViewModel
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
         private readonly ObservableCollection<LogEntry> _actionLog = new ObservableCollection<LogEntry>();
         private bool _isJoining;
-
+        private string _version;
 
         #endregion Fields
 
@@ -67,6 +67,10 @@ namespace ArmaBrowser.ViewModel
 
         private ListCollectionView CreateServerItemsView()
         {
+            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+            _version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            
+
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
 
             // Sorting
@@ -386,7 +390,7 @@ namespace ArmaBrowser.ViewModel
                 var canActive = false;
                 if (hostAddonKeys.Any())
                 {
-                    foreach (var addonKey in item.mod.KeyNames)
+                    foreach (var addonKey in item.mod.KeyNames.Select(k => k.Name))
                     {
                         if (hostAddonKeys.Contains(addonKey))
                         {
@@ -435,6 +439,11 @@ namespace ArmaBrowser.ViewModel
                 _isJoining = value;
                 OnPropertyChanged();
             }
+        }
+
+        public string Version
+        {
+            get { return _version; }
         }
 
 

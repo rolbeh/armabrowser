@@ -47,14 +47,6 @@ namespace ArmaBrowser
             TabListBox.SelectedIndex = 0;
             Test.Freeze();
 
-            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-            string version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
-            VersionTextBlock.Text = "Version " + version;
-
-
-
-
-
         }
 
         void win_SourceInitialized(object sender, EventArgs e)
