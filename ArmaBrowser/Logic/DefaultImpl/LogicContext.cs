@@ -410,10 +410,11 @@ namespace ArmaBrowser.Logic.DefaultImpl
                                         System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
 
                     }
-
-                    var test = new AddonWebApi();
-                    test.PostInstalledAddonsKeysAsync(_addons);
-
+                    if (Properties.Settings.Default.IsGatheringAddonInfosEnabled)
+                    {
+                        var test = new AddonWebApi();
+                        test.PostInstalledAddonsKeysAsync(_addons);   
+                    }
                 }
 
                 return _addons;

@@ -43,7 +43,12 @@ namespace ArmaBrowser
             }
 
             InitializeComponent();
-            AutoJoinView.Visibility = System.Windows.Visibility.Collapsed;
+
+            InfoOverlayGrid.Visibility = Properties.Settings.Default.DontShowGatheringAddonInfoAdvice
+                                            ? Visibility.Collapsed
+                                            : Visibility.Visible;
+
+            AutoJoinView.Visibility = Visibility.Collapsed;
             TabListBox.SelectedIndex = 0;
             Test.Freeze();
 
@@ -226,6 +231,11 @@ namespace ArmaBrowser
         private void AutoJoinControl_Canceled(object sender, RoutedEventArgs e)
         {
             CancelJoiningServer();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            InfoOverlayGrid.Visibility = Visibility.Collapsed;
         }
 
     }

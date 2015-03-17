@@ -10,6 +10,7 @@
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         xmlns:logic="clr-namespace:ArmaBrowser.Logic"
+        xmlns:properties="clr-namespace:ArmaBrowser.Properties"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" MinWidth="660" MinHeight="600"
         UseLayoutRounding="False"
@@ -607,16 +608,38 @@
                     BorderBrush="AliceBlue"
                     BorderThickness="2">
                     <view:AutoJoinControl Canceled="AutoJoinControl_Canceled">
-                        
+
                     </view:AutoJoinControl>
                     <FrameworkElement.Effect>
-                        
-                            <DropShadowEffect BlurRadius="25" ShadowDepth="13"/>
-                        </FrameworkElement.Effect>
+
+                        <DropShadowEffect BlurRadius="25" ShadowDepth="13"/>
+                    </FrameworkElement.Effect>
                 </Border>
             </Grid>
 
         </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#E2000000" x:Name="InfoOverlayGrid" Visibility="Collapsed">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="430" Background="Black">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"  TextWrapping="Wrap" FontSize="16" Margin="10" >
+                   This is an experimental version of Armabowser.<LineBreak /><LineBreak />
+                    This release collects information about addons and sends this information to www.armabrowser.org. 
+                    This data will be use in future versions to simplify the process of installing and updating of addons.
+                    <LineBreak /><LineBreak /><LineBreak />
+                </TextBlock>
+                <CheckBox Grid.Row="0" IsChecked="{Binding Path=IsGatheringAddonInfosEnabled, Source={x:Static properties:Settings.Default}}" VerticalAlignment="Bottom" Margin="10">
+                    Yes, collect information about addons and send it to www.armabrowser.org?
+                </CheckBox>
+                <CheckBox Grid.Row="1" Margin="10"
+                          IsChecked="{Binding Path=DontShowGatheringAddonInfoAdvice, Source={x:Static properties:Settings.Default}}">Do not show again.</CheckBox>
+                <Button Grid.Row="1" Content="Continue" Width="93" Margin="10" Click="Button_Click"/>
+            </Grid>
+        </Grid>
+
     </Grid>
     <FrameworkElement.Triggers>
         <EventTrigger RoutedEvent="MouseEnter">
