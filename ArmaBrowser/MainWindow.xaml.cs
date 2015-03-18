@@ -41,22 +41,16 @@ namespace ArmaBrowser
                 this.Top = Properties.Settings.Default.MainWindowTop;
                 this.Left = Properties.Settings.Default.MainWindowLeft;
             }
-            try
-            {
-                InitializeComponent();
-                TabListBox.SelectedIndex = 0;
-                Test.Freeze();
 
-                var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-                string version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
-                VersionTextBlock.Text = "Version " + version;
+            InitializeComponent();
 
+            InfoOverlayGrid.Visibility = Properties.Settings.Default.DontShowGatheringAddonInfoAdvice
+                                            ? Visibility.Collapsed
+                                            : Visibility.Visible;
 
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            AutoJoinView.Visibility = Visibility.Collapsed;
+            TabListBox.SelectedIndex = 0;
+            Test.Freeze();
 
         }
 
@@ -237,6 +231,11 @@ namespace ArmaBrowser
         private void AutoJoinControl_Canceled(object sender, RoutedEventArgs e)
         {
             CancelJoiningServer();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            InfoOverlayGrid.Visibility = Visibility.Collapsed;
         }
 
     }

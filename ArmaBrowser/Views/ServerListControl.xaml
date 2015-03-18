@@ -3,8 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
-             xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:design="clr-namespace:ArmaBrowser.Design"
              mc:Ignorable="d design"
@@ -13,30 +11,6 @@
              >
     <FrameworkElement.Resources>
 
-        <BitmapImage x:Key="Recently"  UriSource="/Img/recently16.png"/>
-        
-        <Storyboard x:Key="DataRowAnimationHeight" AutoReverse="False" >
-            <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
-        </Storyboard>
-
-        <Storyboard x:Key="DataRowAnimationOpacity" AutoReverse="False" >
-            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
-                             Duration="0:0:0:0.300"/>
-        </Storyboard>
-
-        <EventTrigger x:Key="LoadedEvent" RoutedEvent="Loaded">
-            <BeginStoryboard >
-                <Storyboard  AutoReverse="False" >
-                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
-                </Storyboard>
-            </BeginStoryboard>
-            <BeginStoryboard >
-                <Storyboard   AutoReverse="False" >
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
-                             Duration="0:0:0:0.300"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
 
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
             <!--<Setter Property="Height" Value="18"/>-->
@@ -68,6 +42,34 @@
             </Style.Triggers>-->
         </Style>
 
+
+        <DataTemplate x:Key="ServerNameDatatemplate">
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                     
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"   Height="18" Width="23"  Source="{DynamicResource RecentlyBitmapImage}"
+                                       SnapsToDevicePixels="True" 
+                                       Stretch="None" 
+                                       HorizontalAlignment="Left">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+
+                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+            </Grid>
+        </DataTemplate>
+
     </FrameworkElement.Resources>
     <Grid>
         <!--<ListView Name="lstProducts" Background="{x:Null}" ItemsSource="{Binding Path=ServerItemsView}" IsSynchronizedWithCurrentItem="False">
@@ -96,7 +98,7 @@
             </ListView.GroupStyle>
         </ListView>-->
 
-        <DataGrid Grid.Row="1" x:Name="ServerDatagrid" 
+        <DataGrid Grid.Row="0" x:Name="ServerDatagrid" 
               AutoGenerateColumns="False"
               Background="{x:Null}"
               RowHeaderWidth="0"
@@ -115,7 +117,7 @@
               MaxWidth="2560"
               MaxHeight="1600"
               VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560"  >
-             <!--<ItemsControl.ItemsPanel>
+            <!--<ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="Vertical"  VirtualizingPanel.IsVirtualizing="False"   />
                 </ItemsPanelTemplate>
@@ -176,33 +178,8 @@
                 <DataGridTemplateColumn Header="Server"                                
                                 Width="350"
                                 IsReadOnly="True"
+                                CellTemplate="{StaticResource ServerNameDatatemplate}"
                                 >
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                             <Grid >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Image Grid.Column="0"  SnapsToDevicePixels="True" Height="18" Stretch="None" HorizontalAlignment="Left" >
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Source" Value="{x:Null}"/>
-                                            <Setter Property="Width" Value="0"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
-                                                    <Setter Property="Source" Value="{StaticResource Recently}"/>
-                                                    <Setter Property="Width" Value="23"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                
-                                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
-                            </Grid> 
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Mission"
                                 Binding="{Binding Mission}" 

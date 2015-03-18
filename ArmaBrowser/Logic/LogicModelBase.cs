@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using ArmaBrowser.Annotations;
 
 namespace ArmaBrowser.Logic
 {
@@ -12,7 +13,8 @@ namespace ArmaBrowser.Logic
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // Create the OnPropertyChanged method to raise the event 
+        /// Create the OnPropertyChanged method to raise the event 
+        [NotifyPropertyChangedInvocator]
         protected void OnPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (propertyName == null || propertyName == string.Empty) throw new ArgumentException("Argument 'propertyName' is empty!", "propertyName");

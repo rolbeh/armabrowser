@@ -20,14 +20,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock FontSize="18" Text="Joining Server" TextAlignment="Center" Foreground="{StaticResource TitleBarForegroundBrush}" Background="{StaticResource TitleBarBackgroundBrush}"/>
+        <TextBlock Padding="5" FontSize="18" Text="Joining Server" TextAlignment="Center" Foreground="{StaticResource TitleBarForegroundBrush}" Background="{StaticResource TitleBarBackgroundBrush}"/>
         <StackPanel Grid.Row="1" Margin="50,0">
-            <TextBlock Margin="5" FontSize="18" Text="{Binding Path=Name}" TextAlignment="Center"/>
-            <TextBlock Margin="5" FontSize="16" Text="{Binding Path=Mission}" TextAlignment="Center"/>
+            <TextBlock Padding="5" FontSize="18" Text="{Binding Path=Name}" TextAlignment="Center"/>
+            <TextBlock Padding="5" FontSize="16" Text="{Binding Path=Mission}" TextAlignment="Center"/>
         </StackPanel>
-        <TextBlock Grid.Row="2" Margin="50,0" FontSize="16" Text="{Binding Path=PlayersState, StringFormat=Player {0}, FallbackValue='Player ???'}" TextAlignment="Center"/>
+        <TextBlock Grid.Row="2" Padding="4" Margin="50,0" FontSize="16" Text="{Binding Path=PlayersState, StringFormat=Player {0}, FallbackValue='Player ???'}" TextAlignment="Center"/>
         <Border Grid.Row="3" Background="{StaticResource TitleBarBackgroundBrush}">
-            <Button Foreground="Black" Content="Cancel" Height="30" Width="93" Click="Button_Click"/>
+            <Button Margin="5,5,5,10" Foreground="Black" Content="Cancel" Height="30" Width="93" Click="Button_Click"/>
         </Border>
     </Grid>
 </UserControl>

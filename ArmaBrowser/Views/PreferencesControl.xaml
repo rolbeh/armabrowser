@@ -27,15 +27,27 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Arma 3 location" Padding="4" />
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=ArmaPath, Source={x:Static Member=properties:Settings.Default}}" 
-                              Foreground="Black"/>
-                </StackPanel>
-                
-                <!-- Version -->
-                <StackPanel Grid.Row="1" Orientation="Vertical">
-                    <TextBlock Text="Arma 3 Version" Padding="4" />
-                <TextBox Text="{Binding Path=ArmaVersion, Mode=OneWay}" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True"/>
+                <GroupBox Header="Arma III">
+                    <StackPanel>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Location" Padding="4" />
+                        <TextBox Grid.Row="0" Grid.Column="1" IsReadOnly="True" Text="{Binding Path=ArmaPath, Mode=OneWay, Source={x:Static Member=properties:Settings.Default}}" 
+                                  Foreground="Black"/>
+                        
+                        
+                        <!-- Version -->
+                        <StackPanel Grid.Row="1" Orientation="Vertical">
+                            <TextBlock Text="Version" Padding="4" />
+                        <TextBox Text="{Binding Path=ArmaVersion, Mode=OneWay}" Foreground="Black" BorderThickness="0" Background="{x:Null}" IsReadOnly="True"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Addons">
+                    <StackPanel>
+                        <CheckBox Grid.Row="0" IsChecked="{Binding Path=IsGatheringAddonInfosEnabled, Source={x:Static properties:Settings.Default}}" VerticalAlignment="Center" Margin="10" HorizontalAlignment="Left">
+                            <TextBlock TextWrapping="Wrap" Padding="10,0,0,0">Yes, collect information about addons and send it to www.armabrowser.org?</TextBlock>
+                        </CheckBox>
+                    </StackPanel>
+                </GroupBox>
             </StackPanel>
         </Grid>
          

@@ -153,6 +153,15 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         public string Modhashs { get; internal set; }
 
+        public string Signatures
+        {
+            get { return _signatures; }
+            internal set
+            {
+                _signatures = (value ?? string.Empty);
+            }
+        }
+
         public int CurrentPlayerCount
         {
             get { return _playersNum; }
@@ -210,17 +219,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
         }
 
         public string Island { get; internal set; }
-
-
-        public string Signatures
-        {
-            get { return _signatures; }
-            internal set
-            {
-                _signatures = (value ?? string.Empty);
-            }
-        }
-
+        
         public string FullText
         {
             get { return string.Format("{0} {1} {2}", Name, Mission, Island); }
@@ -243,6 +242,8 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
+
+        public bool VerifySignatures { get; set; }
     }
 
 }

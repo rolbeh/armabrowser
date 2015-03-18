@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
+using System.Text;
 
 namespace ArmaBrowser
 {
@@ -31,6 +32,12 @@ namespace ArmaBrowser
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+
+            if (string.IsNullOrEmpty(ArmaBrowser.Properties.Settings.Default.Id)
+                || ArmaBrowser.Properties.Settings.Default.Id.Length != 32)
+            {
+                ArmaBrowser.Properties.Settings.Default.Id = Guid.NewGuid().ToByteArray().ToHexString();
+            }
 
             if (!ArmaBrowser.Properties.Settings.Default.Upgraded)
             {
@@ -65,6 +72,5 @@ namespace ArmaBrowser
                 }
             }
         }
-
     }
 }

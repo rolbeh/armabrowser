@@ -33,7 +33,7 @@ namespace ArmaBrowser.ViewModel
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
         private readonly ObservableCollection<LogEntry> _actionLog = new ObservableCollection<LogEntry>();
         private bool _isJoining;
-
+        private string _version;
 
         #endregion Fields
 
@@ -67,6 +67,10 @@ namespace ArmaBrowser.ViewModel
 
         private ListCollectionView CreateServerItemsView()
         {
+            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+            _version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            
+
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
 
             // Sorting
@@ -171,27 +175,30 @@ namespace ArmaBrowser.ViewModel
 
             UiTask.Initialize();
             _context = new LogicContext();
-            _context.PropertyChanged += Context_PropertyChanged;
-            _context.LiveAction += _context_LiveAction;
-
-            TextFilter = Properties.Settings.Default.TextFilter;
-            _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
-
-            LookForInstallation();
-
-            var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
-            var serverItems = _context.AddServerItems(recentlyHosts);
-            foreach (var item in serverItems)
+            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
-                item.LastPlayed = DateTime.Now;
-            }
-            _context.RefreshServerInfoAsync(serverItems)
-                .ContinueWith(t =>
-                    {
-                        ServerItemsView.Refresh();
-                    }, UiTask.TaskScheduler);
+                _context.PropertyChanged += Context_PropertyChanged;
+                _context.LiveAction += _context_LiveAction;
 
-            Task.Run((Action)EndlessRefreshSelecteItem);
+                TextFilter = Properties.Settings.Default.TextFilter;
+                _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
+
+                LookForInstallation();
+
+                var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
+                var serverItems = _context.AddServerItems(recentlyHosts);
+                foreach (var item in serverItems)
+                {
+                    item.LastPlayed = DateTime.Now;
+                }
+                _context.RefreshServerInfoAsync(serverItems)
+                    .ContinueWith(t =>
+                        {
+                            ServerItemsView.Refresh();
+                        }, UiTask.TaskScheduler);
+
+                Task.Run((Action)EndlessRefreshSelecteItem);
+            }
         }
 
         void Context_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -348,26 +355,29 @@ namespace ArmaBrowser.ViewModel
             {
                 return;
             }
-            var sortNr = 1;
-            var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
+            //if (_selectedServerItem.Mods != null)
+            //{
+                var sortNr = 1;
+                var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
 
-            var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
-            var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>().FirstOrDefault(h => h.EndPoint == endpoint);
+                var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
+                var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>().FirstOrDefault(h => h.EndPoint == endpoint);
 
-            if (hostCfgItem != null)
-            {
-                sortNr = 1;
-                hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
+                if (hostCfgItem != null)
+                {
+                    sortNr = 1;
+                    hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
 
-            }
+                }
 
-            var mods = (from mod in Addons
-                        join selectedMod in hostAddons on mod.ModName equals selectedMod.ModName into selectedMods
-                        from selectedMod in selectedMods.DefaultIfEmpty()
-                        let Sortnr = selectedMod == null ? 0 : selectedMod.SortNr
-                        let selectedModName = selectedMod == null ? null : selectedMod.ModName
-                        orderby Sortnr
-                        select new { mod, selectedMod = selectedModName, Sortnr }).ToArray();
+                var mods = (from mod in Addons
+                            join selectedMod in hostAddons on mod.ModName equals selectedMod.ModName into selectedMods
+                            from selectedMod in selectedMods.DefaultIfEmpty()
+                            let Sortnr = selectedMod == null ? 0 : selectedMod.SortNr
+                            let selectedModName = selectedMod == null ? null : selectedMod.ModName
+                            orderby Sortnr
+                            select new { mod, selectedMod = selectedModName, Sortnr }).ToArray();
+            //}
 
             var s = _selectedServerItem.Signatures ?? string.Empty;
             var hostAddonKeys = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
@@ -376,19 +386,22 @@ namespace ArmaBrowser.ViewModel
             foreach (var item in mods)
             {
                 item.mod.IsActive = !string.IsNullOrWhiteSpace(item.selectedMod);
-                Thread.Sleep(1);
-                item.mod.CanActived = false;
+                //Thread.Sleep(1);
+                var canActive = false;
                 if (hostAddonKeys.Any())
                 {
-                    foreach (var addonKey in item.mod.KeyNames)
+                    foreach (var addonKey in item.mod.KeyNames.Select(k => k.Name))
                     {
                         if (hostAddonKeys.Contains(addonKey))
                         {
-                            item.mod.CanActived = true;
+                            canActive = true;
                             break;
                         }
                     }
                 }
+                item.mod.CanActived = canActive;
+                if (Properties.Settings.Default.SelectAllAceptedAddons)
+                    item.mod.IsActive = canActive;
 
             }
 
@@ -426,6 +439,11 @@ namespace ArmaBrowser.ViewModel
                 _isJoining = value;
                 OnPropertyChanged();
             }
+        }
+
+        public string Version
+        {
+            get { return _version; }
         }
 
 
@@ -509,12 +527,12 @@ namespace ArmaBrowser.ViewModel
         {
             while (true)
             {
-                var mainwin = UiTask.Run(() => App.Current.MainWindow);
-                mainwin.Wait();
+                var mainwin = await UiTask.Run(() => App.Current.MainWindow);
+                
                 if (mainwin == null) break;
                 try
                 {
-                    var task = UiTask.Run(() => App.Current.MainWindow.WindowState != WindowState.Minimized);
+                    var task = UiTask.Run(() => mainwin.WindowState != WindowState.Minimized);
                     task.Wait();
                     if (task.IsCompleted && task.Result && !_isJoining)
                     {

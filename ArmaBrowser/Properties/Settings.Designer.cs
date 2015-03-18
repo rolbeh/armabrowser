@@ -178,5 +178,53 @@ namespace ArmaBrowser.Properties {
                 this["Favorits"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SelectAllAceptedAddons {
+            get {
+                return ((bool)(this["SelectAllAceptedAddons"]));
+            }
+            set {
+                this["SelectAllAceptedAddons"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string Id {
+            get {
+                return ((string)(this["Id"]));
+            }
+            set {
+                this["Id"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsGatheringAddonInfosEnabled {
+            get {
+                return ((bool)(this["IsGatheringAddonInfosEnabled"]));
+            }
+            set {
+                this["IsGatheringAddonInfosEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DontShowGatheringAddonInfoAdvice {
+            get {
+                return ((bool)(this["DontShowGatheringAddonInfoAdvice"]));
+            }
+            set {
+                this["DontShowGatheringAddonInfoAdvice"] = value;
+            }
+        }
     }
 }

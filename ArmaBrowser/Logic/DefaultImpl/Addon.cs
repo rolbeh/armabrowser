@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ArmaBrowser.Data;
 
 namespace ArmaBrowser.Logic.DefaultImpl
 {
@@ -57,6 +58,6 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        public IEnumerable<string> KeyNames { get; internal set; }
+        public IEnumerable<AddonKey> KeyNames { get; internal set; }
     }
 }

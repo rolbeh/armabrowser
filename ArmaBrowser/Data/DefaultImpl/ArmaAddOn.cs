@@ -5,11 +5,11 @@ using System.Text;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    class ArmaAddOn : IArmaAddOn
+    class ArmaAddOn : IArmaAddon
     {
         public ArmaAddOn()
         {
-            KeyNames = Enumerable.Empty<string>();
+            KeyNames = Enumerable.Empty<AddonKey>();
         }
 
         public string Name { get; internal set; }
@@ -22,6 +22,6 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         public string ModName { get; set; }
 
-        public IEnumerable<string> KeyNames { get; set; }
+        public IEnumerable<AddonKey> KeyNames { get; set; }
     }
 }

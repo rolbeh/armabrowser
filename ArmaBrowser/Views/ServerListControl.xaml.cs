@@ -49,13 +49,5 @@ namespace ArmaBrowser.Views
             CommandManager.InvalidateRequerySuggested();
         }
         
-        void ServerListControl_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-
-            }
-        }
-
     }
 }

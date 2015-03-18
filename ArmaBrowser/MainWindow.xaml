@@ -9,7 +9,8 @@
         xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
-        
+        xmlns:logic="clr-namespace:ArmaBrowser.Logic"
+        xmlns:properties="clr-namespace:ArmaBrowser.Properties"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" MinWidth="660" MinHeight="600"
         UseLayoutRounding="False"
@@ -22,7 +23,28 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
+        <DataTemplate x:Key="SelectAddonsDataTemplate">
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Source="/Img/cert24.png" Stretch="Uniform" Margin="0,2,0,0"
+                       VerticalAlignment="Top" Height="17" StretchDirection="DownOnly">
+                    <FrameworkElement.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </FrameworkElement.Style>
+                </Image>
+                <TextBlock Grid.Column="1" Text="{Binding Path=DisplayText}"/>
+            </Grid>
+        </DataTemplate>
 
     </Window.Resources>
 
@@ -480,7 +502,7 @@
                                
                                Padding="2"/>
 
-                        <ListBox Grid.Row="2" Margin="0,33,0,0" DisplayMemberPath="DisplayText"
+                        <ListBox Grid.Row="2" Margin="0,33,0,0" ItemTemplate="{DynamicResource SelectAddonsDataTemplate}"
                              Background="{StaticResource ListingBackgroundBrush}"
                              Height="125" VerticalAlignment="Top" 
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -575,20 +597,49 @@
 
         </Grid>
 
-        <Grid Grid.RowSpan="2" Background="#AA000000" x:Name="AutoJoinView" Visibility="Collapsed">
+        <Grid Grid.RowSpan="2" Background="#7CA9A9A9" x:Name="AutoJoinView" Visibility="Collapsed">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="4*" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="1" VerticalAlignment="Center" Background="Black"
+                <Border Grid.Column="1" VerticalAlignment="Center"
                     BorderBrush="AliceBlue"
                     BorderThickness="2">
-                    <view:AutoJoinControl Canceled="AutoJoinControl_Canceled"></view:AutoJoinControl>
+                    <view:AutoJoinControl Canceled="AutoJoinControl_Canceled">
+
+                    </view:AutoJoinControl>
+                    <FrameworkElement.Effect>
+
+                        <DropShadowEffect BlurRadius="25" ShadowDepth="13"/>
+                    </FrameworkElement.Effect>
                 </Border>
             </Grid>
+
         </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#E2000000" x:Name="InfoOverlayGrid" Visibility="Collapsed">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="430" Background="Black">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"  TextWrapping="Wrap" FontSize="16" Margin="10" >
+                   This is an experimental version of Armabowser.<LineBreak /><LineBreak />
+                    This release collects information about addons and sends this information to www.armabrowser.org. 
+                    This data will be use in future versions to simplify the process of installing and updating of addons.
+                    <LineBreak /><LineBreak /><LineBreak />
+                </TextBlock>
+                <CheckBox Grid.Row="0" IsChecked="{Binding Path=IsGatheringAddonInfosEnabled, Source={x:Static properties:Settings.Default}}" VerticalAlignment="Bottom" Margin="10">
+                    Yes, collect information about addons and send it to www.armabrowser.org?
+                </CheckBox>
+                <CheckBox Grid.Row="1" Margin="10"
+                          IsChecked="{Binding Path=DontShowGatheringAddonInfoAdvice, Source={x:Static properties:Settings.Default}}">Do not show again.</CheckBox>
+                <Button Grid.Row="1" Content="Continue" Width="93" Margin="10" Click="Button_Click"/>
+            </Grid>
+        </Grid>
+
     </Grid>
     <FrameworkElement.Triggers>
         <EventTrigger RoutedEvent="MouseEnter">
@@ -642,7 +693,7 @@
                                RequestNavigate="PoweredByHyperlink_RequestNavigate"
                                >Google+</Hyperlink>
             </TextBlock>
-            <TextBlock x:Name="VersionTextBlock" Margin="5,5,0,0" Height="30" />
+            <TextBlock Margin="5,5,0,0" Height="30" Text="{Binding Version, StringFormat='Version {0}'}" />
             <!--<Button Background="{x:Null}"  x:Name="appbar_settings"
                     Click="AppbarSettings_OnClick"
                     ToolTip="Preferences"

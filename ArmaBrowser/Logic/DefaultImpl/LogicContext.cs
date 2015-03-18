@@ -4,12 +4,15 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using ArmaBrowser.Data;
 
 namespace ArmaBrowser.Logic.DefaultImpl
 {
@@ -217,51 +220,18 @@ namespace ArmaBrowser.Logic.DefaultImpl
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(Run)).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+                (new Thread(LoadingServerList)).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
             waitArray[waitArray.Length - 1] = lastreset;
-            (new Thread(Run) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new RunState { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
+            (new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
 
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
-
-            //Parallel.ForEach(_serverIPListe, new ParallelOptions() { MaxDegreeOfParallelism=50, CancellationToken = token, TaskScheduler = PriorityScheduler.BelowNormal }, dataItem =>
-            //                    {
-            //                        if (token.IsCancellationRequested)
-            //                            return;
-
-            //                        var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
-
-            //                        if (LiveAction != null)
-            //                        {
-            //                            LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
-            //                        }
-
-            //                        var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
-
-            //                        if (cancellationToken.IsCancellationRequested)
-            //                            return;
-
-            //                        var item = new ServerItem();
-            //                        if (vo != null)
-            //                        {
-            //                            AssignProperties(item, vo);
-            //                        }
-            //                        else
-            //                        {
-            //                            item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
-            //                            item.Host = serverQueryEndpoint.Address;
-            //                            item.QueryPort = serverQueryEndpoint.Port;
-            //                        }
-
-            //                        var t = UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
-            //                    });
-
         }
 
-        class RunState
+        class LoadingServerListContext
         {
             public IEnumerable<Data.IServerVo> ips { get; set; }
             public Collection<IServerItem> dest { get; set; }
@@ -269,9 +239,9 @@ namespace ArmaBrowser.Logic.DefaultImpl
             public ManualResetEventSlim Reset { get; set; }
         }
 
-        void Run(object runState)
+        void LoadingServerList(object loadingServerListContext)
         {
-            var state = (RunState)runState;
+            var state = (LoadingServerListContext)loadingServerListContext;
             foreach (var dataItem in state.ips)
             {
                 if (state.token.IsCancellationRequested)
@@ -385,6 +355,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             item.Port = vo.Port;
             item.QueryPort = vo.QueryPort;
             item.Signatures = vo.Signatures;
+            item.VerifySignatures = vo.VerifySignatures;
             item.Version = vo.Version;
             item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.Passworded;
             item.Ping = vo.Ping;
@@ -401,24 +372,76 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 {
                     _addons = new ObservableCollection<IAddon>();
                     var armaPath = Properties.Settings.Default.ArmaPath;
-                    if (!string.IsNullOrEmpty(armaPath))
+
+                    if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                     {
-                        var items = _defaultDataRepository.GetInstalledAddons(armaPath);
-                        foreach (var item in items)
+                        _addons.Add(new Addon
                         {
-                            _addons.Add(new Addon
-                                        {
-                                            Name = item.Name,
-                                            DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
-                                            ModName = item.ModName,
-                                            Version = item.Version,
-                                            KeyNames = item.KeyNames
-                                        });
-                        }
+                            Name = "no Sign",
+#if DEBUG
+                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
+#else
+                            DisplayText = string.Format("{0} ({1})", "DisplayText CannotActived", "Name"),
+#endif
+                            ModName = "@modename",
+                            Version = "000.00.0",
+                            KeyNames = new[] { new AddonKey() { Name = "key" } }
+                        });
+
+                        _addons.Add(new Addon
+                        {
+                            Name = "new Sign",
+#if DEBUG
+                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
+#else
+                            DisplayText = string.Format("{0} ({1})", "DisplayText CanActived", "Name"),
+#endif
+                            ModName = "@modename",
+                            Version = "000.00.0",
+                            KeyNames = new[] { new AddonKey(){Name = "key" }},
+                            CanActived = true
+                        });
+                    }
+                    else
+                    {
+
+                        ReloadAddons(armaPath);
+                        ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+                                        System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
+
+                    }
+                    if (Properties.Settings.Default.IsGatheringAddonInfosEnabled)
+                    {
+                        var test = new AddonWebApi();
+                        test.PostInstalledAddonsKeysAsync(_addons);   
                     }
                 }
 
                 return _addons;
+            }
+        }
+
+        private void ReloadAddons(string path)
+        {
+            
+            if (!string.IsNullOrEmpty(path))
+            {
+                var items = _defaultDataRepository.GetInstalledAddons(path);
+                foreach (var item in items)
+                {
+                    _addons.Add(new Addon
+                    {
+                        Name = item.Name,
+#if DEBUG
+                        DisplayText = string.Format("{0} ({1}) [{2}]", item.DisplayText, item.Name, string.Join(",",item.KeyNames)),
+#else
+                        DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+#endif
+                        ModName = item.ModName,
+                        Version = item.Version,
+                        KeyNames = item.KeyNames
+                    });
+                }
             }
         }
 
@@ -463,10 +486,10 @@ namespace ArmaBrowser.Logic.DefaultImpl
         void ps_Exited(object sender, EventArgs e)
         {
             //Todo Move to ViewModel Code
-            UiTask.Run(() =>
+            var t =UiTask.Run(() =>
             {
-                App.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
-                App.Current.MainWindow.Activate();
+                Application.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
+                Application.Current.MainWindow.Activate();
             });
         }
 

@@ -5,10 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
+             xmlns:properties="clr-namespace:ArmaBrowser.Properties"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
+    
     <Grid>
-        <ListBox ItemsSource="{Binding Path=Addons}" 
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <ListBox Grid.Row="0" x:Name="AddonsListBox" ItemsSource="{Binding Path=Addons}" 
                  BorderThickness="1" BorderBrush="#FF688CAF"
                  Foreground="{StaticResource ForegroundNormalBrush}"
                  
@@ -19,7 +25,8 @@
                 <DataTemplate DataType="{x:Type logic:IAddon}">
                     <Grid Background="Transparent">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="16"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <CheckBox Grid.Column="0" IsChecked="{Binding Path=IsActive}" Margin="0,3">
@@ -27,8 +34,21 @@
                                 <ScaleTransform  ScaleX="1.1" ScaleY="1.1" />
                             </CheckBox.RenderTransform>
                         </CheckBox>
-                        <TextBlock Grid.Column="1" Text="{Binding Path=DisplayText}">
-                            <TextBlock.Style>
+                        <Image Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
+                               >
+                            <FrameworkElement.Style>
+                                <Style TargetType="Image">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </FrameworkElement.Style>
+                        </Image>
+                        <TextBlock Grid.Column="2" Text="{Binding Path=DisplayText}">
+                            <FrameworkElement.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="Normal"/>
                                     <Style.Triggers>
@@ -37,7 +57,7 @@
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
+                            </FrameworkElement.Style>
                         </TextBlock>
                     </Grid>
                 </DataTemplate>
@@ -55,5 +75,16 @@
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,3">
+            
+            <ToggleButton IsChecked="{Binding Path=SelectAllAceptedAddons, Source={x:Static properties:Settings.Default}}"
+                          Checked="ToggleButton_OnChecked"
+                          ToolTip="Select all accepted Addons">
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock VerticalAlignment="Center" Padding="4" IsHitTestVisible="False">All</TextBlock>
+                    <Image Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="3,0,1,0" Height="19"  IsHitTestVisible="False"/>
+                </StackPanel>                
+            </ToggleButton>
+        </StackPanel>
     </Grid>
 </UserControl>

@@ -108,7 +108,11 @@
                                             Width="32"
                                             Height="32"
                                             MouseLeftButtonDown="IconMouseLeftButtonDown"
-                                            />
+                                            >
+                                            <FrameworkElement.Effect>
+                                                <DropShadowEffect/>
+                                            </FrameworkElement.Effect>
+                                        </Image>
                                         <TextBlock
                                             x:Name="Caption"
                                             Grid.Column="1"
@@ -119,7 +123,11 @@
                                             FontSize="12"
                                             Opacity="0.66"
                                             Text="{TemplateBinding Title}"
-                                            />
+                                            >
+                                            <FrameworkElement.Effect>
+                                                <DropShadowEffect/>
+                                            </FrameworkElement.Effect>
+                                        </TextBlock>
                                         <ContentControl 
                                             Grid.Column="2" Content="{Binding Path=(WStyle:WindowTitle.TitleToolbar), RelativeSource={RelativeSource  Mode=TemplatedParent}}">
                                             <FrameworkElement.Resources>
