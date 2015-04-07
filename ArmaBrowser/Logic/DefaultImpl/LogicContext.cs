@@ -152,14 +152,14 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        public void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToken)
+        public async void ReloadServerItems(IEnumerable<System.Net.IPEndPoint> lastAddresses, CancellationToken cancellationToken)
         {
             var dest = ServerItems;
             var recently = dest.Where(srv => srv.LastPlayed.HasValue).ToArray(); //.Select(srv => new System.Net.IPEndPoint(srv.Host, srv.Port))
 
             try
             {
-                UiTask.Run(() => dest.Clear(), cancellationToken).Wait();
+                await UiTask.Run(() => dest.Clear(), cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -167,7 +167,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
                 return;
             }
 
-            RefreshServerInfoAsync(recently)
+             RefreshServerInfoAsync(recently)
                     .ContinueWith(t =>
                     {
                         foreach (var recentlyItem in recently)
@@ -220,7 +220,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(LoadingServerList)).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+                (new Thread(LoadingServerList) { Name = "UDP"+(i+1), IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
@@ -230,7 +230,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
         }
-
+         
         class LoadingServerListContext
         {
             public IEnumerable<Data.IServerVo> ips { get; set; }

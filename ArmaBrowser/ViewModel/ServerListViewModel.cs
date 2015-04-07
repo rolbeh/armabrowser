@@ -289,7 +289,7 @@ namespace ArmaBrowser.ViewModel
 
         void ReloadInternal(CancellationToken cancellationToken)
         {
-            if (_ipEndPointFilter != null)
+            if (_ipEndPointFilter != null) 
                 _context.ReloadServerItem(_ipEndPointFilter, cancellationToken);
             else
                 _context.ReloadServerItems(_lastItems, cancellationToken);

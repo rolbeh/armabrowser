@@ -178,7 +178,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             List<byte> qry = new List<byte>();
             qry.AddRange(startBytes);
-            qry.Add(Header);
+            qry.Add(Header);  
             qry.AddRange(Encoding.Default.GetBytes(qryAsString));
             qry.Add(0x00);
 
@@ -187,13 +187,13 @@ namespace ArmaBrowser.Data.DefaultImpl
             var buffer = new byte[2048];
             using (System.Net.Sockets.UdpClient udp = new System.Net.Sockets.UdpClient())
             {
+                try
+                {
                 udp.Connect(gameServerQueryEndpoint);
 
                 udp.AllowNatTraversal(true);
                 udp.Client.ReceiveTimeout = 300;
 
-                try
-                {
                     sw.Start();
                     udp.Send(qry.ToArray(), qry.Count);
 

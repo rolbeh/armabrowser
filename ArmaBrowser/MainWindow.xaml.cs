@@ -201,7 +201,7 @@ namespace ArmaBrowser
             }
         }
 
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e) 
         {
             App.Current.MainWindow.WindowState = System.Windows.WindowState.Minimized;
         }

@@ -15,7 +15,7 @@ namespace ArmaBrowser.Data.DefaultImpl.Rest
         public RestAddonKey[] Keys { get; set; }
     }
     
-    class RestAddonKey
+    class RestAddonKey 
     {
         public string Key { get; set; }
         public string PubK { get; set; }
