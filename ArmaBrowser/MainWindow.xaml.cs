@@ -201,11 +201,6 @@ namespace ArmaBrowser
             }
         }
 
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e) 
-        {
-            App.Current.MainWindow.WindowState = System.Windows.WindowState.Minimized;
-        }
-
         private void CvsSelectedAddons_OnFilter(object sender, FilterEventArgs e)
         {
             var item = e.Item as IAddon;
@@ -238,5 +233,17 @@ namespace ArmaBrowser
             InfoOverlayGrid.Visibility = Visibility.Collapsed;
         }
 
+        private void OpenInstallFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath))
+                System.Diagnostics.Process.Start(Properties.Settings.Default.ArmaPath);
+            else
+                MessageBox.Show("Arma 3 installation not found");
+        }
+
+        private void PreferencesContextMenuButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            PreferencesContextMenu.IsOpen = true;
+        }
     }
 }
