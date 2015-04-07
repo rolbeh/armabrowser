@@ -189,10 +189,12 @@ namespace ArmaBrowser.Data.DefaultImpl
             {
                 try
                 {
-                udp.Connect(gameServerQueryEndpoint);
+                    udp.Connect(gameServerQueryEndpoint);
 
-                udp.AllowNatTraversal(true);
-                udp.Client.ReceiveTimeout = 300;
+                    udp.AllowNatTraversal(true);
+                    udp.Client.ReceiveTimeout = 300;
+                    udp.AllowNatTraversal(true);
+                    udp.Client.ReceiveTimeout = 300;
 
                     sw.Start();
                     udp.Send(qry.ToArray(), qry.Count);
