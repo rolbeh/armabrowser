@@ -220,7 +220,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(LoadingServerList)).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+                (new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
