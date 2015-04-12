@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq; 
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security;
@@ -21,12 +21,13 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     class AddonWebApi : IAddonWebApi
     {
-        //const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        const string BaseUrl = @"http://armabrowser.org/api/";
-        
+        const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        //const string BaseUrl = @"http://armabrowser.org/api/";
+
         private RestClient _client;
         private readonly Guid _installationsId;
-        
+        private static TimeSpan _offset = new TimeSpan();
+
 
         public AddonWebApi()
         {
@@ -71,7 +72,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept", Value = "application/json", Type = ParameterType.HttpHeader });
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept-Language", Value = Thread.CurrentThread.CurrentUICulture.Name, Type = ParameterType.HttpHeader });
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept-Encoding", Value = "gzip,deflate,text/plain", Type = ParameterType.HttpHeader });
-                    _client.AddDefaultParameter(new Parameter() { Name = "APPI", Value = Properties.Settings.Default.Id , Type = ParameterType.HttpHeader});
+                    _client.AddDefaultParameter(new Parameter() { Name = "APPI", Value = Properties.Settings.Default.Id, Type = ParameterType.HttpHeader });
 
                     var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
                     string ver = string.Empty;
@@ -99,7 +100,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                 ModName = a.ModName,
                 Name = a.Name,
                 Version = a.Version,
-                Keys = a.KeyNames.Select(k => new RestAddonKey() {Key = k.Name, PubK = k.PubK.ToBase64()}).ToArray()
+                Keys = a.KeyNames.Select(k => new RestAddonKey() { Key = k.Name, PubK = k.PubK.ToBase64() }).ToArray()
             }).ToArray();
 
             request.AddJsonBody(restItems);
@@ -108,27 +109,40 @@ namespace ArmaBrowser.Data.DefaultImpl
             if (queryResult.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var dateString = (string)queryResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase)).Value;
-                var offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
-                offset = TimeSpan.FromMinutes(Math.Truncate(offset.TotalMinutes));
-                request = request.htua(offset);
-
+                _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
+                _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
+                request = request.htua(_offset);
 
                 queryResult = _client.Execute(request);
             }
 
-            if (queryResult.StatusCode == HttpStatusCode.OK)
-            {
-                request = new RestRequest();
-            }
-            
         }
 
+        public object[] GetAddonInfos(params string[] addonHashs)
+        {
+            try
+            {
+                var request = new RestRequest("/AddonInfos", Method.GET).htua(_offset);
+
+                request.AddJsonBody(addonHashs);
+
+                var restResult = RestClient.Execute(request);
+
+                if (restResult.StatusCode == HttpStatusCode.OK)
+                    return new object[] {restResult.Content};
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
+            return new object[0];
+        }
         
     }
 
     static class RestRequestExtension
     {
-        
+
         #region public key
 
         static readonly byte[] PubBlob = {0x6,0x2, 0x0,0x0, 0x0,0xA4, 0x0,0x0, 0x52,0x53, 0x41,0x31, 0x0,0x10, 0x0,0x0, 

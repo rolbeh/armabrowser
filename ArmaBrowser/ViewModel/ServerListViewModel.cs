@@ -1,5 +1,4 @@
 ﻿using ArmaBrowser.Logic;
-using ArmaBrowser.Logic.DefaultImpl;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +16,7 @@ namespace ArmaBrowser.ViewModel
     {
         #region Fields
 
-        private LogicContext _context;
+        private readonly LogicContext _context;
         private ListCollectionView _serverItemsView;
         private string _textFilter = string.Empty;
         private System.Net.IPEndPoint _ipEndPointFilter = null;
@@ -380,7 +379,9 @@ namespace ArmaBrowser.ViewModel
             //}
 
             var s = _selectedServerItem.Signatures ?? string.Empty;
-            var hostAddonKeys = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var hostAddonSignaturesHashes = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+
+            _context.GetAddonInfosAsync(hostAddonSignaturesHashes);
 
             // Addons automatisch ab- und auswählen
             foreach (var item in mods)
@@ -388,11 +389,11 @@ namespace ArmaBrowser.ViewModel
                 item.mod.IsActive = !string.IsNullOrWhiteSpace(item.selectedMod);
                 //Thread.Sleep(1);
                 var canActive = false;
-                if (hostAddonKeys.Any())
+                if (hostAddonSignaturesHashes.Any())
                 {
                     foreach (var addonKey in item.mod.KeyNames.Select(k => k.Name))
                     {
-                        if (hostAddonKeys.Contains(addonKey))
+                        if (hostAddonSignaturesHashes.Contains(addonKey))
                         {
                             canActive = true;
                             break;

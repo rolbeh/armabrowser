@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ArmaBrowser.Data;
 
-namespace ArmaBrowser.Logic.DefaultImpl
+namespace ArmaBrowser.Logic
 {
     class Addon : LogicModelBase, IAddon
     {

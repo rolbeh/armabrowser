@@ -151,13 +151,13 @@
     <Compile Include="Helper\SystemExtention.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
+    <Compile Include="Logic\DefaultImpl\Helper\PriorityScheduler.cs" />
     <Compile Include="Logic\DefaultImpl\LogicContext.cs" />
     <Compile Include="Logic\DefaultImpl\ServerItem.cs" />
     <Compile Include="Logic\Intf\IAddon.cs" />
     <Compile Include="Logic\Intf\ILogicContext.cs" />
     <Compile Include="Logic\Intf\IServerItem.cs" />
     <Compile Include="Logic\Intf\ServerItemGroup.cs" />
-    <Compile Include="Logic\LogicManager.cs" />
     <Compile Include="Logic\LogicModelBase.cs" />
     <Compile Include="Logic\UiTask.cs" />
     <Compile Include="HostConfigCollection.cs" />

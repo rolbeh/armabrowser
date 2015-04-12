@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArmaBrowser.Logic.DefaultImpl
+namespace ArmaBrowser.Logic
 {
     class ServerItem : LogicModelBase, IServerItem, ArmaBrowser.Data.IServerQueryAddress
     {
