@@ -116,7 +116,7 @@
               EnableRowVirtualization = "True"
               MaxWidth="2560"
               MaxHeight="1600"
-              VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560"  >
+              VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560" BorderThickness="0"  >
             <!--<ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="Vertical"  VirtualizingPanel.IsVirtualizing="False"   />

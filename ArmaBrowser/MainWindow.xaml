@@ -11,6 +11,7 @@
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         xmlns:logic="clr-namespace:ArmaBrowser.Logic"
         xmlns:properties="clr-namespace:ArmaBrowser.Properties"
+        xmlns:armaBrowser="clr-namespace:ArmaBrowser"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
         Height="693" Width="1023" MinWidth="660" MinHeight="600"
         UseLayoutRounding="False"
@@ -61,41 +62,37 @@
         </Grid.RowDefinitions>
 
         <!-- Main content area -->
-        <Grid  Margin="10,4,10,10" Grid.Row="1">
+        <Grid  Margin="10,4,9,10" Grid.Row="1">
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="400" Width="3*"/>
+                <ColumnDefinition Width="10"></ColumnDefinition>
+                <ColumnDefinition MinWidth="200" Width="1*" />
+                <ColumnDefinition Width="1" />
+            </Grid.ColumnDefinitions>
 
-            <!-- Sidebar -->
-
-
-            <!-- server listing -->
-            <Grid Visibility="Visible">
+            <!-- searchfield and server listing -->
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition MinHeight="42" Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
+                <!-- Suchfeld -->
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="259" MinWidth="259"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="127"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="1"  Click="RefrshServerlist_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
+                    <Button Grid.Column="1"  Click="RefrshServerlist_Click" Padding="3" Margin="0" VerticalAlignment="Center" 
                             Foreground="Black"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}">
-                            <TextBlock Foreground="Black">refresh server</TextBlock>
-                        </Button>
-                        <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                            <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
+                        <TextBlock Foreground="Black">refresh server</TextBlock>
+                    </Button>
+                    <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+                        <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
                                    FontStyle="Italic"
                                    FontSize="18"
                                    IsHitTestVisible="False"
@@ -110,134 +107,134 @@
                                     </Style.Triggers>
                                 </Style>
                             </FrameworkElement.Style>
-                            </TextBlock>
-                            <!-- bussy -->
-                            <Grid  HorizontalAlignment="Right" Height="20" Width="20"  Visibility="{Binding LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}" >
-                                <FrameworkElement.Resources>
-                                    <RotateTransform x:Key="GridRotateTransform" />
-                                </FrameworkElement.Resources>
-                                <Path  Visibility="Hidden"  RenderTransformOrigin="0.5 0.5" Stroke="Black" Fill="BlueViolet" Height="20" Width="20">
-                                    <Path.Data>
-                                        <GeometryGroup FillRule="EvenOdd">
-                                            <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
-                                            <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
-                                        </GeometryGroup>
-                                    </Path.Data>
-                                </Path>
-                                <Path Visibility="Hidden"  
+                        </TextBlock>
+                        <!-- bussy -->
+                        <Grid  HorizontalAlignment="Right" Height="20" Width="20"  Visibility="{Binding LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                            <FrameworkElement.Resources>
+                                <RotateTransform x:Key="GridRotateTransform" />
+                            </FrameworkElement.Resources>
+                            <Path  Visibility="Hidden"  RenderTransformOrigin="0.5 0.5" Stroke="Black" Fill="BlueViolet" Height="20" Width="20">
+                                <Path.Data>
+                                    <GeometryGroup FillRule="EvenOdd">
+                                        <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
+                                        <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
+                                    </GeometryGroup>
+                                </Path.Data>
+                            </Path>
+                            <Path Visibility="Hidden"  
                                   RenderTransformOrigin="0.5 0.5" Height="20" Width="20">
-                                    <Path.Fill>
-                                        <RadialGradientBrush  Center="0.5,-0.23" GradientOrigin="0.8,0.25" RadiusX="0.68" RadiusY="0.68">
-                                            <GradientStop Color="#BFFFFFFF" Offset="0" />
-                                            <GradientStop Color="#00FFFFFF" Offset="1" />
-                                            <GradientStop Color="#21FFFFFF" Offset="0.65" />
-                                        </RadialGradientBrush>
-                                    </Path.Fill>
-                                    <Path.Data>
-                                        <GeometryGroup FillRule="EvenOdd">
-                                            <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
-                                            <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
-                                        </GeometryGroup>
-                                    </Path.Data>
-                                </Path>
-                                <Image HorizontalAlignment="Right" Height="20" Width="20" RenderTransformOrigin="0.5 0.5" >
-                                    <Image.Source>
-                                        <DrawingImage x:Name="Test" >
-                                            <DrawingImage.Drawing>
-                                                <DrawingGroup>
-                                                    <GeometryDrawing Brush="BlueViolet" >
-                                                        <GeometryDrawing.Pen>
-                                                            <Pen DashCap="Round" Brush="Black"/>
-                                                        </GeometryDrawing.Pen>
-                                                        <GeometryDrawing.Geometry>
-                                                            <GeometryGroup FillRule="EvenOdd">
-                                                                <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
-                                                                <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
-                                                            </GeometryGroup>
-                                                        </GeometryDrawing.Geometry>
-                                                    </GeometryDrawing>
-                                                    <GeometryDrawing>
-                                                        <GeometryDrawing.Brush>
-                                                            <RadialGradientBrush  Center="0.5,-0.23" GradientOrigin="0.8,0.25" RadiusX="0.68" RadiusY="0.68">
-                                                                <GradientStop Color="#BFFFFFFF" Offset="0" />
-                                                                <GradientStop Color="#00FFFFFF" Offset="1" />
-                                                                <GradientStop Color="#21FFFFFF" Offset="0.65" />
-                                                            </RadialGradientBrush>
-                                                        </GeometryDrawing.Brush>
-                                                        <GeometryDrawing.Geometry>
-                                                            <GeometryGroup FillRule="Nonzero"  >
-                                                                <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
-                                                                <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
-                                                            </GeometryGroup>
-                                                        </GeometryDrawing.Geometry>
-                                                    </GeometryDrawing>
-                                                </DrawingGroup>
-                                            </DrawingImage.Drawing>
-                                        </DrawingImage>
-                                    </Image.Source>
-                                    <FrameworkElement.RenderTransform>
-                                        <TransformGroup>
-                                            <ScaleTransform/>
-                                            <SkewTransform/>
-                                            <StaticResource ResourceKey="GridRotateTransform"/>
-                                            <TranslateTransform/>
-                                        </TransformGroup>
-                                    </FrameworkElement.RenderTransform>
-                                </Image>
-                                <Grid.Style>
-                                    <Style TargetType="Grid">
-                                        <Style.Triggers>
+                                <Path.Fill>
+                                    <RadialGradientBrush  Center="0.5,-0.23" GradientOrigin="0.8,0.25" RadiusX="0.68" RadiusY="0.68">
+                                        <GradientStop Color="#BFFFFFFF" Offset="0" />
+                                        <GradientStop Color="#00FFFFFF" Offset="1" />
+                                        <GradientStop Color="#21FFFFFF" Offset="0.65" />
+                                    </RadialGradientBrush>
+                                </Path.Fill>
+                                <Path.Data>
+                                    <GeometryGroup FillRule="EvenOdd">
+                                        <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
+                                        <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
+                                    </GeometryGroup>
+                                </Path.Data>
+                            </Path>
+                            <Image HorizontalAlignment="Right" Height="20" Width="20" RenderTransformOrigin="0.5 0.5" >
+                                <Image.Source>
+                                    <DrawingImage x:Name="Test" >
+                                        <DrawingImage.Drawing>
+                                            <DrawingGroup>
+                                                <GeometryDrawing Brush="BlueViolet" >
+                                                    <GeometryDrawing.Pen>
+                                                        <Pen DashCap="Round" Brush="Black"/>
+                                                    </GeometryDrawing.Pen>
+                                                    <GeometryDrawing.Geometry>
+                                                        <GeometryGroup FillRule="EvenOdd">
+                                                            <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
+                                                            <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
+                                                        </GeometryGroup>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                                <GeometryDrawing>
+                                                    <GeometryDrawing.Brush>
+                                                        <RadialGradientBrush  Center="0.5,-0.23" GradientOrigin="0.8,0.25" RadiusX="0.68" RadiusY="0.68">
+                                                            <GradientStop Color="#BFFFFFFF" Offset="0" />
+                                                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                                                            <GradientStop Color="#21FFFFFF" Offset="0.65" />
+                                                        </RadialGradientBrush>
+                                                    </GeometryDrawing.Brush>
+                                                    <GeometryDrawing.Geometry>
+                                                        <GeometryGroup FillRule="Nonzero"  >
+                                                            <EllipseGeometry Center="10 10" RadiusX="9" RadiusY="9" />
+                                                            <EllipseGeometry Center="10 10" RadiusX="6" RadiusY="6" />
+                                                        </GeometryGroup>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                            </DrawingGroup>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                                <FrameworkElement.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <StaticResource ResourceKey="GridRotateTransform"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </FrameworkElement.RenderTransform>
+                            </Image>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
 
-                                            <Trigger Property="Visibility" Value="Visible">
-                                                <Trigger.EnterActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard RepeatBehavior="Forever"  Timeline.DesiredFrameRate="6">
+                                        <Trigger Property="Visibility" Value="Visible">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard RepeatBehavior="Forever"  Timeline.DesiredFrameRate="6">
 
-                                                            <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.Target="{StaticResource GridRotateTransform}" Storyboard.TargetProperty="(RotateTransform.Angle)">
-                                                                <SplineDoubleKeyFrame KeyTime="00:00:02" Value="360" />
-                                                            </DoubleAnimationUsingKeyFrames>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </Trigger.EnterActions>
-                                                <Trigger.ExitActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard RepeatBehavior="0"  Timeline.DesiredFrameRate="6">
-                                                            <DoubleAnimation RepeatBehavior="0" BeginTime="00:00:00" Storyboard.Target="{StaticResource GridRotateTransform}" 
+                                                        <DoubleAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.Target="{StaticResource GridRotateTransform}" Storyboard.TargetProperty="(RotateTransform.Angle)">
+                                                            <SplineDoubleKeyFrame KeyTime="00:00:02" Value="360" />
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard RepeatBehavior="0"  Timeline.DesiredFrameRate="6">
+                                                        <DoubleAnimation RepeatBehavior="0" BeginTime="00:00:00" Storyboard.Target="{StaticResource GridRotateTransform}" 
                                                                          Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="0" Duration="0:0:1"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </Trigger.ExitActions>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Grid.Style>
-                            </Grid>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
 
 
 
-                            <Canvas Height="24" Width="24" HorizontalAlignment="Left" VerticalAlignment="Center" Background="Transparent" IsHitTestVisible="False" >
-                                <Ellipse Canvas.Top="2" Canvas.Left="2" Height="15" Width="15" StrokeThickness="3" Stroke="DarkGray" />
-                                <Rectangle Height="3" Width="8" Canvas.Left="14" Canvas.Top="13" Fill="DarkGray" RenderTransformOrigin="0.00,0.5" >
-                                    <Rectangle.RenderTransform>
-                                        <TransformGroup>
-                                            <ScaleTransform/>
-                                            <SkewTransform/>
-                                            <RotateTransform Angle="45"/>
-                                            <TranslateTransform/>
-                                        </TransformGroup>
-                                    </Rectangle.RenderTransform>
+                        <Canvas Height="24" Width="24" HorizontalAlignment="Left" VerticalAlignment="Center" Background="Transparent" IsHitTestVisible="False" >
+                            <Ellipse Canvas.Top="2" Canvas.Left="2" Height="15" Width="15" StrokeThickness="3" Stroke="DarkGray" />
+                            <Rectangle Height="3" Width="8" Canvas.Left="14" Canvas.Top="13" Fill="DarkGray" RenderTransformOrigin="0.00,0.5" >
+                                <Rectangle.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform Angle="45"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Rectangle.RenderTransform>
 
-                                </Rectangle>
-                            </Canvas>
+                            </Rectangle>
+                        </Canvas>
 
-                            <TextBox x:Name="SearchText" Background="{x:Null}" Foreground="Black"
+                        <TextBox x:Name="SearchText" Background="{x:Null}" Foreground="Black"
                     		     Text="{Binding TextFilter, Mode=TwoWay, Delay=600, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="18"
                     		     BorderThickness="0" Margin="30,0,0,0"
                          >
-                                <FrameworkElement.ToolTip>
-                                    <ToolTip>
-                                        <TextBlock>
+                            <FrameworkElement.ToolTip>
+                                <ToolTip>
+                                    <TextBlock>
                                         <Run>This is a full text search. You can combine your conditions separate with a space.</Run>
                                         <LineBreak/>
                                         <Run>&quot;altis&quot; - Filters for servername / missions / modes</Run> <Run FontWeight="Bold">with</Run> <Run>the substring Altis</Run>
@@ -249,23 +246,23 @@
                                         <Run>&quot;IPAddress:GamePort&quot; - Do only a request for that particular server</Run>
                                         <LineBreak/>
                                         <Run>Some character doesnt work with the filter!</Run>
-                                        </TextBlock>
-                                    </ToolTip>
-                                </FrameworkElement.ToolTip>
-                            </TextBox>
-                        </Grid>
+                                    </TextBlock>
+                                </ToolTip>
+                            </FrameworkElement.ToolTip>
+                        </TextBox>
                     </Grid>
+                </Grid>
 
-                    <Grid Grid.Row="1" Background="Black" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
+                <Grid Grid.Row="1" Grid.Column="0" Background="Black" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
 
-                        <Image  Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False">
-                            <UIElement.Effect>
-                                <!--<Shader:Glow x:Name="GlowShader" Threshold="0.6" GlowFactor="2"/>-->
-                                <Shader:multishader_frag x:Name="GlowShader" 
+                    <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False">
+                        <UIElement.Effect>
+                            <!--<Shader:Glow x:Name="GlowShader" Threshold="0.6" GlowFactor="2"/>-->
+                            <Shader:multishader_frag x:Name="GlowShader" 
                                                      Master="2.6"
                                                      BlurRadius="3.3"
                                                      GlowIntensity="0.7"
@@ -273,160 +270,209 @@
                                                      DirectionHorizontal="7.1"
                                                      TextureHeight="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}"
                                                      TextureWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}" BlurIntensity="2.5"/>
-                            </UIElement.Effect>
-                        </Image>
+                        </UIElement.Effect>
+                    </Image>
 
-                        <ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
+                    <ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
                                   Opacity="0.8"
                                   ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="viewModel:LogEntry">
-                                    <TextBlock Width="108" Height="18" 
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="viewModel:LogEntry">
+                                <TextBlock Width="108" Height="18" 
                                            Text="{Binding Text}"
                                            FontFamily="Consolas"
                                            Foreground="#FFC9744D"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <views:ServerListControl />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <views:ServerListControl Grid.Row="0" BorderThickness="1,1,1,0" BorderBrush="#FF688CAF"/>
 
-                        <!--  ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}" -->
-                        <ListBox Grid.Row="1" Height="171" MinHeight="18" BorderThickness="1,0,1,1" BorderBrush="#FF688CAF"
+                    <!--  ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}" -->
+                    <ListBox Grid.Row="1" Height="171" MinHeight="18" BorderThickness="1" BorderBrush="#FF688CAF"
                              Foreground="{StaticResource ForegroundNormalBrush}"
                             ItemsSource="{Binding Path=SelectedServerItem.CurrentPlayers}"
                              Background="Transparent"  
                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              ScrollViewer.HorizontalScrollBarVisibility="Auto" VerticalAlignment="Bottom"
                              >
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical" IsItemsHost="True" ItemWidth="161" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate >
-                                    <Grid Width="161" Margin="3,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="1" Text="{Binding Path=Name}" TextTrimming="CharacterEllipsis" Padding="2"/>
-                                        <TextBlock Grid.Column="0" Padding="2" >
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0:0}h:{1:00}m">
-                                                    <Binding Path="OnlineTime.Hours"/>
-                                                    <Binding Path="OnlineTime.Minutes"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Vertical" IsItemsHost="True" ItemWidth="161" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate >
+                                <Grid Width="161" Margin="3,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="1" Text="{Binding Path=Name}" TextTrimming="CharacterEllipsis" Padding="2"/>
+                                    <TextBlock Grid.Column="0" Padding="2" >
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0:0}h:{1:00}m">
+                                                <Binding Path="OnlineTime.Hours"/>
+                                                <Binding Path="OnlineTime.Minutes"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
 
-                        </ListBox>
-                    </Grid>
-                    <GridSplitter Grid.Column="1" Background="Transparent" Width="10" 
-                              ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" HorizontalAlignment="Stretch" Grid.Row="1"  />
+                    </ListBox>
+                </Grid>
 
-                    <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" >
-                        <Grid.Resources>
-                            <CollectionViewSource x:Key="CvsSelectedAddons" Source="{Binding Addons}" IsLiveFilteringRequested="True" IsLiveSortingRequested="True" Filter="CvsSelectedAddons_OnFilter">
-                                <CollectionViewSource.LiveFilteringProperties>
-                                    <sys:String>IsActive</sys:String>
-                                </CollectionViewSource.LiveFilteringProperties>
-                                <CollectionViewSource.LiveSortingProperties>
-                                    <sys:String>ActivationOrder</sys:String>
-                                </CollectionViewSource.LiveSortingProperties>
-                                <CollectionViewSource.SortDescriptions>
-                                    <ComponentModel:SortDescription PropertyName="ActivationOrder" Direction="Ascending"/>
-                                </CollectionViewSource.SortDescriptions>
-                            </CollectionViewSource>
-                        </Grid.Resources>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="32"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <ListBox ScrollViewer.VerticalScrollBarVisibility="Disabled"
+
+
+
+                <Border Grid.Column="0" Grid.Row="2"  BorderBrush="#FF688CAF" BorderThickness="1,0,1,1" SnapsToDevicePixels="True" />
+
+                <Grid Grid.Column="0" Grid.Row="2">
+                    <FrameworkElement.Resources>
+                        <Style TargetType="{x:Type TextBlock}" >
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundNormalBrush}"/>
+                        </Style>
+                    </FrameworkElement.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel HorizontalAlignment="Left" Margin="1" Orientation="Horizontal" Background="{StaticResource BackroundNormalBrush}">
+                        <TextBlock >
+                            <Run Text="{Binding ServerItemsView.Count, StringFormat=Server: {0}, Mode=OneWay, FallbackValue=0000}"/>
+                            <Run Text="{Binding ServerItems.Count, StringFormat='/ {0}', Mode=OneWay, FallbackValue=0000}"  FontFamily="Segoe UI Symbol"/>
+                        </TextBlock>
+                        <TextBlock  Text="{Binding Path=TotalPlayerCount, StringFormat='Total player count: {0}'}" Margin="10,0">
+
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal"  HorizontalAlignment="Right" VerticalAlignment="Top" Height="15"  Background="{StaticResource BackroundNormalBrush}">
+                        <TextBlock Text="{Binding SelectedServerItem.Name, FallbackValue='no server selected'}" Height="15" Margin="10,0"/>
+                        <TextBlock Text="{Binding SelectedServerItem.Version, FallbackValue=Version : 0.0.0.0, StringFormat=Version :\{0\}}" Height="15"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="0" Visibility="Collapsed"
+                                   Text="{Binding SelectedServerItem.ModsText, StringFormat=Addons :{0}, FallbackValue='Addons : Arma 3'}" 
+                           HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap"/>
+
+                    <TextBox Grid.Column="0"
+                                 Text="{Binding SelectedServerItem.Endpoint, FallbackValue='', Mode=OneWay}" HorizontalAlignment="Left" Width="128" 
+                         IsReadOnly="True"
+                         BorderThickness="0" Background="Transparent" 
+                         Foreground="{StaticResource ForegroundNormalBrush}"
+                         Margin="0,15,0,12"/>
+
+
+                </Grid>
+
+            </Grid>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Background="Transparent" Width="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeDirection="Columns" />
+
+            <!-- Sidebar -->
+            <Grid Grid.Column="2" Grid.Row="0" >
+                <Grid.Resources>
+                    <CollectionViewSource x:Key="CvsSelectedAddons" Source="{Binding Addons}" IsLiveFilteringRequested="True" IsLiveSortingRequested="True" Filter="CvsSelectedAddons_OnFilter">
+                        <CollectionViewSource.LiveFilteringProperties>
+                            <sys:String>IsActive</sys:String>
+                        </CollectionViewSource.LiveFilteringProperties>
+                        <CollectionViewSource.LiveSortingProperties>
+                            <sys:String>ActivationOrder</sys:String>
+                        </CollectionViewSource.LiveSortingProperties>
+                        <CollectionViewSource.SortDescriptions>
+                            <ComponentModel:SortDescription PropertyName="ActivationOrder" Direction="Ascending"/>
+                        </CollectionViewSource.SortDescriptions>
+                    </CollectionViewSource>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ListBox ScrollViewer.VerticalScrollBarVisibility="Disabled"
                              x:Name="TabListBox"
                              BorderThickness="0"
                              SelectedIndex="0"
                              Background="{x:Null}" Margin="0,0,29,0" 
                              OverridesDefaultStyle="True">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="{StaticResource ForegroundNormalBrush}"
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Foreground="{StaticResource ForegroundNormalBrush}"
                                Margin="0,4,4,0" FontSize="18"
                                
                                Padding="2"/>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-                                    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-                                    <Setter Property="Padding" Value="2,0,0,0"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsSelected" Value="True">
-                                                        <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
-                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
-                                                    </Trigger>
-                                                    <MultiTrigger>
-                                                        <MultiTrigger.Conditions>
-                                                            <Condition Property="IsSelected" Value="True"/>
-                                                            <Condition Property="Selector.IsSelectionActive" Value="False"/>
-                                                        </MultiTrigger.Conditions>
-                                                        <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
-                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
-                                                    </MultiTrigger>
-                                                    <Trigger Property="IsEnabled" Value="False">
-                                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <sys:String>Addons</sys:String>
-                            <sys:String>Arma III</sys:String>
-                        </ListBox>
-                        <!--<TextBlock Grid.Row="0" Text="installed addons"
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                            <Setter Property="Padding" Value="2,0,0,0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                            </Trigger>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsSelected" Value="True"/>
+                                                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                                </MultiTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                                            </MultiTrigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <sys:String>Addons</sys:String>
+                    <sys:String>Arma III</sys:String>
+                </ListBox>
+                <!--<TextBlock Grid.Row="0" Text="installed addons"
                                Foreground="{StaticResource ForegroundNormalBrush}"
                                Margin="0,4,4,0" FontSize="18"
                                
                                Padding="2" PreviewMouseUp="TextBlock_PreviewMouseUp"/>-->
 
-                        <TextBlock Grid.Row="0" Text="..." Visibility="Collapsed"
+                <TextBlock Grid.Row="0" Text="..." Visibility="Collapsed"
                                Foreground="{StaticResource ForegroundNormalBrush}"
                                HorizontalAlignment="Right"
                                Margin="0,4,4,0" FontSize="18"
                                Padding="2" PreviewMouseUp="TextBlock_PreviewMouseUp">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="true">
-                                            <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
 
-                        <Button Grid.Row="0" x:Name="PreferencesContextMenuButton"
+
+                <Button Grid.Row="0" x:Name="PreferencesContextMenuButton"
                                 Foreground="{StaticResource ForegroundNormalBrush}"
                                 HorizontalAlignment="Right"
                                 FontSize="18"
@@ -435,35 +481,36 @@
                                 Content="{DynamicResource PreferencesViewBoxIcon}"
                                 Click="PreferencesContextMenuButton_OnClick">
 
-                            <Button.ContextMenu>
-                                <ContextMenu x:Name="PreferencesContextMenu" 
-                                              
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="PreferencesContextMenu" 
+                                             
                                              Placement="Bottom">
-                                    <MenuItem Header="Open install folder" Click="OpenInstallFolder_OnClick" />
-                                    <MenuItem Header="Addons" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
+                            <MenuItem Header="Open install folder" Click="OpenInstallFolder_OnClick" />
+                            <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddonsCommand" />
+                            <MenuItem Header="Addons" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
 
-                        </Button>
+                </Button>
 
-                        <Grid Grid.Row="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition Height="205"/>
-                            </Grid.RowDefinitions>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="205"/>
+                    </Grid.RowDefinitions>
 
-                            <!--<Rectangle Grid.Row="1" Fill="{StaticResource ListingBackgroundBrush}"/>-->
-                            <Grid Grid.Row="0" Background="{StaticResource ListingBackgroundBrush}">
-                                <views:AddonsControl/>
-                            </Grid>
+                    <!--<Rectangle Grid.Row="1" Fill="{StaticResource ListingBackgroundBrush}"/>-->
+                    <Grid Grid.Row="0" Background="{StaticResource ListingBackgroundBrush}">
+                        <views:AddonsControl/>
+                    </Grid>
 
-                            <TextBlock Grid.Row="2" Text="selected addons"
+                    <TextBlock Grid.Row="1" Text="selected addons"
                                Foreground="{StaticResource ForegroundNormalBrush}"
                                Margin="0,8,4,4" FontSize="18"
                                
                                Padding="2"/>
 
-                            <ListBox Grid.Row="2" Margin="0,33,0,0" ItemTemplate="{DynamicResource SelectAddonsDataTemplate}"
+                    <ListBox Grid.Row="1" Margin="0,33,0,0" ItemTemplate="{DynamicResource SelectAddonsDataTemplate}"
                              Background="{StaticResource ListingBackgroundBrush}"
                              Height="125" VerticalAlignment="Top" 
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -471,64 +518,38 @@
                              Foreground="{StaticResource ForegroundNormalBrush}"
                              FontSize="14"
                              />
-                            <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom" Height="40">
-                                <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="start Arma without Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
-                                <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="as Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
-                            </StackPanel>
+                    <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom" Height="40">
+                        <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="start Arma without Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
+                        <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="as Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
+                    </StackPanel>
 
-                            <Grid.Style>
-                                <Style TargetType="Grid" >
-                                    <Setter Property="Visibility" Value="Hidden"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Addons">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Grid.Style>
-
-                        </Grid>
-                        <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}">
-                            <views:PreferencesControl />
-                            <Grid.Style>
-                                <Style TargetType="Grid" >
-                                    <Setter Property="Visibility" Value="Hidden"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Arma III">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Grid.Style>
-                        </Grid>
-                    </Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid" >
+                            <Setter Property="Visibility" Value="Hidden"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Addons">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
 
                 </Grid>
-                
-                <Grid Grid.Row="1">
-                    <FrameworkElement.Resources>
-                        <Style TargetType="{x:Type TextBlock}" >
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundNormalBrush}"/>
+                <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}">
+                    <views:PreferencesControl />
+                    <Grid.Style>
+                        <Style TargetType="Grid" >
+                            <Setter Property="Visibility" Value="Hidden"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=TabListBox}" Value="Arma III">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
-                    </FrameworkElement.Resources>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="49"/>
-                        <ColumnDefinition Width="221"/>
-                    </Grid.ColumnDefinitions>
+                    </Grid.Style>
+                </Grid>
 
-                    <TextBlock HorizontalAlignment="Left" Width="309" Margin="0,0,0,27">
-                    <Run Text="{Binding ServerItemsView.Count, StringFormat=Server: {0}, Mode=OneWay}"/>
-                    <Run Text="{Binding ServerItems.Count, StringFormat='/ {0}', Mode=OneWay}"  FontFamily="Segoe UI Symbol"/>
-                    </TextBlock>
-                    <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right" VerticalAlignment="Top" Height="15">
-                        <TextBlock Text="{Binding SelectedServerItem.Name, FallbackValue='no server selected'}" Height="15" Margin="10,0"/>
-                        <TextBlock Text="{Binding SelectedServerItem.Version, FallbackValue=Version : 0.0.0.0, StringFormat=Version :\{0\}}" Height="15"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding SelectedServerItem.ModsText, StringFormat=Addons :{0}, FallbackValue='Addons : Arma 3'}" 
-                           HorizontalAlignment="Right" Margin="0,15,10,0" TextWrapping="Wrap"/>
-
-                    <Button Grid.Column="2" 
+                <Button Grid.Column="2" Grid.Row="2" 
                         Width="120"  
                         HorizontalAlignment="Center" 
                         Command="Open"
@@ -536,31 +557,21 @@
                         FontSize="22"
                         FontWeight="ExtraBlack" Margin="0,3"
                         >
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Content" Value="Play"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedServerItem.IsPlayerSlotsFull, FallbackValue=False}" Value="True">
-                                        <Setter Property="Content" Value="auto join"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <TextBox Text="{Binding SelectedServerItem.Endpoint, FallbackValue='', Mode=OneWay}" HorizontalAlignment="Left" Width="128" 
-                         IsReadOnly="True"
-                         BorderThickness="0" Background="Transparent" 
-                         Foreground="{StaticResource ForegroundNormalBrush}"
-                         Margin="0,15,0,12"/>
-                    <Rectangle Grid.Column="1" HorizontalAlignment="Left" 
-                           Fill="#FF688CAF"
-                           Width="1"/>
-                </Grid>
-
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value="Play"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedServerItem.IsPlayerSlotsFull, FallbackValue=False}" Value="True">
+                                    <Setter Property="Content" Value="auto join"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </Grid>
-            
-            <views:AddonListControl Visibility="Collapsed" ></views:AddonListControl> 
-            
+
+            <views:AddonListControl Grid.Column="0" Visibility="Collapsed" ></views:AddonListControl>
+
         </Grid>
 
 
@@ -588,31 +599,9 @@
 
         </Grid>
 
-        <!-- InfoOverlayGrid -->
-        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#E2000000" x:Name="InfoOverlayGrid" Visibility="Collapsed">
-            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="430" Background="Black">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0"  TextWrapping="Wrap" FontSize="16" Margin="10" >
-                   This is an experimental version of Armabowser.<LineBreak /><LineBreak />
-                    This release collects information about addons and sends this information to www.armabrowser.org. 
-                    This data will be use in future versions to simplify the process of installing and updating of addons.
-                    <LineBreak /><LineBreak /><LineBreak />
-                </TextBlock>
-                <CheckBox Grid.Row="0" IsChecked="{Binding Path=IsGatheringAddonInfosEnabled, Source={x:Static properties:Settings.Default}}" VerticalAlignment="Bottom" Margin="10">
-                    Yes, collect information about addons and send it to www.armabrowser.org?
-                </CheckBox>
-                <CheckBox Grid.Row="1" Margin="10"
-                          IsChecked="{Binding Path=DontShowGatheringAddonInfoAdvice, Source={x:Static properties:Settings.Default}}">Do not show again.</CheckBox>
-                <Button Grid.Row="1" Content="Continue" Width="93" Margin="10" Click="Button_Click"/>
-            </Grid>
-        </Grid>
-
     </Grid>
-    <FrameworkElement.Triggers>
-        <EventTrigger RoutedEvent="MouseEnter">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.MouseEnter">
             <!--<BeginStoryboard>
                 <Storyboard RepeatBehavior="Forever">
                     <DoubleAnimation Storyboard.TargetName="GradientStop1" Storyboard.TargetProperty="Offset"
@@ -654,7 +643,7 @@
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
-    </FrameworkElement.Triggers>
+    </Window.Triggers>
     <WStyle:WindowTitle.TitleToolbar>
         <StackPanel Orientation="Horizontal" Height="30">
             <TextBlock Margin="5,5,0,0" Height="30">

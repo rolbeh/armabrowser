@@ -13,16 +13,17 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
-using ArmaBrowser.Data.Intf;
 using ArmaBrowser.Logic;
 using RestSharp;
+using RestSharp.Deserializers;
+using RestSharp.Serializers;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
     class AddonWebApi : IAddonWebApi
     {
         const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        //const string BaseUrl = @"http://armabrowser.org/api/";
+        //const string BaseUrl = @"http://armabrowser.org/api/2/";
 
         private RestClient _client;
         private readonly Guid _installationsId;
@@ -94,7 +95,7 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             var request = new RestRequest("/Addons", Method.POST).htua();
 
-            var restItems = addons.Select(a => new RestAddon()
+            var restItems = addons.Where(a => a.IsInstalled).Select(a => new RestAddon()
             {
                 DisplayText = a.DisplayText,
                 ModName = a.ModName,
@@ -118,24 +119,29 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         }
 
-        public object[] GetAddonInfos(params string[] addonHashs)
+        public IEnumerable<RestAddonInfoResult> GetAddonInfos(params string[] addonKeyNames)
         {
             try
             {
-                var request = new RestRequest("/AddonInfos", Method.GET).htua(_offset);
+                var request = new RestRequest("/Addons/AddonInfo", Method.POST).htua(_offset);
 
-                request.AddJsonBody(addonHashs);
+                request.AddJsonBody(addonKeyNames);
 
                 var restResult = RestClient.Execute(request);
 
                 if (restResult.StatusCode == HttpStatusCode.OK)
-                    return new object[] {restResult.Content};
+                {
+                    var j = new JsonDeserializer();
+                    var o = j.Deserialize<List<RestAddonInfoResult>>(restResult);
+
+                    return o;
+                };
             }
             catch (Exception exception)
             {
                 Debug.WriteLine(exception);
             }
-            return new object[0];
+            return new RestAddonInfoResult[0];
         }
         
     }

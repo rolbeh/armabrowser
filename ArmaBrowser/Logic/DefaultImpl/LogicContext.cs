@@ -3,6 +3,7 @@ using ArmaBrowser.Data.DefaultImpl;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using ArmaBrowser.Data;
+using ArmaBrowser.Data.DefaultImpl.Rest;
 
 namespace ArmaBrowser.Logic
 {
@@ -20,7 +22,7 @@ namespace ArmaBrowser.Logic
 
         private readonly Data.IArma3DataRepository _defaultDataRepository;
         private ObservableCollection<IPEndPoint> _favoritServerEndPoints;
-        private ObservableCollection<IServerItem> _serverItems;
+        private readonly ObservableCollection<IServerItem> _serverItems = new ObservableCollection<IServerItem>();
         private ObservableCollection<IAddon> _addons;
         private ServerRepositorySteam _defaultServerRepository;
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
@@ -45,11 +47,6 @@ namespace ArmaBrowser.Logic
         {
             get
             {
-                if (_serverItems == null)
-                {
-                    _serverItems = new ObservableCollection<IServerItem>();
-                }
-
                 return _serverItems;
             }
         }
@@ -96,6 +93,10 @@ namespace ArmaBrowser.Logic
             }
         }
 
+        public event EventHandler<string> LiveAction;
+
+        #endregion Properties
+
         public void LookForArmaPath()
         {
             _armaPath = _defaultDataRepository.GetArma3Folder();
@@ -103,10 +104,6 @@ namespace ArmaBrowser.Logic
             _armaVersion = null;
             OnPropertyChanged("ArmaVersion");
         }
-
-        public event EventHandler<string> LiveAction;
-
-        #endregion Properties
 
         class _comp : System.Collections.Generic.IEqualityComparer<object>
         {
@@ -165,13 +162,13 @@ namespace ArmaBrowser.Logic
                 return;
             }
 
-             RefreshServerInfoAsync(recently)
-                    .ContinueWith(t =>
-                    {
-                        foreach (var recentlyItem in recently)
-                            dest.Add(recentlyItem);
+            RefreshServerInfoAsync(recently)
+                   .ContinueWith(t =>
+                   {
+                       foreach (var recentlyItem in recently)
+                           dest.Add(recentlyItem);
 
-                    }, UiTask.TaskScheduler);
+                   }, UiTask.TaskScheduler);
 
 
             _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
@@ -218,7 +215,7 @@ namespace ArmaBrowser.Logic
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(LoadingServerList) { Name = "UDP"+(i+1), IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+                (new Thread(LoadingServerList) { Name = "UDP" + (i + 1), IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
@@ -228,7 +225,7 @@ namespace ArmaBrowser.Logic
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
         }
-         
+
         class LoadingServerListContext
         {
             public IEnumerable<Data.IServerVo> ips { get; set; }
@@ -239,6 +236,7 @@ namespace ArmaBrowser.Logic
 
         void LoadingServerList(object loadingServerListContext)
         {
+            var threadId = Thread.CurrentThread.ManagedThreadId;
             var state = (LoadingServerListContext)loadingServerListContext;
             foreach (var dataItem in state.ips)
             {
@@ -249,7 +247,7 @@ namespace ArmaBrowser.Logic
 
                 if (LiveAction != null)
                 {
-                    LiveAction(this, string.Format("{0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort))));
+                    LiveAction(this, string.Format("{2,3} {0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()), BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort)), threadId));
                 }
 
                 var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
@@ -337,7 +335,17 @@ namespace ArmaBrowser.Logic
 
         void AssignProperties(ServerItem item, Data.IServerVo vo)
         {
-            var keyWords = vo.Keywords.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToDictionary(s => s.Substring(0, 1), e => e.Substring(1));
+            var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);
+
+            foreach (var s in keyWordsSplited)
+            {
+                var k = s.Substring(0, 1);
+                if (!keyWords.ContainsKey(k))
+                {
+                    keyWords.Add(k, s.Substring(1));
+                }
+            }
 
             //serverItem1.Country = dataItem1.Country;
             item.Gamename = vo.Gamename;
@@ -369,18 +377,16 @@ namespace ArmaBrowser.Logic
                 if (_addons == null)
                 {
                     _addons = new ObservableCollection<IAddon>();
-                    var armaPath = Properties.Settings.Default.ArmaPath;
+                    
 
                     if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                     {
                         _addons.Add(new Addon
                         {
                             Name = "no Sign",
-#if DEBUG
-                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
-#else
+
                             DisplayText = string.Format("{0} ({1})", "DisplayText CannotActived", "Name"),
-#endif
+
                             ModName = "@modename",
                             Version = "000.00.0",
                             KeyNames = new[] { new AddonKey() { Name = "key" } }
@@ -389,39 +395,49 @@ namespace ArmaBrowser.Logic
                         _addons.Add(new Addon
                         {
                             Name = "new Sign",
-#if DEBUG
-                            DisplayText = string.Format("{0} ({1}) [{2}]", "new Sign", "new Sign", string.Join(",", new[] { "key" })),
-#else
+
                             DisplayText = string.Format("{0} ({1})", "DisplayText CanActived", "Name"),
-#endif
+
                             ModName = "@modename",
                             Version = "000.00.0",
-                            KeyNames = new[] { new AddonKey(){Name = "key" }},
+                            KeyNames = new[] { new AddonKey() { Name = "key" } },
                             CanActived = true
                         });
                     }
                     else
                     {
 
-                        ReloadAddons(armaPath);
-                        ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
-                                        System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar);
+                        ReloadAddons();
 
                     }
-                    if (Properties.Settings.Default.IsGatheringAddonInfosEnabled)
-                    {
-                        var test = new AddonWebApi();
-                        test.PostInstalledAddonsKeysAsync(_addons);   
-                    }
+
+                    IAddonWebApi addonWebApi = new AddonWebApi();
+                    addonWebApi.PostInstalledAddonsKeysAsync(_addons);
                 }
 
                 return _addons;
             }
         }
 
-        private void ReloadAddons(string path)
+        internal void ReloadAddons()
         {
+            if (_addons == null)
+                _addons = new ObservableCollection<IAddon>();
             
+            _addons.Clear();
+
+            var armaPath = Properties.Settings.Default.ArmaPath;
+
+            ReloadAddons(armaPath, true);
+            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+                            System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar, true);
+
+            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + @"\ArmaBrowser\Arma 3\Addons", false);
+        }
+
+        private void ReloadAddons(string path, bool isArmaDefaultPath)
+        {
+
             if (!string.IsNullOrEmpty(path))
             {
                 var items = _defaultDataRepository.GetInstalledAddons(path);
@@ -430,23 +446,23 @@ namespace ArmaBrowser.Logic
                     _addons.Add(new Addon
                     {
                         Name = item.Name,
-#if DEBUG
-                        DisplayText = string.Format("{0} ({1}) [{2}]", item.DisplayText, item.Name, string.Join(",",item.KeyNames)),
-#else
+
                         DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
-#endif
+                        Path = item.Path,
                         ModName = item.ModName,
                         Version = item.Version,
-                        KeyNames = item.KeyNames
+                        KeyNames = item.KeyNames,
+                        IsInstalled = true,
+                        IsArmaDefaultPath = isArmaDefaultPath
                     });
                 }
             }
         }
 
 
-        public void Open(IServerItem serverItem, IAddon[] addon, bool runAsAdmin = false)
+        public void Open(IServerItem serverItem, IAddon[] addons, bool runAsAdmin = false)
         {
-            var addonArgs = string.Format(" -mod={0}", string.Join(";", addon.Select(i => i.Name).ToArray()));
+            var addonArgs = string.Format(" -mod={0}", string.Join(";", addons.Select(i => i.CommandlinePath).ToArray()));
 
             var serverArgs = serverItem != null ? string.Format(" -connect={0} -port={1}", serverItem.Host, serverItem.Port) : string.Empty;
             var path = Properties.Settings.Default.ArmaPath;
@@ -484,7 +500,7 @@ namespace ArmaBrowser.Logic
         void ps_Exited(object sender, EventArgs e)
         {
             //Todo Move to ViewModel Code
-            var t =UiTask.Run(() =>
+            var t = UiTask.Run(() =>
             {
                 Application.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
                 Application.Current.MainWindow.Activate();
@@ -521,12 +537,12 @@ namespace ArmaBrowser.Logic
             return result.ToArray();
         }
 
-        public async Task<object[]> GetAddonInfosAsync(params string[] addonSignaturesHashes)
+        public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
         {
             return await Task.Run(() =>
             {
                 var webapi = new AddonWebApi();
-                return webapi.GetAddonInfos(addonSignaturesHashes);
+                return webapi.GetAddonInfos(addonKeynames);
             });
         }
     }

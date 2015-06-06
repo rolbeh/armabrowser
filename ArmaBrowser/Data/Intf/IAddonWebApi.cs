@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ArmaBrowser.Logic;
 
-namespace ArmaBrowser.Data.Intf
+namespace ArmaBrowser.Data
 {
     interface IAddonWebApi
     {

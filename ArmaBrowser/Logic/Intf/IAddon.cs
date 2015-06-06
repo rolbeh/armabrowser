@@ -13,9 +13,15 @@ namespace ArmaBrowser.Logic
         string ModName { get; }
         string DisplayText { get; }
         string Version { get; }
+        string Path { get; }
         bool IsActive { get; set; }
         bool CanActived { get; set; }
         long ActivationOrder { get;}
         IEnumerable<AddonKey> KeyNames { get; }
+        bool IsInstalled { get; }
+        IEnumerable<Uri> DownlandUris { get; }
+        bool IsInstallable { get; }
+        bool IsArmaDefaultPath { get; }
+        string CommandlinePath { get; }
     }
 }

@@ -166,39 +166,45 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                 // reading bisign files
                 var addonFileFolder = Path.Combine(addonFolder, "addons");
-                var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
-                var keys = new List<AddonKey>(200);
-                var sb = new StringBuilder();
-                foreach (var bisignPath in bisignPaths)
+                if (Directory.Exists(addonFileFolder))
                 {
-                    if (File.Exists(bisignPath))
+                    var keys = new List<AddonKey>(200);
+                    var sb = new StringBuilder();
+                    var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
+                    foreach (var bisignPath in bisignPaths)
                     {
-                        try
+                        if (File.Exists(bisignPath))
                         {
-                            using (var bisignStream = new FileStream(bisignPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 10))
-                            using (var br = new BinaryReader(bisignStream, Encoding.ASCII, false))
+                            try
                             {
-                                sb.Clear();
-                                while (bisignStream.Position < bisignStream.Length && br.PeekChar() > 0)
+                                using (
+                                    var bisignStream = new FileStream(bisignPath, FileMode.Open, FileAccess.Read,
+                                        FileShare.ReadWrite, 10))
+                                using (var br = new BinaryReader(bisignStream, Encoding.ASCII, false))
                                 {
-                                    sb.Append(br.ReadChar());
+                                    sb.Clear();
+                                    while (bisignStream.Position < bisignStream.Length && br.PeekChar() > 0)
+                                    {
+                                        sb.Append(br.ReadChar());
+                                    }
+
+                                    var keyLen = br.ReadInt32();
+                                    var bytes = br.ReadBytes(keyLen);
+
+                                    keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
+                                    break;
                                 }
-
-                                var keyLen = br.ReadInt32();
-                                var bytes = br.ReadBytes(keyLen);
-
-                                keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
-                                break;
+                            }
+                            catch
+                            {
+                                // ignore all erros
                             }
                         }
-                        catch
-                        {
-                            // ignore all erros
-                        }
                     }
+                    if (keys.Count > 0)
+                        item.KeyNames = keys.Distinct().ToArray();
                 }
-                if (keys.Count > 0)
-                    item.KeyNames = keys.Distinct().ToArray();
+
 
                 //var addonKeyFolder = addonFolder; // Path.Combine(addonFolder, "keys");
                 //if (Directory.Exists(addonKeyFolder))

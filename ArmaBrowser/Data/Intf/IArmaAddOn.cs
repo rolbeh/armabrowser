@@ -12,6 +12,7 @@ namespace ArmaBrowser.Data
         string DisplayText { get; }
         string Version { get; }
         IEnumerable<AddonKey> KeyNames { get; }
+        string Path { get; }
     }
 
     class AddonKey

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -43,10 +44,6 @@ namespace ArmaBrowser
             }
 
             InitializeComponent();
-
-            InfoOverlayGrid.Visibility = Properties.Settings.Default.DontShowGatheringAddonInfoAdvice
-                                            ? Visibility.Collapsed
-                                            : Visibility.Visible;
 
             AutoJoinView.Visibility = Visibility.Collapsed;
             TabListBox.SelectedIndex = 0;
@@ -228,11 +225,6 @@ namespace ArmaBrowser
             CancelJoiningServer();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            InfoOverlayGrid.Visibility = Visibility.Collapsed;
-        }
-
         private void OpenInstallFolder_OnClick(object sender, RoutedEventArgs e)
         {
             if (System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath))
@@ -243,6 +235,11 @@ namespace ArmaBrowser
 
         private void PreferencesContextMenuButton_OnClick(object sender, RoutedEventArgs e)
         {
+            var btn = (Button) sender;
+            PreferencesContextMenu.PlacementTarget = btn;
+            PreferencesContextMenu.Placement = PlacementMode.Bottom;
+            ContextMenuService.SetPlacement(btn, PlacementMode.Bottom);
+
             PreferencesContextMenu.IsOpen = true;
         }
     }

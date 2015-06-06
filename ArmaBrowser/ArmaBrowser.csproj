@@ -134,6 +134,8 @@
     <Compile Include="Data\DefaultImpl\ArmaBrowserServerJsonRepository.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddon.cs" />
+    <Compile Include="Data\DefaultImpl\Rest\RestAddonInfoResult.cs" />
+    <Compile Include="Data\DefaultImpl\Rest\RestAddonKey.cs" />
     <Compile Include="Data\DefaultImpl\ServerItem.cs" />
     <Compile Include="Data\DefaultImpl\ServerRepositorySteam.cs" />
     <Compile Include="Data\DefaultImpl\SteamConfigReader.cs" />
