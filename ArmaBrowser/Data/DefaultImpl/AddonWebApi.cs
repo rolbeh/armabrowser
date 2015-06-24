@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
+using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
 using RestSharp;
 using RestSharp.Deserializers;
@@ -23,7 +24,7 @@ namespace ArmaBrowser.Data.DefaultImpl
     class AddonWebApi : IAddonWebApi
     {
         const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        //const string BaseUrl = @"http://armabrowser.org/api/2/";
+        //const string BaseUrl = @"http://armabrowser.org/api/3/";
 
         private RestClient _client;
         private readonly Guid _installationsId;
@@ -143,7 +144,40 @@ namespace ArmaBrowser.Data.DefaultImpl
             }
             return new RestAddonInfoResult[0];
         }
-        
+
+        public void AddAddonDownloadUri(IAddon addon, string uri)
+        {
+            try
+            {
+                var key = addon.KeyNames.FirstOrDefault();
+                RestAddonUri item = null;
+                if (key != null)
+                {
+                    item = new RestAddonUri
+                    {
+                        Hash = key.PubK.ToBase64().ComputeSha1Hash(),
+                        Uri = uri
+                    };
+                }
+
+
+                var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
+
+                request.AddJsonBody(item);
+
+                var restResult = RestClient.Execute(request);
+
+                if (restResult.StatusCode == HttpStatusCode.OK)
+                {
+                    return;
+                };
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
+        }
+
     }
 
     static class RestRequestExtension
@@ -216,5 +250,16 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             return request;
         }
+
+        internal static string ComputeSha1Hash(this string s)
+        {
+            byte[] hashValue = Encoding.ASCII.GetBytes(s);
+            using (var hashAlg = HashAlgorithm.Create(@"SHA1"))
+            {
+                hashValue = hashAlg.ComputeHash(hashValue);
+            }
+            return Encoding.ASCII.GetString(hashValue);
+        }
+
     }
 }

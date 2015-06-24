@@ -28,11 +28,6 @@ namespace ArmaBrowser.Logic
         /// Name der Mission
         /// </summary>
         string Mission { get; }
-
-        /// <summary>
-        /// Länder Code e.g.'DE'
-        /// </summary>
-        //string Country { get; }
         
         /// <summary>
         /// IP - Adresse

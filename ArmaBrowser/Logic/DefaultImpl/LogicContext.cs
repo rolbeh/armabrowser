@@ -432,7 +432,7 @@ namespace ArmaBrowser.Logic
             ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
                             System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar, true);
 
-            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + @"\ArmaBrowser\Arma 3\Addons", false);
+            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar + "Addons", false);
         }
 
         private void ReloadAddons(string path, bool isArmaDefaultPath)
@@ -462,14 +462,14 @@ namespace ArmaBrowser.Logic
 
         public void Open(IServerItem serverItem, IAddon[] addons, bool runAsAdmin = false)
         {
-            var addonArgs = string.Format(" -mod={0}", string.Join(";", addons.Select(i => i.CommandlinePath).ToArray()));
+            var addonArgs = string.Format(" \"-mod={0}\"", string.Join(";", addons.Select(i => i.CommandlinePath).ToArray()));
 
             var serverArgs = serverItem != null ? string.Format(" -connect={0} -port={1}", serverItem.Host, serverItem.Port) : string.Empty;
             var path = Properties.Settings.Default.ArmaPath;
             var psInfo = new System.Diagnostics.ProcessStartInfo
             {
-                FileName = Path.Combine(path, "Arma3.exe"),
-                Arguments = " -noSplash -noPause -world=empty " + addonArgs + serverArgs,// -malloc=system
+                FileName = Path.Combine(path, "arma3battleye.exe"),
+                Arguments = " 2 1 1 -skipintro -noSplash -noPause -world=empty " + addonArgs + serverArgs,// -malloc=system
                 WorkingDirectory = path,
                 UseShellExecute = true,
 
@@ -543,6 +543,15 @@ namespace ArmaBrowser.Logic
             {
                 var webapi = new AddonWebApi();
                 return webapi.GetAddonInfos(addonKeynames);
+            });
+        }
+
+        internal void AddAddonUri(IAddon addon, string uri)
+        {
+            Task.Run(() =>
+            {
+                var webapi = new AddonWebApi();
+                webapi.AddAddonDownloadUri(addon,uri);
             });
         }
     }

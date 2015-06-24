@@ -225,14 +225,6 @@ namespace ArmaBrowser
             CancelJoiningServer();
         }
 
-        private void OpenInstallFolder_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (System.IO.Directory.Exists(Properties.Settings.Default.ArmaPath))
-                System.Diagnostics.Process.Start(Properties.Settings.Default.ArmaPath);
-            else
-                MessageBox.Show("Arma 3 installation not found");
-        }
-
         private void PreferencesContextMenuButton_OnClick(object sender, RoutedEventArgs e)
         {
             var btn = (Button) sender;

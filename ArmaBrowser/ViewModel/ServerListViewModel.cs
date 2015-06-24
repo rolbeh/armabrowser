@@ -477,6 +477,13 @@ namespace ArmaBrowser.ViewModel
 
         }
 
+        public void AddAddonUri()
+        {
+            IAddon addon = null;
+            string uri = null;
+            _context.AddAddonUri(addon, uri);
+        }
+
         public string ArmaPath
         {
             get
@@ -648,6 +655,32 @@ namespace ArmaBrowser.ViewModel
         {
             _context.ReloadAddons();
         }
+
+        #region AddonFolder
+
+        public string ArmaBrowserAddonFolder
+        {
+            get
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + 
+                    System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" +
+                    System.IO.Path.DirectorySeparatorChar + "Addons" + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+        public string Arma3UserAddonFolder
+        {
+            get
+            {
+                return
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+                        Environment.SpecialFolderOption.DoNotVerify) +
+                    System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+
+        #endregion
     }
 
     class LogEntry
