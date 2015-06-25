@@ -91,5 +91,7 @@ namespace ArmaBrowser.Logic
                 return IsArmaDefaultPath ? Name : Path;
             }
         }
+
+        public bool IsEasyInstallable { get; set; }
     }
 }

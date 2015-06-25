@@ -548,11 +548,35 @@ namespace ArmaBrowser.Logic
 
         internal void AddAddonUri(IAddon addon, string uri)
         {
+            //Task.Run(() =>
+            //{
+            //    var webapi = new AddonWebApi();
+            //    webapi.AddAddonDownloadUri(addon,uri);
+            //});
+        }
+
+        internal static void UploadAddon(IAddon addon)
+        {
             Task.Run(() =>
             {
                 var webapi = new AddonWebApi();
-                webapi.AddAddonDownloadUri(addon,uri);
+
+                var infos = webapi.GetAddonInfos(addon.KeyNames.Select(k => k.Hash).ToArray());
+                if (infos.Count() == 0 || infos.Any(a => a.easyinstall))
+                    return;
+
+                webapi.UploadAddon(addon);
             });
+        }
+
+        internal static void DownloadAddon(IAddon addon)
+        {
+            if (addon.IsEasyInstallable && addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash)))
+            {
+                var webapi = new AddonWebApi();
+                webapi.DownloadAddon(addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash);
+
+            }
         }
     }
 }

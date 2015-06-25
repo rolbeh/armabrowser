@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ArmaBrowser.Helper;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
@@ -191,7 +192,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                                     var keyLen = br.ReadInt32();
                                     var bytes = br.ReadBytes(keyLen);
 
-                                    keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
+                                    keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes, Hash = bytes.ToBase64().ComputeSha1Hash()});
                                     break;
                                 }
                             }

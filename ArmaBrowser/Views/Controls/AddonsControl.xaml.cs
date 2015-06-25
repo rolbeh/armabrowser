@@ -16,7 +16,8 @@ namespace ArmaBrowser.Views.Controls
         {
             InitializeComponent();
             AddonsListBox.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("DisplayText", System.ComponentModel.ListSortDirection.Ascending));
-            AddonsListBox.Items.GroupDescriptions.Add(new PropertyGroupDescription("IsInstalled"));
+            //AddonsListBox.Items.GroupDescriptions.Add(new PropertyGroupDescription("IsInstalled"));
+            AddonsListBox.Items.GroupDescriptions.Add(new PropertyGroupDescription("IsEasyInstallable"));
         }
 
         private void ListBox_MouseUp(object sender, MouseButtonEventArgs e)

@@ -6,6 +6,7 @@
              xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              xmlns:properties="clr-namespace:ArmaBrowser.Properties"
+             xmlns:armaBrowser="clr-namespace:ArmaBrowser"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
 
@@ -29,10 +30,10 @@
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" >
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Name}" Value="True">
+                                            <DataTrigger Binding="{Binding Name}" Value="False">
                                                 <Setter Property="Text" Value="installed"/>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding Name}" Value="False">
+                                            <DataTrigger Binding="{Binding Name}" Value="True">
                                                 <Setter Property="Text" Value="can install"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -87,19 +88,32 @@
                             </FrameworkElement.Style>
                         </TextBlock>
 
-                        <!--<Image Grid.Column="3" Source="/Img/DownloadAddon.png" Stretch="None"  
-                               >
+                        <!--  Command="armaBrowser:ArmaBrowserCommands.UploadAddon"-->
+                        <Button Grid.Column="3" CommandParameter="{Binding Path=.}" 
+                                BorderThickness="0" Background="Transparent" >
                             <FrameworkElement.Style>
-                                <Style TargetType="Image">
-                                    <Setter Property="OpacityMask" Value="#BA000000"/>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                    <Setter Property="Command" Value="armaBrowser:ArmaBrowserCommands.UploadAddon"/>
                                     <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="OpacityMask" Value="#FF000000"/>
-                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsEasyInstallable}" Value="True">
+                                            <Setter Property="Command" Value="armaBrowser:ArmaBrowserCommands.EasyInstallAddon"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </FrameworkElement.Style>
-                        </Image>-->
+                            <Image Source="/Img/DownloadAddon.png" Stretch="None">
+                                <FrameworkElement.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="OpacityMask" Value="#BA000000"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="OpacityMask" Value="#FF000000"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </FrameworkElement.Style>
+                            </Image>
+                        </Button>
 
                     </Grid>
                 </DataTemplate>

@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using ArmaBrowser.Data.DefaultImpl.Helper;
+using ArmaBrowser.Logic;
 
 namespace ArmaBrowser
 {
@@ -15,6 +19,9 @@ namespace ArmaBrowser
 
         public static ICommand OpenAddonFolder { get; private set; }
 
+        public static ICommand UploadAddon { get; private set; }
+        public static ICommand EasyInstallAddon { get; private set; }
+
         static ArmaBrowserCommands()
         {
             
@@ -22,10 +29,50 @@ namespace ArmaBrowser
             MarkAsFavorite = new RoutedUICommand("Favorite", "MarkAsFavorite", typeof(ArmaBrowserCommands));
             OpenAddonFolder = new RoutedUICommand("Open", "OpenAddonFolder", typeof(ArmaBrowserCommands));
 
-            CommandManager.RegisterClassCommandBinding(typeof(UIElement), new CommandBinding(ArmaBrowserCommands.MarkAsFavorite, MarkAsFavorite_OnExecuted));
+            UploadAddon = new RoutedUICommand("Upload", "UploadAddon", typeof(ArmaBrowserCommands));
+            EasyInstallAddon = new RoutedUICommand("Install", "EasyInstallAddon", typeof(ArmaBrowserCommands));
+
+            CommandManager.RegisterClassCommandBinding(typeof(UIElement), new CommandBinding(MarkAsFavorite, MarkAsFavorite_OnExecuted));
             CommandManager.RegisterClassCommandBinding(typeof(FrameworkElement), new CommandBinding(RefreshAddonsCommand, RefreshAddonsCommand_OnExecuted));
             CommandManager.RegisterClassCommandBinding(typeof(FrameworkElement), new CommandBinding(OpenAddonFolder, OpenAddonFolder_OnExecuted));
 
+            CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(UploadAddon, UploadAddon_OnExecuted));
+            CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(EasyInstallAddon, EasyInstallAddon_OnExecuted, EasyInstallAddon_CanExecute));
+
+        }
+
+        private static void EasyInstallAddon_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            var addon = e.Parameter as IAddon;
+            e.CanExecute = addon != null && addon.IsEasyInstallable &&
+                            addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash));
+        }
+
+        private static void EasyInstallAddon_OnExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            var addon = e.Parameter as IAddon;
+            if (addon != null)
+            {
+                
+                LogicContext.DownloadAddon(addon);
+            }
+        }
+
+        private static void UploadAddon_OnExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            var addon = e.Parameter as IAddon;
+            if (addon != null)
+            {
+                if (PathHelper.CalculateFolderSize(addon.Path) < (1024*1024*20))
+                {
+                    LogicContext.UploadAddon(addon);
+                }
+                else
+                {
+                    MessageBox.Show(Application.Current.MainWindow, "At present, only addons with an installation size of 20 MB are allowed to upload.",
+                        "Addon is too big. ", MessageBoxButton.OK, MessageBoxImage.Stop);
+                }
+            }
         }
 
         private static void OpenAddonFolder_OnExecuted(object sender, ExecutedRoutedEventArgs e)

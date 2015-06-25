@@ -6,5 +6,7 @@
         public string name { get; set; }
         public string version { get; set; }
         public string uriref { get; set; }
+        public string hash { get; set; }
+        public bool easyinstall { get; set; }
     }
 }

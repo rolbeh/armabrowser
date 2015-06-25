@@ -39,7 +39,6 @@ namespace ArmaBrowser.ViewModel
 
         #endregion Fields
 
-
         #region Properties
 
         public Collection<LogEntry> ActionLog
@@ -168,10 +167,36 @@ namespace ArmaBrowser.ViewModel
 
         #endregion Properties
 
+        #region AddonFolder
+
+        public string ArmaBrowserAddonFolder
+        {
+            get
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+                    System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" +
+                    System.IO.Path.DirectorySeparatorChar + "Addons" + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+        public string Arma3UserAddonFolder
+        {
+            get
+            {
+                return
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+                        Environment.SpecialFolderOption.DoNotVerify) +
+                    System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+
+        #endregion
+
         public ServerListViewModel()
         {
-            //if (Properties.Settings.Default.Hosts == null)
-            //    Properties.Settings.Default.Hosts = new Properties.HostConfigCollection();
+            if (!System.IO.Directory.Exists(ArmaBrowserAddonFolder))
+                System.IO.Directory.CreateDirectory(ArmaBrowserAddonFolder);
 
 
             UiTask.Initialize();
@@ -462,9 +487,10 @@ namespace ArmaBrowser.ViewModel
                                 Name = a.name,
                                 ModName = a.name,
                                 DisplayText = a.name,
-                                KeyNames = new[] { new Data.AddonKey { Name = a.keytag } },
-                                DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
-                                IsInstalled = false
+                                KeyNames = new[] { new Data.AddonKey { Name = a.keytag, Hash = a.hash} },
+                                //DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
+                                IsInstalled = false,
+                                IsEasyInstallable = addonInfo.easyinstall
                             });
                         }, addonInfo);
                 }
@@ -656,31 +682,6 @@ namespace ArmaBrowser.ViewModel
             _context.ReloadAddons();
         }
 
-        #region AddonFolder
-
-        public string ArmaBrowserAddonFolder
-        {
-            get
-            {
-                return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + 
-                    System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" +
-                    System.IO.Path.DirectorySeparatorChar + "Addons" + System.IO.Path.DirectorySeparatorChar;
-            }
-        }
-
-        public string Arma3UserAddonFolder
-        {
-            get
-            {
-                return
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
-                        Environment.SpecialFolderOption.DoNotVerify) +
-                    System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar;
-            }
-        }
-
-
-        #endregion
     }
 
     class LogEntry
@@ -688,4 +689,5 @@ namespace ArmaBrowser.ViewModel
         public string Text { get; set; }
         public DateTime Time { get; set; }
     }
+
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ArmaBrowser.Data.DefaultImpl;
+using ArmaBrowser.Helper;
 
 namespace ArmaBrowser.Data
 {
@@ -20,10 +22,12 @@ namespace ArmaBrowser.Data
         public AddonKey()
         {
             PubK = new byte[0];
+            Hash = PubK.ToBase64().ComputeSha1Hash();
         }
 
         public string Name { get; set; }
         public byte[] PubK { get; set; }
+        public string Hash { get; set; }
 
         public override string ToString()
         {

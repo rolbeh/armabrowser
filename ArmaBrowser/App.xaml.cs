@@ -38,6 +38,7 @@ namespace ArmaBrowser
                 || ArmaBrowser.Properties.Settings.Default.Id.Length != 32)
             {
                 ArmaBrowser.Properties.Settings.Default.Id = Guid.NewGuid().ToByteArray().ToHexString();
+                ArmaBrowser.Properties.Settings.Default.Save();
             }
 
             if (!ArmaBrowser.Properties.Settings.Default.Upgraded)
