@@ -202,29 +202,5 @@ namespace ArmaBrowser.Properties {
                 this["Id"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool IsGatheringAddonInfosEnabled {
-            get {
-                return ((bool)(this["IsGatheringAddonInfosEnabled"]));
-            }
-            set {
-                this["IsGatheringAddonInfosEnabled"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DontShowGatheringAddonInfoAdvice {
-            get {
-                return ((bool)(this["DontShowGatheringAddonInfoAdvice"]));
-            }
-            set {
-                this["DontShowGatheringAddonInfoAdvice"] = value;
-            }
-        }
     }
 }

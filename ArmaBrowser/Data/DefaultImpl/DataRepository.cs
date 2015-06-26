@@ -51,37 +51,37 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             try
             {
-                Helper.Logger.Default.Push(@"SteamPath - ");
+                Logger.Default.Push(@"SteamPath - ");
                 var steamFolder = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", "");
                 if (steamFolder != null)
                 {
-                    Helper.Logger.Default.PushLine(@"found");
+                    Logger.Default.PushLine(@"found");
 
                     // Test Standartinstallion
                     {
-                        Helper.Logger.Default.Push(@"Arma 3 in default location - ");
+                        Logger.Default.Push(@"Arma 3 in default location - ");
                         var testPath = Path.Combine(steamFolder.ToString(), "SteamApps", "common", "ARMA 3", "arma3.exe");
                         if (File.Exists(testPath))
                         {
-                            Helper.Logger.Default.PushLine(@"found");
+                            Logger.Default.PushLine(@"found");
                             return Path.GetDirectoryName(testPath);
                         }
                         else
-                            Helper.Logger.Default.PushLine(@"not found");
+                            Logger.Default.PushLine(@"not found");
                     }
 
 
 
                     // Multi-Locations 
-                    Helper.Logger.Default.Push(@"steam library config - ");
+                    Logger.Default.Push(@"steam library config - ");
                     var libraryConfigPath = System.IO.Path.Combine(steamFolder.ToString(), "SteamApps", "libraryfolders.vdf");
                     if (File.Exists(libraryConfigPath))
                     {
-                        Helper.Logger.Default.PushLine(@"found");
+                        Logger.Default.PushLine(@"found");
                         using (var reader = new SteamConfigReader(libraryConfigPath))
                         {
                             var xml = reader.ToXml();
-                            Helper.Logger.Default.Push(@"Arma 3 in library location - ");
+                            Logger.Default.Push(@"Arma 3 in library location - ");
                             foreach (var item in xml.DocumentElement.ChildNodes.Cast<XmlElement>())
                             {
                                 var valueNode = item.ChildNodes.OfType<XmlText>().FirstOrDefault();
@@ -92,18 +92,18 @@ namespace ArmaBrowser.Data.DefaultImpl
                                     var testPath = Path.Combine(folder, "SteamApps", "common", "ARMA 3", "arma3.exe");
                                     if (File.Exists(testPath))
                                     {
-                                        Helper.Logger.Default.PushLine(@"found");
+                                        Logger.Default.PushLine(@"found");
                                         return Path.GetDirectoryName(testPath);
                                     }
                                 }
                             }
-                            Helper.Logger.Default.PushLine(@"not found");
+                            Logger.Default.PushLine(@"not found");
 
                         }
 
                     }
                     else
-                        Helper.Logger.Default.PushLine(@"not found");
+                        Logger.Default.PushLine(@"not found");
 
                     //var steamPath = System.IO.Path.Combine(steamFolder.ToString(), "config", "config.vdf");
                     //Logger.Default.Push(@"Steam config file "+ steamPath + " - ");
@@ -120,12 +120,12 @@ namespace ArmaBrowser.Data.DefaultImpl
                     //}
                 }
                 else
-                    Helper.Logger.Default.PushLine(@"not found");
+                    Logger.Default.PushLine(@"not found");
                 return "";
             }
             catch (Exception ex)
             {
-                Helper.Logger.Default.PushLine(@":-( " + ex.GetType().Name);
+                Logger.Default.PushLine(@":-( " + ex.GetType().Name);
             }
             return "";
         }
@@ -166,39 +166,45 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                 // reading bisign files
                 var addonFileFolder = Path.Combine(addonFolder, "addons");
-                var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
-                var keys = new List<AddonKey>(200);
-                var sb = new StringBuilder();
-                foreach (var bisignPath in bisignPaths)
+                if (Directory.Exists(addonFileFolder))
                 {
-                    if (File.Exists(bisignPath))
+                    var keys = new List<AddonKey>(200);
+                    var sb = new StringBuilder();
+                    var bisignPaths = Directory.EnumerateFiles(addonFileFolder, "*.bisign");
+                    foreach (var bisignPath in bisignPaths)
                     {
-                        try
+                        if (File.Exists(bisignPath))
                         {
-                            using (var bisignStream = new FileStream(bisignPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 10))
-                            using (var br = new BinaryReader(bisignStream, Encoding.ASCII, false))
+                            try
                             {
-                                sb.Clear();
-                                while (bisignStream.Position < bisignStream.Length && br.PeekChar() > 0)
+                                using (
+                                    var bisignStream = new FileStream(bisignPath, FileMode.Open, FileAccess.Read,
+                                        FileShare.ReadWrite, 10))
+                                using (var br = new BinaryReader(bisignStream, Encoding.ASCII, false))
                                 {
-                                    sb.Append(br.ReadChar());
+                                    sb.Clear();
+                                    while (bisignStream.Position < bisignStream.Length && br.PeekChar() > 0)
+                                    {
+                                        sb.Append(br.ReadChar());
+                                    }
+
+                                    var keyLen = br.ReadInt32();
+                                    var bytes = br.ReadBytes(keyLen);
+
+                                    keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
+                                    break;
                                 }
-
-                                var keyLen = br.ReadInt32();
-                                var bytes = br.ReadBytes(keyLen);
-
-                                keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes });
-                                break;
+                            }
+                            catch
+                            {
+                                // ignore all erros
                             }
                         }
-                        catch
-                        {
-                            // ignore all erros
-                        }
                     }
+                    if (keys.Count > 0)
+                        item.KeyNames = keys.Distinct().ToArray();
                 }
-                if (keys.Count > 0)
-                    item.KeyNames = keys.Distinct().ToArray();
+
 
                 //var addonKeyFolder = addonFolder; // Path.Combine(addonFolder, "keys");
                 //if (Directory.Exists(addonKeyFolder))

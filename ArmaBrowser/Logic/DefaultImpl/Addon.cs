@@ -1,12 +1,9 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ArmaBrowser.Data;
 
-namespace ArmaBrowser.Logic.DefaultImpl
+namespace ArmaBrowser.Logic
 {
     class Addon : LogicModelBase, IAddon
     {
@@ -14,6 +11,8 @@ namespace ArmaBrowser.Logic.DefaultImpl
         private bool _isActive;
         private long _activationOrder;
         private bool _canActived;
+        private IEnumerable<Uri> _downlandUris;
+        private IEnumerable<AddonKey> _keyNames;
 
 
         public string Name { get; internal set; }
@@ -24,16 +23,15 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         public string Version { get; internal set; }
 
+        public string Path { get; set; }
+
         public bool IsActive
         {
             get { return _isActive; }
             set 
             { 
                 _isActive = value;
-                if (IsActive == true)
-                    _activationOrder = DateTime.Now.Ticks;
-                else
-                    _activationOrder = 0;
+                _activationOrder = IsActive ? DateTime.Now.Ticks : 0;
                 OnPropertyChanged("ActivationOrder");
                 OnPropertyChanged();
             }
@@ -41,7 +39,7 @@ namespace ArmaBrowser.Logic.DefaultImpl
 
         public bool CanActived
         {
-            get { return _canActived; }
+            get { return _canActived && IsInstalled; }
             set
             {
                 if (_canActived == value) return;
@@ -58,6 +56,40 @@ namespace ArmaBrowser.Logic.DefaultImpl
             }
         }
 
-        public IEnumerable<AddonKey> KeyNames { get; internal set; }
+        public IEnumerable<AddonKey> KeyNames
+        {
+            get { return _keyNames ?? (_keyNames = new AddonKey[0]); }
+            internal set { _keyNames = value; }
+        }
+
+        public bool IsInstalled { get; internal set; }
+
+        public IEnumerable<Uri> DownlandUris
+        {
+            get { return _downlandUris ?? (_downlandUris = new Uri[0]); }
+            internal set
+            {
+                if (Equals(value, _downlandUris)) return;
+                _downlandUris = value;
+                OnPropertyChanged("IsInstallable");
+                OnPropertyChanged();
+                
+            }
+        }
+
+        public bool IsInstallable
+        {
+            get { return _downlandUris != null && _downlandUris.Any(); }
+        }
+
+        public bool IsArmaDefaultPath { get; set; }
+
+        public string CommandlinePath
+        {
+            get
+            {
+                return IsArmaDefaultPath ? Name : Path;
+            }
+        }
     }
 }

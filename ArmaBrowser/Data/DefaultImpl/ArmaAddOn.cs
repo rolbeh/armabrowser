@@ -18,7 +18,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         public string Version { get; internal set; }
 
-        public string Path { get; set; }
+        public string Path { get; internal set; }
 
         public string ModName { get; set; }
 

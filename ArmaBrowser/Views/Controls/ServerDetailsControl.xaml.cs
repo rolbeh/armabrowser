@@ -13,24 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace ArmaBrowser.Views.View
+namespace ArmaBrowser.Views.Controls
 {
     /// <summary>
-    /// Interaktionslogik für AutoJoinControl.xaml
+    /// Interaktionslogik für ServerDetailsControl.xaml
     /// </summary>
-    public partial class AutoJoinControl : UserControl
+    public partial class ServerDetailsControl : UserControl
     {
-        public AutoJoinControl()
+        public ServerDetailsControl()
         {
             InitializeComponent();
-        }
-
-        public event RoutedEventHandler Canceled;
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (Canceled != null)
-                Canceled(this, new RoutedEventArgs());
         }
     }
 }

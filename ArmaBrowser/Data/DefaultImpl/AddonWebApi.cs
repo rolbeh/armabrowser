@@ -13,20 +13,23 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
-using ArmaBrowser.Data.Intf;
+using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
 using RestSharp;
+using RestSharp.Deserializers;
+using RestSharp.Serializers;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
     class AddonWebApi : IAddonWebApi
     {
-        //const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        const string BaseUrl = @"http://armabrowser.org/api/";
-        
+        const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        //const string BaseUrl = @"http://armabrowser.org/api/3/";
+
         private RestClient _client;
         private readonly Guid _installationsId;
-        
+        private static TimeSpan _offset = new TimeSpan();
+
 
         public AddonWebApi()
         {
@@ -71,7 +74,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept", Value = "application/json", Type = ParameterType.HttpHeader });
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept-Language", Value = Thread.CurrentThread.CurrentUICulture.Name, Type = ParameterType.HttpHeader });
                     _client.AddDefaultParameter(new Parameter() { Name = "Accept-Encoding", Value = "gzip,deflate,text/plain", Type = ParameterType.HttpHeader });
-                    _client.AddDefaultParameter(new Parameter() { Name = "APPI", Value = Properties.Settings.Default.Id , Type = ParameterType.HttpHeader});
+                    _client.AddDefaultParameter(new Parameter() { Name = "APPI", Value = Properties.Settings.Default.Id, Type = ParameterType.HttpHeader });
 
                     var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
                     string ver = string.Empty;
@@ -93,13 +96,13 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             var request = new RestRequest("/Addons", Method.POST).htua();
 
-            var restItems = addons.Select(a => new RestAddon()
+            var restItems = addons.Where(a => a.IsInstalled).Select(a => new RestAddon()
             {
                 DisplayText = a.DisplayText,
                 ModName = a.ModName,
                 Name = a.Name,
                 Version = a.Version,
-                Keys = a.KeyNames.Select(k => new RestAddonKey() {Key = k.Name, PubK = k.PubK.ToBase64()}).ToArray()
+                Keys = a.KeyNames.Select(k => new RestAddonKey() { Key = k.Name, PubK = k.PubK.ToBase64() }).ToArray()
             }).ToArray();
 
             request.AddJsonBody(restItems);
@@ -108,27 +111,78 @@ namespace ArmaBrowser.Data.DefaultImpl
             if (queryResult.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var dateString = (string)queryResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase)).Value;
-                var offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
-                offset = TimeSpan.FromMinutes(Math.Truncate(offset.TotalMinutes));
-                request = request.htua(offset);
-
+                _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
+                _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
+                request = request.htua(_offset);
 
                 queryResult = _client.Execute(request);
             }
 
-            if (queryResult.StatusCode == HttpStatusCode.OK)
-            {
-                request = new RestRequest();
-            }
-            
         }
 
-        
+        public IEnumerable<RestAddonInfoResult> GetAddonInfos(params string[] addonKeyNames)
+        {
+            try
+            {
+                var request = new RestRequest("/Addons/AddonInfo", Method.POST).htua(_offset);
+
+                request.AddJsonBody(addonKeyNames);
+
+                var restResult = RestClient.Execute(request);
+
+                if (restResult.StatusCode == HttpStatusCode.OK)
+                {
+                    var j = new JsonDeserializer();
+                    var o = j.Deserialize<List<RestAddonInfoResult>>(restResult);
+
+                    return o;
+                };
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
+            return new RestAddonInfoResult[0];
+        }
+
+        public void AddAddonDownloadUri(IAddon addon, string uri)
+        {
+            try
+            {
+                var key = addon.KeyNames.FirstOrDefault();
+                RestAddonUri item = null;
+                if (key != null)
+                {
+                    item = new RestAddonUri
+                    {
+                        Hash = key.PubK.ToBase64().ComputeSha1Hash(),
+                        Uri = uri
+                    };
+                }
+
+
+                var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
+
+                request.AddJsonBody(item);
+
+                var restResult = RestClient.Execute(request);
+
+                if (restResult.StatusCode == HttpStatusCode.OK)
+                {
+                    return;
+                };
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
+        }
+
     }
 
     static class RestRequestExtension
     {
-        
+
         #region public key
 
         static readonly byte[] PubBlob = {0x6,0x2, 0x0,0x0, 0x0,0xA4, 0x0,0x0, 0x52,0x53, 0x41,0x31, 0x0,0x10, 0x0,0x0, 
@@ -196,5 +250,16 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             return request;
         }
+
+        internal static string ComputeSha1Hash(this string s)
+        {
+            byte[] hashValue = Encoding.ASCII.GetBytes(s);
+            using (var hashAlg = HashAlgorithm.Create(@"SHA1"))
+            {
+                hashValue = hashAlg.ComputeHash(hashValue);
+            }
+            return Encoding.ASCII.GetString(hashValue);
+        }
+
     }
 }

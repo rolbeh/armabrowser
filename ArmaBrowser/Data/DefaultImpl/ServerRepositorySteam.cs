@@ -178,7 +178,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             List<byte> qry = new List<byte>();
             qry.AddRange(startBytes);
-            qry.Add(Header);
+            qry.Add(Header);  
             qry.AddRange(Encoding.Default.GetBytes(qryAsString));
             qry.Add(0x00);
 
@@ -193,7 +193,8 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                     udp.AllowNatTraversal(true);
                     udp.Client.ReceiveTimeout = 300;
-
+                    udp.AllowNatTraversal(true);
+                    udp.Client.ReceiveTimeout = 300;
 
                     sw.Start();
                     udp.Send(qry.ToArray(), qry.Count);

@@ -1,0 +1,13 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Viewbox x:Key="PreferencesViewBoxIcon" >
+        <Canvas Width="32" Height="32" >
+            <Path Data="M4,12.8 L28.48,12.8" Canvas.Left="3.92" Stretch="Fill" Stroke="{DynamicResource IconForeground1Brush}" Canvas.Top="9" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeThickness="4" Width="24.16"/>
+            <Path Data="M4,12.8 L28.48,12.8" Canvas.Left="3.92" Stretch="Fill" Stroke="{DynamicResource IconForeground1Brush}" Canvas.Top="17" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeThickness="4" Width="24.16"/>
+            <Path Data="M4,12.8 L28.48,12.8" Canvas.Left="3.92" Stretch="Fill" Stroke="{DynamicResource IconForeground1Brush}" Canvas.Top="25" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeThickness="4" Width="24.16"/>
+        </Canvas>
+    </Viewbox>
+
+</ResourceDictionary>

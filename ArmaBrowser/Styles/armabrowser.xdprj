@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XDrawProject>
+  <FileVersion>1.0</FileVersion>
+  <ProjectName>armabrowser</ProjectName>
+  <DefaultExportFormat>Canvas</DefaultExportFormat>
+  <XAMLFilePath>armabrowser.xaml</XAMLFilePath>
+  <Drawings>
+    <Drawing Name="PreferencesIcon">
+      <ExportFormat>Canvas</ExportFormat>
+      <DrawingSize>64,64</DrawingSize>
+      <SaveDrawingSize>True</SaveDrawingSize>
+    </Drawing>
+  </Drawings>
+</XDrawProject>
