@@ -21,6 +21,20 @@ namespace ArmaBrowser
 #if DEBUG
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
 #endif
+            if (string.IsNullOrEmpty(ArmaBrowser.Properties.Settings.Default.Id)
+                || ArmaBrowser.Properties.Settings.Default.Id.Length != 32)
+            {
+                ArmaBrowser.Properties.Settings.Default.Id = Guid.NewGuid().ToByteArray().ToHexString();
+                ArmaBrowser.Properties.Settings.Default.Save();
+
+            }
+
+            if (!ArmaBrowser.Properties.Settings.Default.Upgraded)
+            {
+                ArmaBrowser.Properties.Settings.Default.Upgrade();
+                ArmaBrowser.Properties.Settings.Default.Upgraded = true;
+                ArmaBrowser.Properties.Settings.Default.Save();
+            }
         }
 
         
@@ -32,21 +46,6 @@ namespace ArmaBrowser
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-
-            if (string.IsNullOrEmpty(ArmaBrowser.Properties.Settings.Default.Id)
-                || ArmaBrowser.Properties.Settings.Default.Id.Length != 32)
-            {
-                ArmaBrowser.Properties.Settings.Default.Id = Guid.NewGuid().ToByteArray().ToHexString();
-            }
-
-            if (!ArmaBrowser.Properties.Settings.Default.Upgraded)
-            {
-                ArmaBrowser.Properties.Settings.Default.Upgrade();
-                ArmaBrowser.Properties.Settings.Default.Upgraded = true;
-                ArmaBrowser.Properties.Settings.Default.Save();
-            }
-
-
             MainWindow = new MainWindow();
             MainWindow.Show();
 
