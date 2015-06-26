@@ -170,8 +170,8 @@ namespace ArmaBrowser.ViewModel
 
         public ServerListViewModel()
         {
-            //if (Properties.Settings.Default.Hosts == null)
-            //    Properties.Settings.Default.Hosts = new Properties.HostConfigCollection();
+            if (!System.IO.Directory.Exists(ArmaBrowserAddonFolder))
+                System.IO.Directory.CreateDirectory(ArmaBrowserAddonFolder);
 
 
             UiTask.Initialize();
