@@ -80,7 +80,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         public IEnumerable<string> CurrentPlayers { get; set; }
 
-        public long Ping { get; set; }
+        public int Ping { get; set; }
 
         public IEnumerable<ISteamGameServerPlayer> Players { get; set; }
 

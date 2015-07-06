@@ -73,12 +73,14 @@ namespace ArmaBrowser.Data.DefaultImpl
 #if DEBUG
                     _client.AddDefaultParameter(new Parameter() { Name = "XDEBUG_SESSION_START", Value = "3B978CA5", Type = ParameterType.QueryString });
 #endif
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "Accept",
-                        Value = "application/json",
-                        Type = ParameterType.HttpHeader
-                    });
+                    _client.ClearHandlers();
+                    _client.AddHandler("application/json", new JsonDeserializer());
+                    //_client.AddDefaultParameter(new Parameter()
+                    //{
+                    //    Name = "Accept",
+                    //    Value = "application/json",
+                    //    Type = ParameterType.HttpHeader
+                    //});
                     _client.AddDefaultParameter(new Parameter()
                     {
                         Name = "Accept-Language",
@@ -198,36 +200,37 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         public void AddAddonDownloadUri(IAddon addon, string uri)
         {
-            try
-            {
-                var key = addon.KeyNames.FirstOrDefault();
-                RestAddonUri item = null;
-                if (key != null)
-                {
-                    item = new RestAddonUri
-                    {
-                        Hash = key.PubK.ToBase64().ComputeSha1Hash(),
-                        Uri = uri
-                    };
-                }
+            throw new NotSupportedException();
+            //try
+            //{
+            //    var key = addon.KeyNames.FirstOrDefault();
+            //    RestAddonUri item = null;
+            //    if (key != null)
+            //    {
+            //        item = new RestAddonUri
+            //        {
+            //            Hash = key.PubK.ToBase64().ComputeSha1Hash(),
+            //            Uri = uri
+            //        };
+            //    }
 
 
-                var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
+            //    var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
 
-                request.AddJsonBody(item);
+            //    request.AddJsonBody(item);
 
-                var restResult = RestClient.Execute(request);
+            //    var restResult = RestClient.Execute(request);
 
-                if (restResult.StatusCode == HttpStatusCode.OK)
-                {
-                    return;
-                }
-                ;
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-            }
+            //    if (restResult.StatusCode == HttpStatusCode.OK)
+            //    {
+            //        return;
+            //    }
+            //    ;
+            //}
+            //catch (Exception exception)
+            //{
+            //    Debug.WriteLine(exception);
+            //}
         }
 
 
@@ -299,17 +302,33 @@ namespace ArmaBrowser.Data.DefaultImpl
                     System.IO.Path.DirectorySeparatorChar + "Addons" + System.IO.Path.DirectorySeparatorChar;
 
             var request = new RestRequest("/Addons/DownloadAddon", Method.POST);
+            
             request.AddParameter("hash", addonPubKeyHash)
                    .AddHeader("ACCEPT", "application/zip")
                    .htua();
 
             string tempFile = "tmp.zip";
-            using (var writer = File.OpenWrite(tempFile))
-            {
-                request.ResponseWriter = stream => stream.CopyTo(writer);
+            
+                request.ResponseWriter = (res, stream) =>
+                {
+                    if (res.StatusCode == HttpStatusCode.OK && "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase) )
+                    {
+                        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read, true))
+                        {
+                            archive.ExtractToDirectory(folder);
+                        }
+
+
+                        //using (var writer = File.OpenWrite(tempFile))
+                        //{
+                        //    stream.CopyTo(writer);
+                        //}
+                    }
+                };
+                RestClient.ClearHandlers();
                 var response = ExecuteRequest(request);
 
-            }    
+                
         }
     }
 

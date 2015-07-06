@@ -71,12 +71,7 @@ namespace ArmaBrowser
                 //}, TaskScheduler.FromCurrentSynchronizationContext());                
             }
         }
-
-        private void RefrshServerlist_Click(object sender, RoutedEventArgs e)
-        {
-            MyViewModel.Reload();
-        }
-
+        
         private void OpenCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = ((MyViewModel.SelectedServerItem != null && MyViewModel.SelectedServerItem.Port > 0) || MyViewModel.LaunchWithoutHost)

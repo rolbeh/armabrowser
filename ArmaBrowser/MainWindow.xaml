@@ -85,12 +85,12 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1"  Click="RefrshServerlist_Click" Padding="2" Margin="0" VerticalAlignment="Stretch" 
-                            Foreground="Black"
+                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerListCommand" Padding="2" Margin="0" VerticalAlignment="Stretch" 
                             FontSize="16"
                             BorderThickness="0" 
-                            BorderBrush="{x:Null}">
-                        <TextBlock Foreground="Black" FontWeight="ExtraBlack">Refresh list</TextBlock>
+                            BorderBrush="{x:Null}"
+                            Foreground="Black" FontWeight="ExtraBlack"
+                            Content="{Binding Path=Command.Text, RelativeSource={RelativeSource Self}}">
                     </Button>
                     <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
                         <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
@@ -274,7 +274,7 @@
                         </UIElement.Effect>
                     </Image>
 
-                    <ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
+                    <!--<ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
                                   Opacity="0.8"
                                   ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
                         <ItemsControl.ItemTemplate>
@@ -285,7 +285,29 @@
                                            Foreground="#FFC9744D"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
+                    </ItemsControl>-->
+
+                    <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="120" Opacity="0.7"
+                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" >
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="logic:LoadingServerListContext">
+                                <controls:ProgressControl Background="{x:Null}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    
+                    <StackPanel Visibility="Hidden" Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20" Orientation="Horizontal" MaxHeight="120" Opacity="0.7">
+                        <controls:ProgressControl Background="{x:Null}"/>
+                        <controls:ProgressControl Background="{x:Null}"/>
+                        <controls:ProgressControl Background="{x:Null}"/>
+                        <controls:ProgressControl Background="{x:Null}"/>
+                    </StackPanel>
+
                     <controls:ServerListControl Grid.Row="0" BorderThickness="1,1,1,0" BorderBrush="#FF688CAF"/>
 
                     <Border Grid.Row="1" BorderThickness="1,1,1,1" BorderBrush="#FF688CAF">
@@ -662,6 +684,12 @@
     </Window.Triggers>
     <WStyle:WindowTitle.TitleToolbar>
         <StackPanel Orientation="Horizontal" Height="30">
+            <TextBlock Margin="5,5,0,0" Height="30">
+                    <Hyperlink NavigateUri="http://www.armabrowser.org/" 
+                               Foreground="#FFCDE2F3"
+                               RequestNavigate="PoweredByHyperlink_RequestNavigate"
+                               >Web</Hyperlink>
+            </TextBlock>
             <TextBlock Margin="5,5,0,0" Height="30">
                     <Hyperlink NavigateUri="https://plus.google.com/+ArmabrowserOrgofficial/posts" 
                                Foreground="#FFCDE2F3"

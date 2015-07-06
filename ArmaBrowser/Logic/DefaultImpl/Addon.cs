@@ -92,6 +92,6 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        public bool IsEasyInstallable { get; set; }
+        public bool? IsEasyInstallable { get; set; }
     }
 }

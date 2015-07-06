@@ -218,6 +218,9 @@
     <Compile Include="Views\Controls\PreferencesControl.xaml.cs">
       <DependentUpon>PreferencesControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Controls\ProgressControl.xaml.cs">
+      <DependentUpon>ProgressControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Controls\ServerDetailsControl.xaml.cs">
       <DependentUpon>ServerDetailsControl.xaml</DependentUpon>
     </Compile>
@@ -227,6 +230,7 @@
     <Compile Include="Views\Controls\AutoJoinControl.xaml.cs">
       <DependentUpon>AutoJoinControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Converter\ShowShareAddonConverter.cs" />
     <Compile Include="Win32.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -253,6 +257,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Controls\PreferencesControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\ProgressControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -337,6 +345,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Img\DownloadAddon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Img\shareaddon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

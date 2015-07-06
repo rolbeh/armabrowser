@@ -24,6 +24,7 @@ namespace ArmaBrowser.ViewModel
         private System.Net.IPEndPoint _ipEndPointFilter = null;
         private IServerItem _selectedServerItem;
         private readonly ObservableCollection<IAddon> _useAddons = new ObservableCollection<IAddon>();
+        private ICollection<LoadingServerListContext> _reloadContexts; 
         private IAddon _selectedAddon;
         private uint _loadingBusy;
         private string _selectedEndPoint;
@@ -49,6 +50,14 @@ namespace ArmaBrowser.ViewModel
         public Collection<IServerItem> ServerItems
         {
             get { return _context.ServerItems; }
+        }
+
+        public ICollection<LoadingServerListContext> ReloadContexts
+        {
+            get
+            {
+                return _reloadContexts ?? (_reloadContexts = new ReadOnlyObservableCollection<LoadingServerListContext>(_context.ReloadThreads));
+            }
         }
 
         public Collection<IAddon> Addons
@@ -148,7 +157,9 @@ namespace ArmaBrowser.ViewModel
                 if (_selectedServerItem == value) return;
                 _selectedServerItem = value;
                 _selectedEndPoint = _selectedServerItem == null ? string.Empty : string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
-                _context.RefreshServerInfoAsync(items: new[] { _selectedServerItem });
+                
+                RefreshServerInfoAsync(new[] { _selectedServerItem });
+                
                 RefreshUsedAddons();
                 OnPropertyChanged();
 
@@ -218,14 +229,18 @@ namespace ArmaBrowser.ViewModel
                 {
                     item.LastPlayed = DateTime.Now;
                 }
-                _context.RefreshServerInfoAsync(serverItems)
-                    .ContinueWith(t =>
-                        {
-                            ServerItemsView.Refresh();
-                        }, UiTask.TaskScheduler);
+                RefreshServerInfoAsync(serverItems);
+               
 
                 Task.Run((Action)EndlessRefreshSelecteItem);
             }
+        }
+
+        async void RefreshServerInfoAsync(IServerItem[] serverItems)
+        {
+            await _context.RefreshServerInfoAsync(serverItems);
+            _useAddons.Clear();
+            ServerItemsView.Refresh();       
         }
 
         void _serverItems_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -283,7 +298,7 @@ namespace ArmaBrowser.ViewModel
              ;
         }
 
-        public void Reload()
+        public async void ReloadServerList()
         {
             BeginLoading();
 
@@ -291,33 +306,21 @@ namespace ArmaBrowser.ViewModel
             var oldsrc = _reloadingCts;
             _reloadingCts = new System.Threading.CancellationTokenSource();
             CancellationToken token = _reloadingCts.Token;
-            //oldsrc.Dispose();
+            
+            oldsrc.Dispose();
 
-            var lastSelected = _selectedEndPoint;
-
-            Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token)
+            await Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token)
                 .ContinueWith(t =>
                 {
-
-                    //if (!string.IsNullOrEmpty(lastSelected))
-                    //{
-                    //    SelectedServerItem = ServerItems.FirstOrDefault(s => string.Format("{0}:{1}", s.Host, s.Port) == lastSelected);
-                    //}
                     if (t.Status == TaskStatus.RanToCompletion)
                         RememberLastVisiblyItems();
-                    EndLoading();
+                    
+                }, token);
 
-                })
-                .ContinueWith(t => _actionLog.Clear(), UiTask.TaskScheduler);
-
+            _actionLog.Clear();
+            EndLoading();
         }
-
-        void Test()
-        {
-            var lastItems = ServerItemsView.Cast<IServerItem>().Select(i => { return new System.Net.IPEndPoint(i.Host, i.Port); });
-
-        }
-
+        
         public bool LoadingBusy
         {
             get { return _loadingBusy > 0; }
@@ -342,6 +345,7 @@ namespace ArmaBrowser.ViewModel
                 _context.ReloadServerItem(_ipEndPointFilter, cancellationToken);
             else
                 _context.ReloadServerItems(_lastItems, cancellationToken);
+            _useAddons.Clear();
             RefreshUsedAddons();
         }
 
@@ -400,27 +404,24 @@ namespace ArmaBrowser.ViewModel
         private void RefreshUsedAddons()
         {
             var selectedItem = _selectedServerItem;
-            var t = UiTask.Run(_useAddons.Clear);
 
-            if (selectedItem == null || selectedItem.Mods == null)
+            if (_selectedServerItem == null || _selectedServerItem.Mods == null)
             {
                 return;
             }
             //if (_selectedServerItem.Mods != null)
             //{
             var sortNr = 1;
-            var hostAddons = selectedItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
+            var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
 
-            var endpoint = string.Format("{0}:{1}", selectedItem.Host, selectedItem.Port);
+            var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
             var hostCfgItem = HostConfigCollection.Default.Cast<HostConfig>()
-                .FirstOrDefault(h => h.EndPoint == endpoint);
+                                .FirstOrDefault(h => h.EndPoint == endpoint);
 
             if (hostCfgItem != null)
             {
                 sortNr = 1;
-                hostAddons =
-                    hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
-
+                hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
             }
 
             var mods = (from mod in Addons

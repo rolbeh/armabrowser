@@ -14,7 +14,8 @@ namespace ArmaBrowser
 {
     static class ArmaBrowserCommands
     {
-        public static RoutedCommand RefreshAddonsCommand { get; private set; }
+        public static ICommand RefreshAddonsCommand { get; private set; }
+        public static ICommand ReloadServerListCommand { get; private set; }
         public static ICommand MarkAsFavorite { get; private set; }
 
         public static ICommand OpenAddonFolder { get; private set; }
@@ -24,13 +25,18 @@ namespace ArmaBrowser
 
         static ArmaBrowserCommands()
         {
-            
-            RefreshAddonsCommand = new RoutedCommand("Refresh Addons", typeof(ArmaBrowserCommands));
+
+            RefreshAddonsCommand = new RoutedCommand("RefreshAddonsCommand", typeof(ArmaBrowserCommands));
+            ReloadServerListCommand = new RoutedUICommand("Refresh list", "ReloadServerListCommand", typeof(ArmaBrowserCommands));
+
             MarkAsFavorite = new RoutedUICommand("Favorite", "MarkAsFavorite", typeof(ArmaBrowserCommands));
             OpenAddonFolder = new RoutedUICommand("Open", "OpenAddonFolder", typeof(ArmaBrowserCommands));
 
             UploadAddon = new RoutedUICommand("Upload", "UploadAddon", typeof(ArmaBrowserCommands));
             EasyInstallAddon = new RoutedUICommand("Install", "EasyInstallAddon", typeof(ArmaBrowserCommands));
+
+
+            CommandManager.RegisterClassCommandBinding(typeof(MainWindow), new CommandBinding(ReloadServerListCommand, ReloadServerList_OnExecuted));
 
             CommandManager.RegisterClassCommandBinding(typeof(UIElement), new CommandBinding(MarkAsFavorite, MarkAsFavorite_OnExecuted));
             CommandManager.RegisterClassCommandBinding(typeof(FrameworkElement), new CommandBinding(RefreshAddonsCommand, RefreshAddonsCommand_OnExecuted));
@@ -38,13 +44,22 @@ namespace ArmaBrowser
 
             CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(UploadAddon, UploadAddon_OnExecuted));
             CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(EasyInstallAddon, EasyInstallAddon_OnExecuted, EasyInstallAddon_CanExecute));
+            
+        }
 
+        private static void ReloadServerList_OnExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            var mainwnd = sender as MainWindow;
+            if (mainwnd != null)
+            {
+                mainwnd.MyViewModel.ReloadServerList();
+            }
         }
 
         private static void EasyInstallAddon_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             var addon = e.Parameter as IAddon;
-            e.CanExecute = addon != null && addon.IsEasyInstallable &&
+            e.CanExecute = addon != null && addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value &&
                             addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash));
         }
 
