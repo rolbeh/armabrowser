@@ -334,8 +334,8 @@ namespace ArmaBrowser.ViewModel
 
         private void EndLoading()
         {
-            _loadingBusy--;
-            if (_loadingBusy < 0) _loadingBusy = 0;
+            if (_loadingBusy > 0)
+                _loadingBusy--;
             OnPropertyChanged("LoadingBusy");
         }
 
