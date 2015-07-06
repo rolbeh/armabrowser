@@ -464,7 +464,7 @@ namespace ArmaBrowser.Logic
 
             if (!string.IsNullOrEmpty(path))
             {
-                var items = await Task.Delay(3000).ContinueWith((t) => _defaultDataRepository.GetInstalledAddons(path));
+                var items = await Task.Run(() => _defaultDataRepository.GetInstalledAddons(path));
                 foreach (var item in items)
                 {
                     _addons.Add(new Addon

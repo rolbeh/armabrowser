@@ -33,7 +33,7 @@ namespace ArmaBrowser.ViewModel
         private IEnumerable<System.Net.IPEndPoint> _lastItems = new System.Net.IPEndPoint[0];
 
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
-        private readonly ObservableCollection<LogEntry> _actionLog = new ObservableCollection<LogEntry>();
+        
         private bool _isJoining;
         private string _version;
         private int _totalPlayerCount;
@@ -41,12 +41,7 @@ namespace ArmaBrowser.ViewModel
         #endregion Fields
 
         #region Properties
-
-        public Collection<LogEntry> ActionLog
-        {
-            get { return _actionLog; }
-        }
-
+        
         public Collection<IServerItem> ServerItems
         {
             get { return _context.ServerItems; }
@@ -216,8 +211,7 @@ namespace ArmaBrowser.ViewModel
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 _context.PropertyChanged += Context_PropertyChanged;
-                _context.LiveAction += _context_LiveAction;
-
+                
                 TextFilter = Properties.Settings.Default.TextFilter;
                 _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
 
@@ -238,8 +232,8 @@ namespace ArmaBrowser.ViewModel
 
         async void RefreshServerInfoAsync(IServerItem[] serverItems)
         {
-            await _context.RefreshServerInfoAsync(serverItems);
             _useAddons.Clear();
+            await _context.RefreshServerInfoAsync(serverItems);
             ServerItemsView.Refresh();       
         }
 
@@ -276,28 +270,7 @@ namespace ArmaBrowser.ViewModel
                     break;
             }
         }
-
-        void _context_LiveAction(object sender, string e)
-        {
-            UiTask.Run((list, item) =>
-            {
-                var entry = new LogEntry { Text = item, Time = DateTime.Now };
-                list.Insert(0, entry);
-                //return entry;
-            }, _actionLog, e)
-                //.ContinueWith(t =>
-                //    {
-                //        Task.Delay(5000);
-                //        return t.Result;
-                //    }
-                //    )
-                // .ContinueWith(t => {
-                //     if (_actionLog.Count > 0)
-                //         _actionLog.RemoveAt(0);
-                // },UiTask.TaskScheduler)
-             ;
-        }
-
+        
         public async void ReloadServerList()
         {
             BeginLoading();
@@ -306,8 +279,8 @@ namespace ArmaBrowser.ViewModel
             var oldsrc = _reloadingCts;
             _reloadingCts = new System.Threading.CancellationTokenSource();
             CancellationToken token = _reloadingCts.Token;
-            
-            oldsrc.Dispose();
+
+            oldsrc.Cancel(false);
 
             await Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token)
                 .ContinueWith(t =>
@@ -316,8 +289,7 @@ namespace ArmaBrowser.ViewModel
                         RememberLastVisiblyItems();
                     
                 }, token);
-
-            _actionLog.Clear();
+            
             EndLoading();
         }
         
@@ -404,7 +376,7 @@ namespace ArmaBrowser.ViewModel
         private void RefreshUsedAddons()
         {
             var selectedItem = _selectedServerItem;
-
+            _useAddons.Clear();
             if (_selectedServerItem == null || _selectedServerItem.Mods == null)
             {
                 return;
@@ -683,12 +655,6 @@ namespace ArmaBrowser.ViewModel
             _context.ReloadAddons();
         }
 
-    }
-
-    class LogEntry
-    {
-        public string Text { get; set; }
-        public DateTime Time { get; set; }
     }
 
 }
