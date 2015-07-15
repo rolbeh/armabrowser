@@ -25,7 +25,8 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     internal class AddonWebApi : IAddonWebApi
     {
-        private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        private const string BaseUrl = @"http://homeserver/arma/api/3/";
         //const string BaseUrl = @"http://armabrowser.org/api/3/";
 
         private RestClient _client;
@@ -75,12 +76,12 @@ namespace ArmaBrowser.Data.DefaultImpl
 #endif
                     _client.ClearHandlers();
                     _client.AddHandler("application/json", new JsonDeserializer());
-                    //_client.AddDefaultParameter(new Parameter()
-                    //{
-                    //    Name = "Accept",
-                    //    Value = "application/json",
-                    //    Type = ParameterType.HttpHeader
-                    //});
+                    _client.AddDefaultParameter(new Parameter()
+                    {
+                        Name = "Accept",
+                        Value = "application/json",
+                        Type = ParameterType.HttpHeader
+                    });
                     _client.AddDefaultParameter(new Parameter()
                     {
                         Name = "Accept-Language",
@@ -136,12 +137,12 @@ namespace ArmaBrowser.Data.DefaultImpl
         }
 
 
-        public void PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
+        public async Task PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
         {
-            Task.Run(() => PostInstalledAddonsKeys(addons));
+            await Task.Run(() => PostInstalledAddonsKeys(addons));
         }
 
-        public void PostInstalledAddonsKeys(IEnumerable<IAddon> addons)
+        private void PostInstalledAddonsKeys(IEnumerable<IAddon> addons)
         {
             var request = new RestRequest("/Addons", Method.POST).htua();
 

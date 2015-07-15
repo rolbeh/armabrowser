@@ -17,7 +17,7 @@ namespace ArmaBrowser.Views.Converter
             var item = value as IAddon;
             if (item == null) return Visibility.Collapsed;
 
-            return (item.IsInstalled && item.IsEasyInstallable.HasValue && !item.IsEasyInstallable.Value) ? Visibility.Visible : Visibility.Collapsed;
+            return (item.IsInstalled && (item.IsEasyInstallable.HasValue && !item.IsEasyInstallable.Value)) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

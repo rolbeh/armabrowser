@@ -12,9 +12,11 @@
              d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
     <UserControl.Resources>
 
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
         <converter:ShowShareAddonConverter x:Key="ShowShareAddonConverter"/>
         <converter:ShowEasyInstallAddonConverter x:Key="ShowEasyInstallAddonConverter"/>
-        
+
         <Style x:Key="ListBoxItemStyle2" TargetType="{x:Type ListBoxItem}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
@@ -30,15 +32,14 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                                
-                                <!-- Share  -->
-                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.UploadAddon" CommandParameter="{Binding Path=.}" BorderThickness="0" Background="Transparent"
-                                        ToolTip="upload and share"
-                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
-                                        Visibility="{Binding Path=.,Converter={StaticResource ShowShareAddonConverter}}"  >
+
+                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.UploadAddon" CommandParameter="{Binding .}" BorderThickness="0" Background="Transparent"
+                            		ToolTip="upload and share"
+                            		Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                            		Visibility="{Binding CanSharing, Converter={StaticResource BooleanToVisibilityConverter}}"  >
                                     <Image Source="/Img/shareaddon.png" Stretch="None">
-                                        <FrameworkElement.Style>
-                                            <Style TargetType="Image">
+                                        <Image.Style>
+                                            <Style TargetType="{x:Type Image}">
                                                 <Setter Property="OpacityMask" Value="#BA000000"/>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
@@ -46,18 +47,18 @@
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </FrameworkElement.Style>
+                                        </Image.Style>
                                     </Image>
                                 </Button>
 
                                 <!-- EasyInstallAddon  -->
-                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.EasyInstallAddon" CommandParameter="{Binding Path=.}" BorderThickness="0" Background="Transparent"
+                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.EasyInstallAddon" CommandParameter="{Binding .}" BorderThickness="0" Background="Transparent"
                                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
-                                        Visibility="{Binding Path=.,Converter={StaticResource ShowEasyInstallAddonConverter}}"
+                                        Visibility="{Binding IsEasyInstallable, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         ToolTip="Download and equip">
                                     <Image Source="/Img/DownloadAddon.png" Stretch="None">
-                                        <FrameworkElement.Style>
-                                            <Style TargetType="Image">
+                                        <Image.Style>
+                                            <Style TargetType="{x:Type Image}">
                                                 <Setter Property="OpacityMask" Value="#BA000000"/>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
@@ -65,7 +66,7 @@
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </FrameworkElement.Style>
+                                        </Image.Style>
                                     </Image>
                                 </Button>
 
@@ -124,7 +125,7 @@
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  SelectedItem="{Binding Path=SelectedAddon}"
                  MouseUp="ListBox_MouseUp" ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" >
-            <ListBox.GroupStyle>
+            <!--<ListBox.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
@@ -145,7 +146,7 @@
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
                 </GroupStyle>
-            </ListBox.GroupStyle>
+            </ListBox.GroupStyle>-->
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type logic:IAddon}">
                     <Grid Background="Transparent">
@@ -158,7 +159,8 @@
                         <CheckBox Grid.Column="0" IsChecked="{Binding Path=IsActive}" Margin="0,3"
                                   FontSize="8"
                                   Background="YellowGreen"
-                                  Foreground="Black">
+                                  Foreground="Black"
+                                  IsEnabled="{Binding IsInstalled}">
                             <CheckBox.Style>
                                 <Style TargetType="CheckBox" BasedOn="{StaticResource OnOffCheckBoxStyle}">
                                     <Setter Property="ToolTip" Value="Activate addon"/>

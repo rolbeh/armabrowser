@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -432,18 +433,16 @@ namespace ArmaBrowser.Logic
                     {
 
                         ReloadAddons();
-
+                        
                     }
-
-                    IAddonWebApi addonWebApi = new AddonWebApi();
-                    addonWebApi.PostInstalledAddonsKeysAsync(_addons);
+                    
                 }
 
                 return _addons;
             }
         }
 
-        internal void ReloadAddons()
+        internal async void ReloadAddons()
         {
             if (_addons == null)
                 _addons = new ObservableCollection<IAddon>();
@@ -452,14 +451,17 @@ namespace ArmaBrowser.Logic
 
             var armaPath = Properties.Settings.Default.ArmaPath;
 
-            ReloadAddonsAsync(armaPath, true);
-            ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+            await ReloadAddonsAsync(armaPath, true);
+            await ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
                             System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar, true);
 
-            ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar + "Addons", false);
+            await ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar + "Addons", false);
+
+            IAddonWebApi addonWebApi = new AddonWebApi();
+            var t = addonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray());
         }
 
-        private async void ReloadAddonsAsync(string path, bool isArmaDefaultPath)
+        private async Task ReloadAddonsAsync(string path, bool isArmaDefaultPath)
         {
 
             if (!string.IsNullOrEmpty(path))
@@ -601,6 +603,47 @@ namespace ArmaBrowser.Logic
                 webapi.DownloadAddon(addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash);
 
             }
+        }
+
+        public async Task UpdateAddonInfos(string[] hostAddonKeyNames)
+        {
+            IEnumerable<RestAddonInfoResult> addonInfosTask = await GetAddonInfosAsync(hostAddonKeyNames);
+
+            var addonInfosTaskResult = addonInfosTask;
+
+            //await addonInfosTask.ContinueWith(parentTask =>
+            {
+                //if (parentTask.Status != TaskStatus.RanToCompletion) return;
+
+                //var addonInfosTaskResult = parentTask.Result;
+                foreach (var addonInfo in addonInfosTaskResult)
+                {
+                    var updAddon =
+                        Addons.FirstOrDefault(
+                            a =>
+                                a.KeyNames.Any(
+                                    tag => tag.Hash.Equals(addonInfo.hash, StringComparison.OrdinalIgnoreCase)));
+
+                    if (updAddon != null)
+                        updAddon.IsEasyInstallable = addonInfo.easyinstall;
+                    else
+                    {
+                        
+                            Addons.Add(new Addon()
+                            {
+                                Name = addonInfo.name,
+                                ModName = addonInfo.name,
+                                DisplayText = addonInfo.name,
+                                KeyNames = new[] { new Data.AddonKey { Name = addonInfo.keytag, Hash = addonInfo.hash } },
+                                //DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
+                                IsInstalled = false,
+                                IsEasyInstallable = addonInfo.easyinstall,
+                                CanActived = true
+                            });
+                        
+                    }
+                }
+            }//);
         }
     }
 

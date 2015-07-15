@@ -23,7 +23,6 @@ namespace ArmaBrowser.ViewModel
         private string _textFilter = string.Empty;
         private System.Net.IPEndPoint _ipEndPointFilter = null;
         private IServerItem _selectedServerItem;
-        private readonly ObservableCollection<IAddon> _useAddons = new ObservableCollection<IAddon>();
         private ICollection<LoadingServerListContext> _reloadContexts; 
         private IAddon _selectedAddon;
         private uint _loadingBusy;
@@ -59,12 +58,7 @@ namespace ArmaBrowser.ViewModel
         {
             get { return _context.Addons; }
         }
-
-        public Collection<IAddon> UseAddons
-        {
-            get { return _useAddons; }
-        }
-
+        
         public ListCollectionView ServerItemsView
         {
             get { return _serverItemsView ?? CreateServerItemsView(); }
@@ -232,7 +226,6 @@ namespace ArmaBrowser.ViewModel
 
         async void RefreshServerInfoAsync(IServerItem[] serverItems)
         {
-            _useAddons.Clear();
             await _context.RefreshServerInfoAsync(serverItems);
             ServerItemsView.Refresh();       
         }
@@ -317,7 +310,7 @@ namespace ArmaBrowser.ViewModel
                 _context.ReloadServerItem(_ipEndPointFilter, cancellationToken);
             else
                 _context.ReloadServerItems(_lastItems, cancellationToken);
-            _useAddons.Clear();
+            
             RefreshUsedAddons();
         }
 
@@ -373,10 +366,10 @@ namespace ArmaBrowser.ViewModel
 
         }
 
-        private void RefreshUsedAddons()
+        private async void RefreshUsedAddons()
         {
             var selectedItem = _selectedServerItem;
-            _useAddons.Clear();
+            
             if (_selectedServerItem == null || _selectedServerItem.Mods == null)
             {
                 return;
@@ -401,6 +394,7 @@ namespace ArmaBrowser.ViewModel
                         from selectedMod in selectedMods.DefaultIfEmpty()
                         let sortnr = selectedMod == null ? 0 : selectedMod.SortNr
                         let selectedModName = selectedMod == null ? null : selectedMod.ModName
+                        where mod.IsInstalled
                         orderby sortnr
                         select new { mod, selectedMod = selectedModName, Sortnr = sortnr }).ToArray();
             //}
@@ -408,11 +402,13 @@ namespace ArmaBrowser.ViewModel
             var s = selectedItem.Signatures ?? string.Empty;
             var hostAddonKeyNames = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
+            await _context.UpdateAddonInfos(hostAddonKeyNames);
+
             // Addons automatisch ab- oder aus- wählen
             foreach (var item in mods)
             {
-                item.mod.IsActive = !string.IsNullOrWhiteSpace(item.selectedMod);
-                //Thread.Sleep(1);
+                item.mod.IsActive = item.mod.IsInstalled && !string.IsNullOrWhiteSpace(item.selectedMod);
+               
                 var canActive = false;
                 if (hostAddonKeyNames.Any())
                 {
@@ -431,48 +427,48 @@ namespace ArmaBrowser.ViewModel
 
             }
 
-            // Ausgewählt Addons in die Liste für die Anzeige hinzufügen
-            UiTask.Run((list, selectedMods) =>
-            {
-                list.Clear();
-                foreach (var mod in selectedMods.Where(m => m.mod.IsActive).OrderBy(m => m.Sortnr))
-                    list.Add(mod.mod);
-            }, _useAddons, mods);
 
+            //Task<IEnumerable<RestAddonInfoResult>> addonInfosTask = await _context.GetAddonInfosAsync(hostAddonKeyNames);
+            //addonInfosTask.ContinueWith(parentTask =>
+            //{
+            //    if (parentTask.Status != TaskStatus.RanToCompletion) return;
 
-            Task<IEnumerable<RestAddonInfoResult>> addonInfosTask = _context.GetAddonInfosAsync(hostAddonKeyNames);
-            addonInfosTask.ContinueWith(parentTask =>
-            {
-                if (parentTask.Status != TaskStatus.RanToCompletion) return;
+            //    var msgStr = new StringBuilder();
 
-                var msgStr = new StringBuilder();
+            //    foreach (var addonInfo in parentTask.Result)
+            //    {
+            //        msgStr.AppendLine(addonInfo.name);
 
-                foreach (var restAddonInfoResult in parentTask.Result)
-                {
-                    var addonInfo = restAddonInfoResult;
-                    msgStr.AppendLine(addonInfo.name);
+            //        var updAddon =
+            //            Addons.FirstOrDefault(
+            //                a =>
+            //                    a.KeyNames.Any(
+            //                        tag => tag.Hash.Equals(addonInfo.hash, StringComparison.OrdinalIgnoreCase)));
 
-                    if (!Addons.Any(a => a.ModName.Equals(addonInfo.name, StringComparison.OrdinalIgnoreCase)))
-                        UiTask.Run(a =>
-                        {
-                            Addons.Add(new Addon()
-                            {
-                                Name = a.name,
-                                ModName = a.name,
-                                DisplayText = a.name,
-                                KeyNames = new[] { new Data.AddonKey { Name = a.keytag, Hash = a.hash} },
-                                //DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
-                                IsInstalled = false,
-                                IsEasyInstallable = addonInfo.easyinstall
-                            });
-                        }, addonInfo);
-                }
+            //        //if (!Addons.Any(a => a.ModName.Equals(addonInfo.name, StringComparison.OrdinalIgnoreCase)))
+            //        if (updAddon == null)
+            //        {
+            //            UiTask.Run(a =>
+            //            {
+            //                Addons.Add(new Addon()
+            //                {
+            //                    Name = a.name,
+            //                    ModName = a.name,
+            //                    DisplayText = a.name,
+            //                    KeyNames = new[] { new Data.AddonKey { Name = a.keytag, Hash = a.hash} },
+            //                    //DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
+            //                    IsInstalled = false,
+            //                    IsEasyInstallable = addonInfo.easyinstall
+            //                });
+            //            }, addonInfo);
+            //        }
+            //    }
 
                 //MessageBox.Show(msgStr.ToString());
 
 
 
-            });
+            //});
 
         }
 
