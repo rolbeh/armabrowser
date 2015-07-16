@@ -595,16 +595,53 @@ namespace ArmaBrowser.Logic
             });
         }
 
-        internal static void DownloadAddon(IAddon addon)
+        internal async void DownloadAddonAsync(IAddon addon)
         {
             if (addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value && addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash)))
             {
-                var webapi = new AddonWebApi();
-                webapi.DownloadAddon(addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash);
+                var installedAddon = await Task.Run(() =>
+                {
+                    string targetFolder =
+                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+                            Environment.SpecialFolderOption.DoNotVerify) +
+                        Path.DirectorySeparatorChar + @"ArmaBrowser" + Path.DirectorySeparatorChar +
+                        "Arma 3" +
+                        Path.DirectorySeparatorChar + "Addons" + Path.DirectorySeparatorChar;
+                    var hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
+                    var webapi = new AddonWebApi();
+                    webapi.DownloadAddon(hash, targetFolder);
 
+                    var addons = _defaultDataRepository.GetInstalledAddons(targetFolder);
+                    IArmaAddon item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));
+                    if (item != null)
+                    {
+                        return new Addon
+                        {
+                            Name = item.Name,
+
+                            DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+                            Path = item.Path,
+                            ModName = item.ModName,
+                            Version = item.Version,
+                            KeyNames = item.KeyNames,
+                            IsInstalled = true,
+                            IsEasyInstallable = true,
+                            CanActived = addon.CanActived,
+                            IsActive = addon.CanActived
+                        };
+
+                    }
+                    return null;
+                });
+
+                if (installedAddon != null)
+                {
+                    var idx = _addons.IndexOf(addon);
+                    _addons[idx] = installedAddon;
+                }
             }
         }
-
+        
         public async Task UpdateAddonInfos(string[] hostAddonKeyNames)
         {
             IEnumerable<RestAddonInfoResult> addonInfosTask = await GetAddonInfosAsync(hostAddonKeyNames);

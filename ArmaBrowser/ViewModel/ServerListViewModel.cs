@@ -651,6 +651,10 @@ namespace ArmaBrowser.ViewModel
             _context.ReloadAddons();
         }
 
+        public void DownloadAddon(IAddon addon)
+        {
+            _context.DownloadAddonAsync(addon);
+        }
     }
 
 }

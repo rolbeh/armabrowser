@@ -76,12 +76,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 #endif
                     _client.ClearHandlers();
                     _client.AddHandler("application/json", new JsonDeserializer());
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "Accept",
-                        Value = "application/json",
-                        Type = ParameterType.HttpHeader
-                    });
+  
                     _client.AddDefaultParameter(new Parameter()
                     {
                         Name = "Accept-Language",
@@ -296,12 +291,8 @@ namespace ArmaBrowser.Data.DefaultImpl
             }
         }
 
-        internal void DownloadAddon(string addonPubKeyHash)
+        internal void DownloadAddon(string addonPubKeyHash, string targetFolder)
         {
-            string folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
-                    System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" +
-                    System.IO.Path.DirectorySeparatorChar + "Addons" + System.IO.Path.DirectorySeparatorChar;
-
             var request = new RestRequest("/Addons/DownloadAddon", Method.POST);
             
             request.AddParameter("hash", addonPubKeyHash)
@@ -316,7 +307,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     {
                         using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read, true))
                         {
-                            archive.ExtractToDirectory(folder);
+                            archive.ExtractToDirectory(targetFolder);
                         }
 
 

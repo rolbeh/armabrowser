@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using ArmaBrowser.Data.DefaultImpl.Helper;
 using ArmaBrowser.Logic;
+using ArmaBrowser.Views.Controls;
 
 namespace ArmaBrowser
 {
@@ -43,7 +44,7 @@ namespace ArmaBrowser
             CommandManager.RegisterClassCommandBinding(typeof(FrameworkElement), new CommandBinding(OpenAddonFolder, OpenAddonFolder_OnExecuted));
 
             CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(UploadAddon, UploadAddon_OnExecuted));
-            CommandManager.RegisterClassCommandBinding(typeof(Button), new CommandBinding(EasyInstallAddon, EasyInstallAddon_OnExecuted, EasyInstallAddon_CanExecute));
+            CommandManager.RegisterClassCommandBinding(typeof(AddonsControl), new CommandBinding(EasyInstallAddon, EasyInstallAddon_OnExecuted, EasyInstallAddon_CanExecute));
             
         }
 
@@ -68,8 +69,8 @@ namespace ArmaBrowser
             var addon = e.Parameter as IAddon;
             if (addon != null)
             {
-                
-                LogicContext.DownloadAddon(addon);
+                if (sender is FrameworkElement && ((FrameworkElement)sender).DataContext is ViewModel.ServerListViewModel)
+                    ((ViewModel.ServerListViewModel) ((FrameworkElement) sender).DataContext).DownloadAddon(addon);
             }
         }
 

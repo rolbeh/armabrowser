@@ -74,6 +74,7 @@ namespace ArmaBrowser.Logic
                 if (value == _isInstalled) return;
                 _isInstalled = value;
                 OnPropertyChanged();
+                OnPropertyChanged("IsEasyInstallable");
                 OnPropertyChanged("CanActived");
                 OnPropertyChanged("CanSharing");
             }
@@ -109,7 +110,7 @@ namespace ArmaBrowser.Logic
 
         public bool? IsEasyInstallable
         {
-            get { return _isEasyInstallable; }
+            get { return _isEasyInstallable.HasValue ? (bool?)(_isEasyInstallable.Value && !_isInstalled) : null; }
             set
             {
                 if (value == _isEasyInstallable) return;
@@ -121,9 +122,9 @@ namespace ArmaBrowser.Logic
         }
 
 
-        public bool? CanSharing
+        public bool CanSharing
         {
-            get { return IsInstalled && IsEasyInstallable.HasValue && !IsEasyInstallable.Value; }
+            get { return IsInstalled && _isEasyInstallable.HasValue && !_isEasyInstallable.Value; }
         }
     }
 }
