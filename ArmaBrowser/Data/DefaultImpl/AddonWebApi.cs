@@ -23,8 +23,8 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     class AddonWebApi : IAddonWebApi
     {
-        const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        //const string BaseUrl = @"http://armabrowser.org/api/3/";
+        //const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+        const string BaseUrl = @"http://armabrowser.org/api/3/";
 
         private RestClient _client;
         private readonly Guid _installationsId;
