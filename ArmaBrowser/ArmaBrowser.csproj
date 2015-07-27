@@ -34,10 +34,10 @@
     <ProductName>ArmaBrowser</ProductName>
     <PublisherName>ArmaBrowser</PublisherName>
     <SuiteName>ArmaBrowser</SuiteName>
-    <MinimumRequiredVersion>0.7.5.84</MinimumRequiredVersion>
+    <MinimumRequiredVersion>0.7.5.87</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>84</ApplicationRevision>
+    <ApplicationRevision>87</ApplicationRevision>
     <ApplicationVersion>0.7.5.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
