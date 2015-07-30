@@ -37,17 +37,17 @@
                             		ToolTip="upload and share"
                             		Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                             		Visibility="{Binding CanSharing, Converter={StaticResource BooleanToVisibilityConverter}}"  >
-                                    <Image Source="/Img/shareaddon.png" Stretch="None">
-                                        <Image.Style>
+                                    <Image x:Name="shareaddonImage" Source="/Img/shareaddon.png" Stretch="None" Opacity="0.4">
+                                        <!--<Image.Style>
                                             <Style TargetType="{x:Type Image}">
-                                                <Setter Property="OpacityMask" Value="#BA000000"/>
+                                                <Setter Property="Opacity" Value="0.73"/>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="OpacityMask" Value="#FF000000"/>
+                                                        <Setter Property="Opacity" Value="1"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </Image.Style>
+                                        </Image.Style>-->
                                     </Image>
                                 </Button>
 
@@ -56,8 +56,8 @@
                                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                         Visibility="{Binding IsEasyInstallable, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         ToolTip="Download and equip">
-                                    <Image Source="/Img/DownloadAddon.png" Stretch="None">
-                                        <Image.Style>
+                                    <Image x:Name="DownloadImage" Source="/Img/DownloadAddon.png" Stretch="None" Opacity="0.4">
+                                        <!--<Image.Style>
                                             <Style TargetType="{x:Type Image}">
                                                 <Setter Property="OpacityMask" Value="#BA000000"/>
                                                 <Style.Triggers>
@@ -66,13 +66,19 @@
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
-                                        </Image.Style>
+                                        </Image.Style>-->
                                     </Image>
                                 </Button>
 
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <Trigger SourceName="DownloadImage" Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DownloadImage" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger SourceName="shareaddonImage" Property="IsMouseOver" Value="True">
+                                <Setter TargetName="shareaddonImage" Property="Opacity" Value="1"/>
+                            </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
@@ -124,7 +130,8 @@
                  FontSize="14"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  SelectedItem="{Binding Path=SelectedAddon}"
-                 MouseUp="ListBox_MouseUp" ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" >
+                 MouseUp="ListBox_MouseUp" 
+                 ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" >
             <!--<ListBox.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
@@ -156,52 +163,30 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Grid.Column="0" IsChecked="{Binding Path=IsActive}" Margin="0,3"
+                        <CheckBox Grid.Column="0" x:Name="IsActiveCheckBox" IsChecked="{Binding Path=IsActive}" Margin="0,3"
                                   FontSize="8"
                                   Background="YellowGreen"
                                   Foreground="Black"
-                                  IsEnabled="{Binding IsInstalled}">
-                            <CheckBox.Style>
-                                <Style TargetType="CheckBox" BasedOn="{StaticResource OnOffCheckBoxStyle}">
-                                    <Setter Property="ToolTip" Value="Activate addon"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsChecked" Value="True">
-                                            <Setter Property="ToolTip" Value="Deactivate addon"/>
-                                        </Trigger>
-
-                                    </Style.Triggers>
-                                </Style>
-                            </CheckBox.Style>
+                                  IsEnabled="{Binding IsInstalled}"
+                                  ToolTip="Activate addon"
+                                  Style="{DynamicResource OnOffCheckBoxStyle}">
                             <CheckBox.RenderTransform>
                                 <ScaleTransform  ScaleX="1.1" ScaleY="1.1" />
                             </CheckBox.RenderTransform>
                         </CheckBox>
-                        <Image Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
-                               >
-                            <FrameworkElement.Style>
-                                <Style TargetType="Image">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </FrameworkElement.Style>
-                        </Image>
-                        <TextBlock Grid.Column="2" Text="{Binding Path=DisplayText}">
-                            <FrameworkElement.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="Normal"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </FrameworkElement.Style>
-                        </TextBlock>
+                        <Image x:Name="ServerCertImage" Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
+                               Visibility="Collapsed"/>
+                        <TextBlock x:Name="DisplayTextTextBlock" Grid.Column="2" Text="{Binding Path=DisplayText}" FontWeight="Normal"/>
                     </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
+                            <Setter TargetName="DisplayTextTextBlock" Property="FontWeight" Value="Bold"/>
+                            <Setter TargetName="ServerCertImage" Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <Trigger SourceName="IsActiveCheckBox"  Property="IsChecked" Value="True">
+                            <Setter TargetName="IsActiveCheckBox" Property="ToolTip" Value="Deactivate addon"/>
+                        </Trigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
