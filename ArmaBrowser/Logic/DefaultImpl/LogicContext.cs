@@ -609,7 +609,7 @@ namespace ArmaBrowser.Logic
                         Path.DirectorySeparatorChar + "Addons" + Path.DirectorySeparatorChar;
                     var hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
                     var webapi = new AddonWebApi();
-                    webapi.DownloadAddon(hash, targetFolder);
+                    webapi.DownloadAddon(addon, hash, targetFolder);
 
                     var addons = _defaultDataRepository.GetInstalledAddons(targetFolder);
                     IArmaAddon item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));

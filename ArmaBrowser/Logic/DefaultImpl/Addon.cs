@@ -15,6 +15,7 @@ namespace ArmaBrowser.Logic
         private IEnumerable<AddonKey> _keyNames;
         private bool? _isEasyInstallable;
         private bool _isInstalled;
+        private int _progressValue;
 
 
         public string Name { get; internal set; }
@@ -96,6 +97,17 @@ namespace ArmaBrowser.Logic
         public bool IsInstallable
         {
             get { return _downlandUris != null && _downlandUris.Any(); }
+        }
+
+        public int ProgressValue
+        {
+            get { return _progressValue; }
+            set
+            {
+                if (value == _progressValue) return;
+                _progressValue = value;
+                OnPropertyChanged();
+            }
         }
 
         public bool IsArmaDefaultPath { get; set; }

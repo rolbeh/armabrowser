@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,22 +20,27 @@ using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
 using RestSharp;
 using RestSharp.Deserializers;
+using RestSharp.Extensions;
 using RestSharp.Serializers;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
     internal class AddonWebApi : IAddonWebApi
     {
+
+        private const string ApiVer = "4";
+
         //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
 #if DEBUG
-        private const string BaseUrl = @"http://homeserver/arma/api/3/";
+        private const string BaseUrl = @"http://homeserver/arma/api/" + ApiVer + @"/";
 #else
-        const string BaseUrl = @"http://armabrowser.org/api/3/";
+        const string BaseUrl = @"http://armabrowser.org/api/" + ApiVer + @"/";
 #endif
 
         private RestClient _client;
         private readonly Guid _installationsId;
         private static TimeSpan _offset = new TimeSpan();
+        private static string _ver;
 
 
         public AddonWebApi()
@@ -79,7 +85,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 #endif
                     _client.ClearHandlers();
                     _client.AddHandler("application/json", new JsonDeserializer());
-  
+
                     _client.AddDefaultParameter(new Parameter()
                     {
                         Name = "Accept-Language",
@@ -99,10 +105,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                         Type = ParameterType.HttpHeader
                     });
 
-                    var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-                    string ver = string.Empty;
-                    if (xml.Root != null)
-                        ver = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+                    var ver = GetAppVersion();
+
                     _client.AddDefaultParameter(new Parameter()
                     {
                         Name = "ClientVer",
@@ -112,6 +116,16 @@ namespace ArmaBrowser.Data.DefaultImpl
                 }
                 return _client;
             }
+        }
+
+        private static string GetAppVersion()
+        {
+            if (_ver != null) return _ver;
+
+            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+            if (xml.Root != null)
+                _ver = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            return _ver;
         }
 
 
@@ -244,46 +258,73 @@ namespace ArmaBrowser.Data.DefaultImpl
                     var hash = key.PubK.ToBase64().ComputeSha1Hash();
 
                     IRestRequest request = new RestRequest("/Addons/UploadAddon", Method.POST);
-                    request.AddParameter("hash", hash);
+
 
                     var a = addon;
-                    var d = new Action<Stream>(stream =>
+                    const string ZipFilePath = "tmp.zip";
+                    if (File.Exists(ZipFilePath)) File.Delete(ZipFilePath);
+                    ZipFile.CreateFromDirectory(a.Path, ZipFilePath, CompressionLevel.Optimal, true);
+                    FileParameter headerFileParam;
+                    using (var fs = new FileStream(ZipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
                     {
-                        //var zip = new System.IO.Compression.ZipArchive(stream, ZipArchiveMode.Create, true);
-
-                        //var rootName = a.Name;
-
-                        //var files = Directory.EnumerateFiles(a.Path, "*", SearchOption.AllDirectories).ToArray();
-                        //var rPath = Path.GetDirectoryName(a.Path);
-
-                        //ZipArchive
-
-                        //foreach (var file in files)
-                        //{
-                        //    var entry = zip.CreateEntry(Helper.PathHelper.GetRelativePath(rPath, file), CompressionLevel.Optimal);
-                        //    using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        //    {
-                        //        fs.CopyTo(entry.Open());
-                        //    }
-                        //    //var entry = zip.CreateEntryFromFile(file, Helper.PathHelper.GetRelativePath(rPath, file));
-                        //}
-
-                        ZipFile.CreateFromDirectory(a.Path, "tmp.zip", CompressionLevel.Optimal, true);
-                        using (var fs = new FileStream("tmp.zip", FileMode.Open, FileAccess.Read, FileShare.None))
+                        headerFileParam = new FileParameter
                         {
-                            fs.CopyTo(stream);
+                            ContentLength = fs.Length,
+                            Name = hash,
+                            FileName = addon.Name,
+                            //ContentType = "application/zip",
+                            //Writer = delegate(Stream stream) { fs.CopyTo(stream); }
+                        };
+
+                        Action<Stream> d = delegate(Stream stream)
+                        {
+                            var buffer = new byte[2048];
+                            var readLen = fs.Read(buffer, 0, buffer.Length);
+                            var totalTransmittedCount = 0L;
+                            var aAitem = addon as Addon;
+                            try
+                            {
+                                while (readLen > 0)
+                                {
+                                    stream.Write(buffer, 0, readLen);
+                                    stream.Flush();
+                                    totalTransmittedCount += readLen;
+
+                                    if (aAitem != null)
+                                    {
+                                        var progress = Convert.ToInt32(totalTransmittedCount * 100L / fs.Length);
+                                        aAitem.ProgressValue = progress > 0 ? progress : 1;
+                                    }
+                                    if (totalTransmittedCount == fs.Length)
+                                        break;
+                                    readLen = fs.Read(buffer, 0, buffer.Length);
+                                }
+
+                            }
+                            finally
+                            {
+                                if (aAitem != null)
+                                    aAitem.ProgressValue = 0;
+                            }
+                        };
+
+                        headerFileParam.Writer = d;
+
+                        request.Files.Add(headerFileParam);
+
+                        //request.AlwaysMultipartFormData = false;
+
+                        request.AddParameter("hash", hash, ParameterType.GetOrPost);
+
+                        request.AddParameter("ACCEPT", "text/plain", ParameterType.HttpHeader);
+                        request = request.htua(_offset);
+                        var restResult = ExecuteRequest(request);
+
+                        if (restResult.StatusCode == HttpStatusCode.OK)
+                        {
+                            addon.IsEasyInstallable = true;
+                            return;
                         }
-                        File.Delete("tmp.zip");
-
-                    });
-
-                    request.AddFile(hash, d, addon.Name, "application/zip");
-                    request = request.htua(_offset);
-                    var restResult = ExecuteRequest(request);
-
-                    if (restResult.StatusCode == HttpStatusCode.OK)
-                    {
-                        return;
                     }
                 }
 
@@ -294,36 +335,75 @@ namespace ArmaBrowser.Data.DefaultImpl
             }
         }
 
-        internal void DownloadAddon(string addonPubKeyHash, string targetFolder)
+        internal void DownloadAddon(IAddon addon, string addonPubKeyHash, string targetFolder)
         {
             var request = new RestRequest("/Addons/DownloadAddon", Method.POST);
-            
+            var tmpfile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
             request.AddParameter("hash", addonPubKeyHash)
-                   .AddHeader("ACCEPT", "application/zip")
-                   .htua();
+                .AddHeader("ACCEPT", "application/zip")
+                .htua();
 
-            string tempFile = "tmp.zip";
-            
-                request.ResponseWriter = (res, stream) =>
+            request.ResponseWriter = (res, stream) =>
+            {
+                int fileLen = -1;
+                var hLen = res.Headers.FirstOrDefault(h => "Content-Length".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
+                if (hLen != null)
+                    int.TryParse(hLen.Value, out fileLen);
+
+                var s = stream as System.IO.Compression.GZipStream;
+                var myAddon = addon as Addon;
+                if (res.StatusCode == HttpStatusCode.OK &&
+                    "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (res.StatusCode == HttpStatusCode.OK && "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase) )
+                    try
                     {
-                        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read, true))
+
+                        var buffer = new byte[1024 * 8];
+                        var len = 0;
+                        var downloadLen = 0;
+                        using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Write))
                         {
-                            archive.ExtractToDirectory(targetFolder);
+                            do
+                            {
+                                len = s.Read(buffer, 0, buffer.Length);
+                                tmpfs.Write(buffer, 0, len);
+                                downloadLen += len;
+                                if (myAddon == null || downloadLen <= 0) continue;
+                                var progress = Convert.ToInt32(downloadLen * 100L / fileLen);
+                                myAddon.ProgressValue = progress > 0 ? progress : 1;
+                            } while (len > 0);
+                            tmpfs.Flush();
                         }
-
-
-                        //using (var writer = File.OpenWrite(tempFile))
-                        //{
-                        //    stream.CopyTo(writer);
-                        //}
                     }
-                };
-                RestClient.ClearHandlers();
-                var response = ExecuteRequest(request);
+                    finally
+                    {
+                        if (myAddon != null)
+                            myAddon.ProgressValue = 0;
+                    }
+                }
+            };
 
-                
+            RestClient.ClearHandlers();
+            var response = ExecuteRequest(request);
+
+            if (File.Exists(tmpfile))
+            {
+                try
+                {
+                using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
+                using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
+                {
+                    archive.ExtractToDirectory(targetFolder);
+                }
+
+                }
+                finally
+                {
+                    File.Delete(tmpfile);
+                }
+            }
+
         }
     }
 
@@ -412,8 +492,8 @@ namespace ArmaBrowser.Data.DefaultImpl
             {
                 return hashAlg.ComputeHash(b).ToHexString();
             }
-             
+
         }
-        
+
     }
 }

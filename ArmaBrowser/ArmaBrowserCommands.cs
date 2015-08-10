@@ -79,15 +79,15 @@ namespace ArmaBrowser
             var addon = e.Parameter as IAddon;
             if (addon != null)
             {
-                if (PathHelper.CalculateFolderSize(addon.Path) < (1024*1024*20))
+                //if (PathHelper.CalculateFolderSize(addon.Path) < (1024*1024*20))
                 {
                     LogicContext.UploadAddon(addon);
                 }
-                else
-                {
-                    MessageBox.Show(Application.Current.MainWindow, "At present, only addons with an installation size of 20 MB are allowed to upload.",
-                        "Addon is too big. ", MessageBoxButton.OK, MessageBoxImage.Stop);
-                }
+                //else
+                //{
+                //    MessageBox.Show(Application.Current.MainWindow, "At present, only addons with an installation size of 20 MB are allowed to upload.",
+                //        "Addon is too big. ", MessageBoxButton.OK, MessageBoxImage.Stop);
+                //}
             }
         }
 

@@ -338,6 +338,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\rbsoft.Controls\rbsoft.Controls.csproj">
+      <Project>{7A3A64E8-FB0A-4300-A6FE-0D9C7DBD1E11}</Project>
+      <Name>rbsoft.Controls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
       <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
       <Name>RestSharp.Net4.Signed</Name>
