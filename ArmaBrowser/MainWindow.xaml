@@ -13,7 +13,7 @@
         xmlns:armaBrowser="clr-namespace:ArmaBrowser"
         xmlns:controls="clr-namespace:ArmaBrowser.Views.Controls"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
-        Height="693" Width="1023" MinWidth="660" MinHeight="600"
+        Height="693" Width="1023"
         UseLayoutRounding="False"
         Foreground="White"
         RenderOptions.BitmapScalingMode="NearestNeighbor"
@@ -55,7 +55,7 @@
     <Window.CommandBindings>
         <CommandBinding Command="Open" CanExecute="OpenCommandBinding_CanExecute" Executed="OpenCommandBinding_Executed"/>
     </Window.CommandBindings>
-    <Grid Background="{StaticResource BackroundNormalBrush}">
+    <Grid Background="{StaticResource BackroundNormalBrush}"  MinWidth="660" MinHeight="600">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
