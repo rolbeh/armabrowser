@@ -4,9 +4,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,18 +20,27 @@ using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
 using RestSharp;
 using RestSharp.Deserializers;
+using RestSharp.Extensions;
 using RestSharp.Serializers;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    class AddonWebApi : IAddonWebApi
+    internal class AddonWebApi : IAddonWebApi
     {
-        //const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
-        const string BaseUrl = @"http://armabrowser.org/api/3/";
+
+        private const string ApiVer = "4";
+
+        //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
+#if DEBUG
+        private const string BaseUrl = @"http://homeserver/arma/api/" + ApiVer + @"/";
+#else
+        const string BaseUrl = @"http://armabrowser.org/api/" + ApiVer + @"/";
+#endif
 
         private RestClient _client;
         private readonly Guid _installationsId;
         private static TimeSpan _offset = new TimeSpan();
+        private static string _ver;
 
 
         public AddonWebApi()
@@ -36,7 +48,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             _installationsId = new Guid(Properties.Settings.Default.Id.FromHexString());
         }
 
-        string GenerateByteArraCode()
+        private string GenerateByteArraCode()
         {
             var result = new StringBuilder("new byte[] {");
             var byteCount = 0;
@@ -61,7 +73,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             return result.ToString();
         }
 
-        RestClient RestClient
+        private RestClient RestClient
         {
             get
             {
@@ -71,28 +83,78 @@ namespace ArmaBrowser.Data.DefaultImpl
 #if DEBUG
                     _client.AddDefaultParameter(new Parameter() { Name = "XDEBUG_SESSION_START", Value = "3B978CA5", Type = ParameterType.QueryString });
 #endif
-                    _client.AddDefaultParameter(new Parameter() { Name = "Accept", Value = "application/json", Type = ParameterType.HttpHeader });
-                    _client.AddDefaultParameter(new Parameter() { Name = "Accept-Language", Value = Thread.CurrentThread.CurrentUICulture.Name, Type = ParameterType.HttpHeader });
-                    _client.AddDefaultParameter(new Parameter() { Name = "Accept-Encoding", Value = "gzip,deflate,text/plain", Type = ParameterType.HttpHeader });
-                    _client.AddDefaultParameter(new Parameter() { Name = "APPI", Value = Properties.Settings.Default.Id, Type = ParameterType.HttpHeader });
+                    _client.ClearHandlers();
+                    _client.AddHandler("application/json", new JsonDeserializer());
 
-                    var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-                    string ver = string.Empty;
-                    if (xml.Root != null)
-                        ver = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
-                    _client.AddDefaultParameter(new Parameter() { Name = "ClientVer", Value = ver, Type = ParameterType.HttpHeader });
+                    _client.AddDefaultParameter(new Parameter()
+                    {
+                        Name = "Accept-Language",
+                        Value = Thread.CurrentThread.CurrentUICulture.Name,
+                        Type = ParameterType.HttpHeader
+                    });
+                    _client.AddDefaultParameter(new Parameter()
+                    {
+                        Name = "Accept-Encoding",
+                        Value = "gzip,deflate,text/plain",
+                        Type = ParameterType.HttpHeader
+                    });
+                    _client.AddDefaultParameter(new Parameter()
+                    {
+                        Name = "APPI",
+                        Value = Properties.Settings.Default.Id,
+                        Type = ParameterType.HttpHeader
+                    });
+
+                    var ver = GetAppVersion();
+
+                    _client.AddDefaultParameter(new Parameter()
+                    {
+                        Name = "ClientVer",
+                        Value = ver,
+                        Type = ParameterType.HttpHeader
+                    });
                 }
                 return _client;
             }
         }
 
-
-        public void PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
+        private static string GetAppVersion()
         {
-            Task.Run(() => PostInstalledAddonsKeys(addons));
+            if (_ver != null) return _ver;
+
+            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
+            if (xml.Root != null)
+                _ver = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            return _ver;
         }
 
-        public void PostInstalledAddonsKeys(IEnumerable<IAddon> addons)
+
+        private IRestResponse ExecuteRequest(IRestRequest request)
+        {
+            var restResult = RestClient.Execute(request);
+
+            if (restResult.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var dateString =
+                    (string)
+                        restResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase))
+                            .Value;
+                _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
+                _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
+                request = request.htua(_offset);
+
+                restResult = _client.Execute(request);
+            }
+            return restResult;
+        }
+
+
+        public async Task PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
+        {
+            await Task.Run(() => PostInstalledAddonsKeys(addons));
+        }
+
+        private void PostInstalledAddonsKeys(IEnumerable<IAddon> addons)
         {
             var request = new RestRequest("/Addons", Method.POST).htua();
 
@@ -110,12 +172,15 @@ namespace ArmaBrowser.Data.DefaultImpl
             var queryResult = RestClient.Execute(request);
             if (queryResult.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var dateString = (string)queryResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase)).Value;
+                var dateString =
+                    (string)
+                        queryResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase))
+                            .Value;
                 _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
                 _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
                 request = request.htua(_offset);
 
-                queryResult = _client.Execute(request);
+                queryResult = RestClient.Execute(request);
             }
 
         }
@@ -136,7 +201,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                     var o = j.Deserialize<List<RestAddonInfoResult>>(restResult);
 
                     return o;
-                };
+                }
+                ;
             }
             catch (Exception exception)
             {
@@ -147,30 +213,121 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         public void AddAddonDownloadUri(IAddon addon, string uri)
         {
+            throw new NotSupportedException();
+            //try
+            //{
+            //    var key = addon.KeyNames.FirstOrDefault();
+            //    RestAddonUri item = null;
+            //    if (key != null)
+            //    {
+            //        item = new RestAddonUri
+            //        {
+            //            Hash = key.PubK.ToBase64().ComputeSha1Hash(),
+            //            Uri = uri
+            //        };
+            //    }
+
+
+            //    var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
+
+            //    request.AddJsonBody(item);
+
+            //    var restResult = RestClient.Execute(request);
+
+            //    if (restResult.StatusCode == HttpStatusCode.OK)
+            //    {
+            //        return;
+            //    }
+            //    ;
+            //}
+            //catch (Exception exception)
+            //{
+            //    Debug.WriteLine(exception);
+            //}
+        }
+
+
+        internal void UploadAddon(IAddon addon)
+        {
             try
             {
                 var key = addon.KeyNames.FirstOrDefault();
                 RestAddonUri item = null;
                 if (key != null)
                 {
-                    item = new RestAddonUri
+                    var hash = key.PubK.ToBase64().ComputeSha1Hash();
+
+                    IRestRequest request = new RestRequest("/Addons/UploadAddon", Method.POST);
+
+
+                    var a = addon;
+                    const string ZipFilePath = "tmp.zip";
+                    if (File.Exists(ZipFilePath)) File.Delete(ZipFilePath);
+                    ZipFile.CreateFromDirectory(a.Path, ZipFilePath, CompressionLevel.Optimal, true);
+                    FileParameter headerFileParam;
+                    using (var fs = new FileStream(ZipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
                     {
-                        Hash = key.PubK.ToBase64().ComputeSha1Hash(),
-                        Uri = uri
-                    };
+                        headerFileParam = new FileParameter
+                        {
+                            ContentLength = fs.Length,
+                            Name = hash,
+                            FileName = addon.Name,
+                            //ContentType = "application/zip",
+                            //Writer = delegate(Stream stream) { fs.CopyTo(stream); }
+                        };
+
+                        Action<Stream> d = delegate(Stream stream)
+                        {
+                            var buffer = new byte[2048];
+                            var readLen = fs.Read(buffer, 0, buffer.Length);
+                            var totalTransmittedCount = 0L;
+                            var aAitem = addon as Addon;
+                            try
+                            {
+                                while (readLen > 0)
+                                {
+                                    stream.Write(buffer, 0, readLen);
+                                    stream.Flush();
+                                    totalTransmittedCount += readLen;
+
+                                    if (aAitem != null)
+                                    {
+                                        var progress = Convert.ToInt32(totalTransmittedCount * 100L / fs.Length);
+                                        aAitem.ProgressValue = progress > 0 ? progress : 1;
+                                    }
+                                    if (totalTransmittedCount == fs.Length)
+                                        break;
+                                    readLen = fs.Read(buffer, 0, buffer.Length);
+                                }
+
+                            }
+                            finally
+                            {
+                                if (aAitem != null)
+                                    aAitem.ProgressValue = 0;
+                            }
+                        };
+
+                        headerFileParam.Writer = d;
+
+                        request.Files.Add(headerFileParam);
+
+                        //request.AlwaysMultipartFormData = false;
+
+                        request.AddParameter("hash", hash, ParameterType.GetOrPost);
+
+                        request.AddParameter("ACCEPT", "text/plain", ParameterType.HttpHeader);
+                        request = request.htua(_offset);
+                        var restResult = ExecuteRequest(request);
+
+                        if (restResult.StatusCode == HttpStatusCode.OK)
+                        {
+                            addon.IsEasyInstallable = true;
+                            return;
+                        }
+                    }
                 }
 
-
-                var request = new RestRequest("/Addons/AddAddonDownloadUri", Method.POST).htua(_offset);
-
-                request.AddJsonBody(item);
-
-                var restResult = RestClient.Execute(request);
-
-                if (restResult.StatusCode == HttpStatusCode.OK)
-                {
-                    return;
-                };
             }
             catch (Exception exception)
             {
@@ -178,7 +335,78 @@ namespace ArmaBrowser.Data.DefaultImpl
             }
         }
 
+        internal void DownloadAddon(IAddon addon, string addonPubKeyHash, string targetFolder)
+        {
+            var request = new RestRequest("/Addons/DownloadAddon", Method.POST);
+            var tmpfile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+            request.AddParameter("hash", addonPubKeyHash)
+                .AddHeader("ACCEPT", "application/zip")
+                .htua();
+
+            request.ResponseWriter = (res, stream) =>
+            {
+                int fileLen = -1;
+                var hLen = res.Headers.FirstOrDefault(h => "Content-Length".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
+                if (hLen != null)
+                    int.TryParse(hLen.Value, out fileLen);
+
+                var s = stream as System.IO.Compression.GZipStream;
+                var myAddon = addon as Addon;
+                if (res.StatusCode == HttpStatusCode.OK &&
+                    "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+
+                        var buffer = new byte[1024 * 8];
+                        var len = 0;
+                        var downloadLen = 0;
+                        using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Write))
+                        {
+                            do
+                            {
+                                len = s.Read(buffer, 0, buffer.Length);
+                                tmpfs.Write(buffer, 0, len);
+                                downloadLen += len;
+                                if (myAddon == null || downloadLen <= 0) continue;
+                                var progress = Convert.ToInt32(downloadLen * 100L / fileLen);
+                                myAddon.ProgressValue = progress > 0 ? progress : 1;
+                            } while (len > 0);
+                            tmpfs.Flush();
+                        }
+                    }
+                    finally
+                    {
+                        if (myAddon != null)
+                            myAddon.ProgressValue = 0;
+                    }
+                }
+            };
+
+            RestClient.ClearHandlers();
+            var response = ExecuteRequest(request);
+
+            if (File.Exists(tmpfile))
+            {
+                try
+                {
+                using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
+                using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
+                {
+                    archive.ExtractToDirectory(targetFolder);
+                }
+
+                }
+                finally
+                {
+                    File.Delete(tmpfile);
+                }
+            }
+
+        }
     }
+
 
     static class RestRequestExtension
     {
@@ -222,11 +450,12 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         #endregion
         private const string A = @"ArmaServerBrowser";
-        private const string V = @"1";
+        private const string V = @"2";
         private const string AhK = "appkey";
 
         [SecurityCritical]
-        internal static RestRequest htua(this RestRequest request, TimeSpan offset = default(TimeSpan))
+        // ReSharper disable once InconsistentNaming
+        internal static IRestRequest htua(this IRestRequest request, TimeSpan offset = default(TimeSpan))
         {
             var time = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour,
                 DateTime.Now.Minute, 0).ToUniversalTime().Add(offset);
@@ -254,11 +483,16 @@ namespace ArmaBrowser.Data.DefaultImpl
         internal static string ComputeSha1Hash(this string s)
         {
             byte[] hashValue = Encoding.ASCII.GetBytes(s);
+            return ComputeSha1Hash(hashValue);
+        }
+
+        internal static string ComputeSha1Hash(this byte[] b)
+        {
             using (var hashAlg = HashAlgorithm.Create(@"SHA1"))
             {
-                hashValue = hashAlg.ComputeHash(hashValue);
+                return hashAlg.ComputeHash(b).ToHexString();
             }
-            return Encoding.ASCII.GetString(hashValue);
+
         }
 
     }

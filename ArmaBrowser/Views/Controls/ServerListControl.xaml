@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:design="clr-namespace:ArmaBrowser.Design"
+             xmlns:controls="clr-namespace:ArmaBrowser.Views.Controls"
              mc:Ignorable="d design"
              d:DesignHeight="300" d:DesignWidth="700" 
              d:DataContext="{d:DesignInstance Type=design:ServerListViewModel, IsDesignTimeCreatable=True}"
@@ -97,7 +98,7 @@
                 </GroupStyle>
             </ListView.GroupStyle>
         </ListView>-->
-
+      
         <DataGrid Grid.Row="0" x:Name="ServerDatagrid" 
               AutoGenerateColumns="False"
               Background="{x:Null}"

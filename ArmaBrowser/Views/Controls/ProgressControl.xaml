@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="ArmaBrowser.Views.Controls.ProgressControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:logic="clr-namespace:ArmaBrowser.Logic"
+             mc:Ignorable="d" 
+             Background="Black"
+             MinHeight="120" MinWidth="85"
+             d:DesignHeight="120" d:DesignWidth="85" d:DataContext="{d:DesignInstance Type=logic:LoadingServerListContext }">
+    <Grid  Margin="5,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        
+        <!--<Rectangle Grid.Column="1" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
+                   Height="50"/>-->
+        <ProgressBar Grid.Column="1" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+                     Orientation="Vertical"
+                     Height="100"
+                     Background="{x:Null}"
+                     Maximum="300"
+                     Value="{Binding Ping}"/>
+
+        <!--<Rectangle Grid.Column="2" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
+                   Height="100"/>-->
+
+        <ProgressBar Grid.Column="2" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+                     Orientation="Vertical"
+                     Height="100"
+                     Background="{x:Null}"
+                     Minimum="0"
+                     Maximum="{Binding MaximumValue}"
+                     Value="{Binding ProgressValue}"/>
+
+        <!--<Rectangle Grid.Column="3" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
+                   Height="60"/>-->
+        
+        <ProgressBar Grid.Column="3" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+                     Orientation="Vertical"
+                     Height="100"
+                     Background="{x:Null}"
+                     />
+    </Grid>
+</UserControl>
