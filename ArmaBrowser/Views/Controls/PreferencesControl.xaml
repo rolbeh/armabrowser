@@ -41,13 +41,6 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="Addons">
-                    <StackPanel>
-                        <CheckBox Grid.Row="0" IsChecked="{Binding Path=IsGatheringAddonInfosEnabled, Source={x:Static properties:Settings.Default}}" VerticalAlignment="Center" Margin="10" HorizontalAlignment="Left">
-                            <TextBlock TextWrapping="Wrap" Padding="10,0,0,0">Yes, collect information about addons and send it to www.armabrowser.org?</TextBlock>
-                        </CheckBox>
-                    </StackPanel>
-                </GroupBox>
             </StackPanel>
         </Grid>
          
