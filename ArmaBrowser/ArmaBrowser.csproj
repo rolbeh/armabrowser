@@ -93,7 +93,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>armabrowser.org.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
@@ -193,7 +193,9 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
-    <None Include="armabrowser.org.pfx" />
+    <None Include="..\armabrowser.org.pfx">
+      <Link>armabrowser.org.pfx</Link>
+    </None>
     <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -288,7 +290,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="rbsoftware.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

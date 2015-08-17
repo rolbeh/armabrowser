@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
 using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
+using Controls.System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Deserializers;
 using RestSharp.Extensions;
@@ -183,6 +184,11 @@ namespace ArmaBrowser.Data.DefaultImpl
                 queryResult = RestClient.Execute(request);
             }
 
+        }
+
+        public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeyNames)
+        {
+            return await TaskHelper.Run(GetAddonInfos, addonKeyNames);
         }
 
         public IEnumerable<RestAddonInfoResult> GetAddonInfos(params string[] addonKeyNames)
