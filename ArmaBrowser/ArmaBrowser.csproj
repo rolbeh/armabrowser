@@ -34,11 +34,11 @@
     <ProductName>ArmaBrowser</ProductName>
     <PublisherName>ArmaBrowser</PublisherName>
     <SuiteName>ArmaBrowser</SuiteName>
-    <MinimumRequiredVersion>0.7.5.87</MinimumRequiredVersion>
+    <MinimumRequiredVersion>0.8.0.97</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>87</ApplicationRevision>
-    <ApplicationVersion>0.7.5.%2a</ApplicationVersion>
+    <ApplicationRevision>98</ApplicationRevision>
+    <ApplicationVersion>0.8.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -71,14 +71,13 @@
     <ManifestCertificateThumbprint>F0150A2E8ADC861E3997035865A8DD2BEFD05FF1</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>
-    </ManifestKeyFile>
+    <ManifestKeyFile>armabrowser.org.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <TargetZone>Internet</TargetZone>
@@ -94,7 +93,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>rbsoftware.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
@@ -194,6 +193,9 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
+    <None Include="..\armabrowser.org.pfx">
+      <Link>armabrowser.org.pfx</Link>
+    </None>
     <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -288,7 +290,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="rbsoftware.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

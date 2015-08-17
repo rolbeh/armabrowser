@@ -35,7 +35,7 @@ namespace ArmaBrowser.Logic
 
         public event EventHandler<string> LiveAction;
 
-        
+
 
         #endregion Fields
 
@@ -233,7 +233,7 @@ namespace ArmaBrowser.Logic
                 var threadContext = new LoadingServerListContext
                 {
                     Dest = dest,
-                    Ips = _serverIPListe.Skip(blockCount*i).Take(blockCount).ToArray(),
+                    Ips = _serverIPListe.Skip(blockCount * i).Take(blockCount).ToArray(),
                     Reset = reset,
                     Token = token
                 };
@@ -243,13 +243,13 @@ namespace ArmaBrowser.Logic
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
             waitArray[waitArray.Length - 1] = lastreset;
-            
+
             {
-                var thread = new Thread(LoadingServerList) {IsBackground = true, Priority = ThreadPriority.Lowest};
+                var thread = new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest };
                 var threadContext = new LoadingServerListContext
                 {
                     Dest = dest,
-                    Ips = _serverIPListe.Skip(blockCount*threadCount).ToArray(),
+                    Ips = _serverIPListe.Skip(blockCount * threadCount).ToArray(),
                     Reset = lastreset
                 };
                 UiTask.Run(_reloadThreads.Add, threadContext);
@@ -360,7 +360,7 @@ namespace ArmaBrowser.Logic
 
         void AssignProperties(ServerItem item, Data.IServerVo vo)
         {
-            var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var keyWordsSplited = vo.Keywords.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);
 
             foreach (var s in keyWordsSplited)
@@ -402,7 +402,7 @@ namespace ArmaBrowser.Logic
                 if (_addons == null)
                 {
                     _addons = new ObservableCollection<IAddon>();
-                    
+
 
                     if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                     {
@@ -433,9 +433,9 @@ namespace ArmaBrowser.Logic
                     {
 
                         ReloadAddons();
-                        
+
                     }
-                    
+
                 }
 
                 return _addons;
@@ -446,7 +446,7 @@ namespace ArmaBrowser.Logic
         {
             if (_addons == null)
                 _addons = new ObservableCollection<IAddon>();
-            
+
             _addons.Clear();
 
             var armaPath = Properties.Settings.Default.ArmaPath;
@@ -565,11 +565,8 @@ namespace ArmaBrowser.Logic
 
         public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
         {
-            return await Task.Run(() =>
-            {
-                var webapi = new AddonWebApi();
-                return webapi.GetAddonInfos(addonKeynames);
-            });
+            var webapi = new AddonWebApi();
+            return await webapi.GetAddonInfosAsync(addonKeynames);
         }
 
         internal void AddAddonUri(IAddon addon, string uri)
@@ -641,7 +638,7 @@ namespace ArmaBrowser.Logic
                 }
             }
         }
-        
+
         public async Task UpdateAddonInfos(string[] hostAddonKeyNames)
         {
             IEnumerable<RestAddonInfoResult> addonInfosTask = await GetAddonInfosAsync(hostAddonKeyNames);
@@ -665,7 +662,7 @@ namespace ArmaBrowser.Logic
                         updAddon.IsEasyInstallable = addonInfo.easyinstall;
                     else
                     {
-                        
+                        if (addonInfo.easyinstall)
                             Addons.Add(new Addon()
                             {
                                 Name = addonInfo.name,
@@ -677,7 +674,7 @@ namespace ArmaBrowser.Logic
                                 IsEasyInstallable = addonInfo.easyinstall,
                                 CanActived = true
                             });
-                        
+
                     }
                 }
             }//);
@@ -695,7 +692,7 @@ namespace ArmaBrowser.Logic
 
         public int MaximumValue
         {
-            get { return Ips != null ? Ips.Length: 0; }
+            get { return Ips != null ? Ips.Length : 0; }
         }
 
         public int ProgressValue
