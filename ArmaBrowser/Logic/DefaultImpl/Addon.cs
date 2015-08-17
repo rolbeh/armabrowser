@@ -13,6 +13,9 @@ namespace ArmaBrowser.Logic
         private bool _canActived;
         private IEnumerable<Uri> _downlandUris;
         private IEnumerable<AddonKey> _keyNames;
+        private bool? _isEasyInstallable;
+        private bool _isInstalled;
+        private int _progressValue;
 
 
         public string Name { get; internal set; }
@@ -28,9 +31,11 @@ namespace ArmaBrowser.Logic
         public bool IsActive
         {
             get { return _isActive; }
-            set 
-            { 
-                _isActive = value;
+            set
+            {
+                if (value == _isActive) return;
+                _isActive = IsInstalled && value;
+
                 _activationOrder = IsActive ? DateTime.Now.Ticks : 0;
                 OnPropertyChanged("ActivationOrder");
                 OnPropertyChanged();
@@ -39,15 +44,15 @@ namespace ArmaBrowser.Logic
 
         public bool CanActived
         {
-            get { return _canActived && IsInstalled; }
+            get { return ((IsEasyInstallable.HasValue && IsEasyInstallable.Value) || IsInstalled) && _canActived; }
             set
             {
                 if (_canActived == value) return;
                 _canActived = value;
-                   OnPropertyChanged();
+                OnPropertyChanged();
             }
         }
-        
+
         public long ActivationOrder
         {
             get
@@ -62,7 +67,19 @@ namespace ArmaBrowser.Logic
             internal set { _keyNames = value; }
         }
 
-        public bool IsInstalled { get; internal set; }
+        public bool IsInstalled
+        {
+            get { return _isInstalled; }
+            internal set
+            {
+                if (value == _isInstalled) return;
+                _isInstalled = value;
+                OnPropertyChanged();
+                OnPropertyChanged("IsEasyInstallable");
+                OnPropertyChanged("CanActived");
+                OnPropertyChanged("CanSharing");
+            }
+        }
 
         public IEnumerable<Uri> DownlandUris
         {
@@ -73,13 +90,24 @@ namespace ArmaBrowser.Logic
                 _downlandUris = value;
                 OnPropertyChanged("IsInstallable");
                 OnPropertyChanged();
-                
+
             }
         }
 
         public bool IsInstallable
         {
             get { return _downlandUris != null && _downlandUris.Any(); }
+        }
+
+        public int ProgressValue
+        {
+            get { return _progressValue; }
+            set
+            {
+                if (value == _progressValue) return;
+                _progressValue = value;
+                OnPropertyChanged();
+            }
         }
 
         public bool IsArmaDefaultPath { get; set; }
@@ -90,6 +118,25 @@ namespace ArmaBrowser.Logic
             {
                 return IsArmaDefaultPath ? Name : Path;
             }
+        }
+
+        public bool? IsEasyInstallable
+        {
+            get { return _isEasyInstallable.HasValue ? (bool?)(_isEasyInstallable.Value && !_isInstalled) : null; }
+            set
+            {
+                if (value == _isEasyInstallable) return;
+                _isEasyInstallable = value;
+                OnPropertyChanged();
+                OnPropertyChanged("CanSharing");
+                OnPropertyChanged("CanActived");
+            }
+        }
+
+
+        public bool CanSharing
+        {
+            get { return IsInstalled && _isEasyInstallable.HasValue && !_isEasyInstallable.Value; }
         }
     }
 }

@@ -6,8 +6,112 @@
              xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              xmlns:properties="clr-namespace:ArmaBrowser.Properties"
+             xmlns:armaBrowser="clr-namespace:ArmaBrowser"
+             xmlns:converter="clr-namespace:ArmaBrowser.Views.Converter"
+             xmlns:rbsoft="http://schemas.rbsoftware.de/rbsoft/2015"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
+    <UserControl.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <converter:ShowShareAddonConverter x:Key="ShowShareAddonConverter"/>
+        <converter:ShowEasyInstallAddonConverter x:Key="ShowEasyInstallAddonConverter"/>
+
+        <Style x:Key="ListBoxItemStyle2" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+            <Setter Property="Padding" Value="2,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.UploadAddon" CommandParameter="{Binding .}" BorderThickness="0" Background="Transparent"
+                            		ToolTip="upload and share"
+                            		Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                            		Visibility="{Binding CanSharing, Converter={StaticResource BooleanToVisibilityConverter}}"  >
+                                    <Image x:Name="shareaddonImage" Source="/Img/shareaddon.png" Stretch="None" Opacity="0.4"/>
+                                </Button>
+
+                                <!-- EasyInstallAddon  -->
+                                <Button Grid.Column="1" Command="armaBrowser:ArmaBrowserCommands.EasyInstallAddon" CommandParameter="{Binding .}" BorderThickness="0" Background="Transparent"
+                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                        Visibility="{Binding IsEasyInstallable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        ToolTip="Download and equip">
+                                    <Image x:Name="DownloadImage" Source="/Img/DownloadAddon.png" Stretch="None" Opacity="0.4"/>
+                                </Button>
+
+                                <rbsoft:EllipseProgressBar Grid.Column="1" Value="{Binding Path=ProgressValue}" Height="24" Width="24"
+                                                           Background="{x:Null}"
+                                                           Foreground="WhiteSmoke"
+                                                           BorderBrush="#FF634E4E">
+                                    <FrameworkElement.Style>
+                                        <Style TargetType="rbsoft:EllipseProgressBar">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=ProgressValue}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </FrameworkElement.Style>
+                                </rbsoft:EllipseProgressBar>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger SourceName="DownloadImage" Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DownloadImage" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger SourceName="shareaddonImage" Property="IsMouseOver" Value="True">
+                                <Setter TargetName="shareaddonImage" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ResourceKey=ListBoxItemStyle2}">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="ToolTip">
+                <Setter.Value>
+                    <ToolTip>
+                        <TextBlock Text="{Binding Path}"/>
+                    </ToolTip>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive}" Value="true">
+                    <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -17,11 +121,12 @@
         <ListBox Grid.Row="0" x:Name="AddonsListBox" ItemsSource="{Binding Path=Addons}" 
                  BorderThickness="1" BorderBrush="#FF688CAF"
                  Foreground="{StaticResource ForegroundNormalBrush}"
-                 
                  FontSize="14"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  SelectedItem="{Binding Path=SelectedAddon}"
-                 MouseUp="ListBox_MouseUp" >
-            <ListBox.GroupStyle>
+                 MouseUp="ListBox_MouseUp" 
+                 ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" >
+            <!--<ListBox.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
@@ -29,10 +134,10 @@
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" >
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Name}" Value="True">
+                                            <DataTrigger Binding="{Binding Name}" Value="False">
                                                 <Setter Property="Text" Value="installed"/>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding Name}" Value="False">
+                                            <DataTrigger Binding="{Binding Name}" Value="True">
                                                 <Setter Property="Text" Value="can install"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -42,7 +147,7 @@
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
                 </GroupStyle>
-            </ListBox.GroupStyle>
+            </ListBox.GroupStyle>-->
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type logic:IAddon}">
                     <Grid Background="Transparent">
@@ -52,78 +157,32 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Grid.Column="0" IsChecked="{Binding Path=IsActive}" Margin="0,3"
-                                  Style="{StaticResource OnOffCheckBoxStyle}"
+                        <CheckBox Grid.Column="0" x:Name="IsActiveCheckBox" IsChecked="{Binding Path=IsActive}" Margin="0,3"
                                   FontSize="8"
                                   Background="YellowGreen"
-                                  Foreground="Black">
+                                  Foreground="Black"
+                                  IsEnabled="{Binding IsInstalled}"
+                                  ToolTip="Activate addon"
+                                  Style="{DynamicResource OnOffCheckBoxStyle}">
                             <CheckBox.RenderTransform>
                                 <ScaleTransform  ScaleX="1.1" ScaleY="1.1" />
                             </CheckBox.RenderTransform>
                         </CheckBox>
-                        <Image Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
-                               >
-                            <FrameworkElement.Style>
-                                <Style TargetType="Image">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </FrameworkElement.Style>
-                        </Image>
-                        <TextBlock Grid.Column="2" Text="{Binding Path=DisplayText}">
-                            <FrameworkElement.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="Normal"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </FrameworkElement.Style>
-                        </TextBlock>
-
-                        <!--<Image Grid.Column="3" Source="/Img/DownloadAddon.png" Stretch="None"  
-                               >
-                            <FrameworkElement.Style>
-                                <Style TargetType="Image">
-                                    <Setter Property="OpacityMask" Value="#BA000000"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="OpacityMask" Value="#FF000000"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </FrameworkElement.Style>
-                        </Image>-->
-
+                        <Image x:Name="ServerCertImage" Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
+                               Visibility="Collapsed"/>
+                        <TextBlock x:Name="DisplayTextTextBlock" Grid.Column="2" Text="{Binding Path=DisplayText}" FontWeight="Normal"/>
                     </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=CanActived}" Value="True">
+                            <Setter TargetName="DisplayTextTextBlock" Property="FontWeight" Value="Bold"/>
+                            <Setter TargetName="ServerCertImage" Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <Trigger SourceName="IsActiveCheckBox"  Property="IsChecked" Value="True">
+                            <Setter TargetName="IsActiveCheckBox" Property="ToolTip" Value="Deactivate addon"/>
+                        </Trigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ResourceKey={x:Type ListBoxItem}}">
-                    <Setter Property="BorderThickness" Value="1"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="ToolTip">
-                        <Setter.Value>
-                            <ToolTip>
-                                <TextBlock Text="{Binding Path=Path}"/>
-                            </ToolTip>
-                        </Setter.Value>
-                    </Setter>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=IsActive}" Value="true">
-                            <Setter Property="Background" Value="{StaticResource {x:Static SystemColors.HighlightBrushKey}}"/>
-                            <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
-                            <Setter Property="BorderBrush" Value="Black"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ListBox.ItemContainerStyle>
         </ListBox>
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,3">
 

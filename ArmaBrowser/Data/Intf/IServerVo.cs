@@ -33,7 +33,7 @@ namespace ArmaBrowser.Data
         string Signatures { get; }
         bool Passworded { get;}
 
-        long Ping { get;}
+        int Ping { get;}
 
         IEnumerable<ISteamGameServerPlayer> Players { get; }
 

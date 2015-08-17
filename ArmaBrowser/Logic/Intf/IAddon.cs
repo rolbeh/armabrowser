@@ -23,5 +23,6 @@ namespace ArmaBrowser.Logic
         bool IsInstallable { get; }
         bool IsArmaDefaultPath { get; }
         string CommandlinePath { get; }
+        bool? IsEasyInstallable { get; set; }
     }
 }

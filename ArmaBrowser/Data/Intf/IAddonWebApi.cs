@@ -9,6 +9,6 @@ namespace ArmaBrowser.Data
 {
     interface IAddonWebApi
     {
-        void PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons);
+        Task PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons);
     }
 }

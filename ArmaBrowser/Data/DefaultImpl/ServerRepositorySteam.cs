@@ -221,7 +221,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                         item = new ServerQueryRequest();
                         item.ProtocolVersion = br.ReadByte();
 
-                        item.Ping = sw.ElapsedMilliseconds;
+                        item.Ping = (int)sw.ElapsedMilliseconds;
 
                         var count = Array.FindIndex(receivedBytes, (int)mem.Position, IsNULL) - (int)mem.Position;
                         item.GameServerName = enconding.GetString(br.ReadBytes(count));
@@ -530,7 +530,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             public string Keywords;
 
             public long GameID;
-            public long Ping;
+            public int Ping;
 
             public Dictionary<string, string> KeyValues { get; private set; }
 

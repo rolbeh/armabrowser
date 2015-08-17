@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,6 +31,12 @@ namespace ArmaBrowser.Logic
         private string _armaVersion = null;
         private Data.IServerVo[] _serverIPListe;
 
+        private readonly ObservableCollection<LoadingServerListContext> _reloadThreads = new ObservableCollection<LoadingServerListContext>();
+
+        public event EventHandler<string> LiveAction;
+
+
+
         #endregion Fields
 
         public LogicContext()
@@ -48,6 +55,14 @@ namespace ArmaBrowser.Logic
             get
             {
                 return _serverItems;
+            }
+        }
+
+        public ObservableCollection<LoadingServerListContext> ReloadThreads
+        {
+            get
+            {
+                return _reloadThreads;
             }
         }
 
@@ -92,8 +107,6 @@ namespace ArmaBrowser.Logic
                 return _armaPath;
             }
         }
-
-        public event EventHandler<string> LiveAction;
 
         #endregion Properties
 
@@ -205,7 +218,7 @@ namespace ArmaBrowser.Logic
 
             var threadCount = System.Environment.ProcessorCount * 4;
 
-            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (30 * 1d)));
+            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (threadCount * 1d)));
 
             if (_serverIPListe.Length == 0) return;
 
@@ -215,32 +228,45 @@ namespace ArmaBrowser.Logic
             {
                 var reset = new ManualResetEventSlim(false);
                 waitArray[i] = reset;
-                (new Thread(LoadingServerList) { Name = "UDP" + (i + 1), IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * i).Take(blockCount), Reset = reset, token = token });
+
+                var thread = new Thread(LoadingServerList) { Name = "UDP" + (i + 1), IsBackground = true, Priority = ThreadPriority.Lowest };
+                var threadContext = new LoadingServerListContext
+                {
+                    Dest = dest,
+                    Ips = _serverIPListe.Skip(blockCount * i).Take(blockCount).ToArray(),
+                    Reset = reset,
+                    Token = token
+                };
+                UiTask.Run(_reloadThreads.Add, threadContext);
+                thread.Start(threadContext);
             }
             // den Rest als extra Thread starten
             var lastreset = new ManualResetEventSlim(false);
             waitArray[waitArray.Length - 1] = lastreset;
-            (new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest }).Start(new LoadingServerListContext { dest = dest, ips = _serverIPListe.Skip(blockCount * threadCount), Reset = lastreset });
+
+            {
+                var thread = new Thread(LoadingServerList) { IsBackground = true, Priority = ThreadPriority.Lowest };
+                var threadContext = new LoadingServerListContext
+                {
+                    Dest = dest,
+                    Ips = _serverIPListe.Skip(blockCount * threadCount).ToArray(),
+                    Reset = lastreset
+                };
+                UiTask.Run(_reloadThreads.Add, threadContext);
+                thread.Start(threadContext);
+            }
 
             WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
 
-        }
-
-        class LoadingServerListContext
-        {
-            public IEnumerable<Data.IServerVo> ips { get; set; }
-            public Collection<IServerItem> dest { get; set; }
-            public CancellationToken token { get; set; }
-            public ManualResetEventSlim Reset { get; set; }
         }
 
         void LoadingServerList(object loadingServerListContext)
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
             var state = (LoadingServerListContext)loadingServerListContext;
-            foreach (var dataItem in state.ips)
+            foreach (var dataItem in state.Ips)
             {
-                if (state.token.IsCancellationRequested)
+                if (state.Token.IsCancellationRequested)
                     break;
 
                 var serverQueryEndpoint = new System.Net.IPEndPoint(dataItem.Host, dataItem.QueryPort);
@@ -252,7 +278,7 @@ namespace ArmaBrowser.Logic
 
                 var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
 
-                if (state.token.IsCancellationRequested)
+                if (state.Token.IsCancellationRequested)
                     break;
 
                 var item = new ServerItem();
@@ -267,9 +293,13 @@ namespace ArmaBrowser.Logic
                     item.QueryPort = serverQueryEndpoint.Port;
                 }
 
-                var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.dest, item);
+                state.ProgressValue++;
+                state.Ping = item.Ping;
+
+                var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item);
             }
             state.Reset.Set();
+            UiTask.Run((ctx) => _reloadThreads.Remove(ctx), state);
         }
 
         public void ReloadServerItem(System.Net.IPEndPoint iPEndPoint, CancellationToken cancellationToken)
@@ -303,11 +333,6 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        private async Task UpdateServerInfoAsync(IServerItem[] serverItems)
-        {
-            await Task.Run(() => UpdateServerInfo(serverItems));
-        }
-
         private void UpdateServerInfo(IServerItem[] serverItems)
         {
             foreach (ServerItem serverItem in serverItems)
@@ -335,7 +360,7 @@ namespace ArmaBrowser.Logic
 
         void AssignProperties(ServerItem item, Data.IServerVo vo)
         {
-            var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var keyWordsSplited = vo.Keywords.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);
 
             foreach (var s in keyWordsSplited)
@@ -377,7 +402,7 @@ namespace ArmaBrowser.Logic
                 if (_addons == null)
                 {
                     _addons = new ObservableCollection<IAddon>();
-                    
+
 
                     if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                     {
@@ -411,36 +436,37 @@ namespace ArmaBrowser.Logic
 
                     }
 
-                    IAddonWebApi addonWebApi = new AddonWebApi();
-                    addonWebApi.PostInstalledAddonsKeysAsync(_addons);
                 }
 
                 return _addons;
             }
         }
 
-        internal void ReloadAddons()
+        internal async void ReloadAddons()
         {
             if (_addons == null)
                 _addons = new ObservableCollection<IAddon>();
-            
+
             _addons.Clear();
 
             var armaPath = Properties.Settings.Default.ArmaPath;
 
-            ReloadAddons(armaPath, true);
-            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
+            await ReloadAddonsAsync(armaPath, true);
+            await ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) +
                             System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar, true);
 
-            ReloadAddons(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar + "Addons", false);
+            await ReloadAddonsAsync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) + System.IO.Path.DirectorySeparatorChar + @"ArmaBrowser" + System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar + "Addons", false);
+
+            IAddonWebApi addonWebApi = new AddonWebApi();
+            var t = addonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray());
         }
 
-        private void ReloadAddons(string path, bool isArmaDefaultPath)
+        private async Task ReloadAddonsAsync(string path, bool isArmaDefaultPath)
         {
 
             if (!string.IsNullOrEmpty(path))
             {
-                var items = _defaultDataRepository.GetInstalledAddons(path);
+                var items = await Task.Run(() => _defaultDataRepository.GetInstalledAddons(path));
                 foreach (var item in items)
                 {
                     _addons.Add(new Addon
@@ -511,12 +537,12 @@ namespace ArmaBrowser.Logic
         public void RefreshServerInfo(IServerItem[] items)
         {
             if (items == null) return;
-            UpdateServerInfoAsync(items).Wait();
+            RefreshServerInfoAsync(items).Wait();
         }
 
-        public Task RefreshServerInfoAsync(IServerItem[] items)
+        public async Task RefreshServerInfoAsync(IServerItem[] items)
         {
-            return UpdateServerInfoAsync(items);
+            await Task.Run(() => UpdateServerInfo(items));
         }
 
 
@@ -539,20 +565,156 @@ namespace ArmaBrowser.Logic
 
         public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
         {
-            return await Task.Run(() =>
-            {
-                var webapi = new AddonWebApi();
-                return webapi.GetAddonInfos(addonKeynames);
-            });
+            var webapi = new AddonWebApi();
+            return await webapi.GetAddonInfosAsync(addonKeynames);
         }
 
         internal void AddAddonUri(IAddon addon, string uri)
         {
+            //Task.Run(() =>
+            //{
+            //    var webapi = new AddonWebApi();
+            //    webapi.AddAddonDownloadUri(addon,uri);
+            //});
+        }
+
+        internal static void UploadAddon(IAddon addon)
+        {
             Task.Run(() =>
             {
                 var webapi = new AddonWebApi();
-                webapi.AddAddonDownloadUri(addon,uri);
+
+                var infos = webapi.GetAddonInfos(addon.KeyNames.Select(k => k.Hash).ToArray());
+                if (infos.Count() == 0 || infos.Any(a => a.easyinstall))
+                    return;
+
+                webapi.UploadAddon(addon);
             });
+        }
+
+        internal async void DownloadAddonAsync(IAddon addon)
+        {
+            if (addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value && addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash)))
+            {
+                var installedAddon = await Task.Run(() =>
+                {
+                    string targetFolder =
+                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+                            Environment.SpecialFolderOption.DoNotVerify) +
+                        Path.DirectorySeparatorChar + @"ArmaBrowser" + Path.DirectorySeparatorChar +
+                        "Arma 3" +
+                        Path.DirectorySeparatorChar + "Addons" + Path.DirectorySeparatorChar;
+                    var hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
+                    var webapi = new AddonWebApi();
+                    webapi.DownloadAddon(addon, hash, targetFolder);
+
+                    var addons = _defaultDataRepository.GetInstalledAddons(targetFolder);
+                    IArmaAddon item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));
+                    if (item != null)
+                    {
+                        return new Addon
+                        {
+                            Name = item.Name,
+
+                            DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+                            Path = item.Path,
+                            ModName = item.ModName,
+                            Version = item.Version,
+                            KeyNames = item.KeyNames,
+                            IsInstalled = true,
+                            IsEasyInstallable = true,
+                            CanActived = addon.CanActived,
+                            IsActive = addon.CanActived
+                        };
+
+                    }
+                    return null;
+                });
+
+                if (installedAddon != null)
+                {
+                    var idx = _addons.IndexOf(addon);
+                    _addons[idx] = installedAddon;
+                }
+            }
+        }
+
+        public async Task UpdateAddonInfos(string[] hostAddonKeyNames)
+        {
+            IEnumerable<RestAddonInfoResult> addonInfosTask = await GetAddonInfosAsync(hostAddonKeyNames);
+
+            var addonInfosTaskResult = addonInfosTask;
+
+            //await addonInfosTask.ContinueWith(parentTask =>
+            {
+                //if (parentTask.Status != TaskStatus.RanToCompletion) return;
+
+                //var addonInfosTaskResult = parentTask.Result;
+                foreach (var addonInfo in addonInfosTaskResult)
+                {
+                    var updAddon =
+                        Addons.FirstOrDefault(
+                            a =>
+                                a.KeyNames.Any(
+                                    tag => tag.Hash.Equals(addonInfo.hash, StringComparison.OrdinalIgnoreCase)));
+
+                    if (updAddon != null)
+                        updAddon.IsEasyInstallable = addonInfo.easyinstall;
+                    else
+                    {
+                        if (addonInfo.easyinstall)
+                            Addons.Add(new Addon()
+                            {
+                                Name = addonInfo.name,
+                                ModName = addonInfo.name,
+                                DisplayText = addonInfo.name,
+                                KeyNames = new[] { new Data.AddonKey { Name = addonInfo.keytag, Hash = addonInfo.hash } },
+                                //DownlandUris = new Uri[] { new Uri("http://www.armabrowser.de/"), },
+                                IsInstalled = false,
+                                IsEasyInstallable = addonInfo.easyinstall,
+                                CanActived = true
+                            });
+
+                    }
+                }
+            }//);
+        }
+    }
+
+    class LoadingServerListContext : LogicModelBase
+    {
+        private int _progressValue;
+        private int _ping;
+        public IServerVo[] Ips { get; set; }
+        public Collection<IServerItem> Dest { get; set; }
+        public CancellationToken Token { get; set; }
+        public ManualResetEventSlim Reset { get; set; }
+
+        public int MaximumValue
+        {
+            get { return Ips != null ? Ips.Length : 0; }
+        }
+
+        public int ProgressValue
+        {
+            get { return _progressValue; }
+            set
+            {
+                if (value == _progressValue) return;
+                _progressValue = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int Ping
+        {
+            get { return _ping; }
+            set
+            {
+                if (value == _ping) return;
+                _ping = value;
+                OnPropertyChanged();
+            }
         }
     }
 }

@@ -34,7 +34,7 @@ namespace ArmaBrowser.Design
         public string CurrentPlayersText { get; private set; }
         public ISteamGameServerPlayer[] CurrentPlayers { get; private set; }
         public int QueryPort { get; private set; }
-        public long Ping { get; private set; }
+        public int Ping { get; private set; }
 
         public ArmaBrowser.Logic.ServerItemGroup GroupName { get; set; }
     }

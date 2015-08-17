@@ -16,12 +16,11 @@ namespace ArmaBrowser
     /// </summary>
     partial class App : Application
     {
-        public App()
-            : base()
+        public App() : base()
         {
-#if DEBUG
+
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-#endif
+
             if (string.IsNullOrEmpty(ArmaBrowser.Properties.Settings.Default.Id)
                 || ArmaBrowser.Properties.Settings.Default.Id.Length != 32)
             {
@@ -38,12 +37,6 @@ namespace ArmaBrowser
             }
         }
 
-        
-        protected override void OnStartup(StartupEventArgs e)
-        {
-                base.OnStartup(e);
-        }
-
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -57,20 +50,28 @@ namespace ArmaBrowser
         {
             e.Handled = true;
             Debug.WriteLine(e.Exception);
-
-            var exception = e.Exception as AggregateException;
-            if (exception != null)
+            try
             {
-                var i = 0;
-                foreach (var item in exception.InnerExceptions)
+                var exception = e.Exception as AggregateException;
+                if (exception != null)
                 {
-                    i++;
-                    Debug.WriteLine(i.ToString() + ". Exception: ");
+                    var i = 0;
+                    foreach (var item in exception.InnerExceptions)
+                    {
+                        i++;
+                        Debug.WriteLine(i.ToString() + ". Exception: ");
 
-                    Debug.WriteLine(item);
-                    Debug.WriteLine("----------------------------");
+                        Debug.WriteLine(item);
+                        Debug.WriteLine("----------------------------");
+                    }
                 }
             }
+            catch 
+            {
+                
+                
+            }
+            
         }
     }
 }

@@ -102,7 +102,7 @@ namespace ArmaBrowser.Logic
         /// </summary>
         int QueryPort { get;   }
 
-        long Ping { get; }
+        int Ping { get; }
 
     }
 }

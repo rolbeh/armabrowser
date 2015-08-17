@@ -22,7 +22,7 @@ namespace ArmaBrowser.Logic
         private string _name;
         private string _mode;
         private Data.ISteamGameServerPlayer[] _currentPlayers;
-        private long _ping;
+        private int _ping;
         private DateTime? _lastPlayed;
         private bool _isFavorite;
 
@@ -231,7 +231,7 @@ namespace ArmaBrowser.Logic
 
         public bool IsVersionOk { get; set; }
 
-        public long Ping
+        public int Ping
         {
             get { return _ping; }
             internal set
