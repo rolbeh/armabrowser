@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
 using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
-using Controls.System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Deserializers;
 using RestSharp.Extensions;

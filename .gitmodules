@@ -1,3 +1,7 @@
 [submodule "RestSharp"]
 	path = RestSharp
 	url = https://github.com/restsharp/RestSharp.git
+[submodule "magic"]
+	path = magic
+url=https://github.com/rolbeh/Magic.net.git
+	branch = master

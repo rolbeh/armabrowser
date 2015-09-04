@@ -8,7 +8,7 @@
              xmlns:properties="clr-namespace:ArmaBrowser.Properties"
              xmlns:armaBrowser="clr-namespace:ArmaBrowser"
              xmlns:converter="clr-namespace:ArmaBrowser.Views.Converter"
-             xmlns:rbsoft="http://schemas.rbsoftware.de/rbsoft/2015"
+             xmlns:magic="http://schemas.rolbeh.de/magic/2015"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="330" d:DataContext="{d:DesignInstance Type=viewModel:ServerListViewModel}">
     <UserControl.Resources>
@@ -49,12 +49,12 @@
                                     <Image x:Name="DownloadImage" Source="/Img/DownloadAddon.png" Stretch="None" Opacity="0.4"/>
                                 </Button>
 
-                                <rbsoft:EllipseProgressBar Grid.Column="1" Value="{Binding Path=ProgressValue}" Height="24" Width="24"
+                                <magic:MagEllipseProgressBar Grid.Column="1" Value="{Binding Path=ProgressValue}" Height="24" Width="24"
                                                            Background="{x:Null}"
                                                            Foreground="WhiteSmoke"
                                                            BorderBrush="#FF634E4E">
                                     <FrameworkElement.Style>
-                                        <Style TargetType="rbsoft:EllipseProgressBar">
+                                        <Style TargetType="magic:MagEllipseProgressBar">
                                             <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Path=ProgressValue}" Value="0">
@@ -63,7 +63,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </FrameworkElement.Style>
-                                </rbsoft:EllipseProgressBar>
+                                </magic:MagEllipseProgressBar>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -157,17 +157,16 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Grid.Column="0" x:Name="IsActiveCheckBox" IsChecked="{Binding Path=IsActive}" Margin="0,3"
+                        <magic:MagCheckBox Grid.Column="0" x:Name="IsActiveCheckBox" IsChecked="{Binding Path=IsActive}" Margin="0,3"
                                   FontSize="8"
                                   Background="YellowGreen"
                                   Foreground="Black"
                                   IsEnabled="{Binding IsInstalled}"
-                                  ToolTip="Activate addon"
-                                  Style="{DynamicResource OnOffCheckBoxStyle}">
-                            <CheckBox.RenderTransform>
+                                  ToolTip="Activate addon">
+                            <magic:MagCheckBox.RenderTransform>
                                 <ScaleTransform  ScaleX="1.1" ScaleY="1.1" />
-                            </CheckBox.RenderTransform>
-                        </CheckBox>
+                            </magic:MagCheckBox.RenderTransform>
+                        </magic:MagCheckBox>
                         <Image x:Name="ServerCertImage" Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="0,-2,1,0"
                                Visibility="Collapsed"/>
                         <TextBlock x:Name="DisplayTextTextBlock" Grid.Column="2" Text="{Binding Path=DisplayText}" FontWeight="Normal"/>
@@ -186,8 +185,7 @@
         </ListBox>
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,3">
 
-            <CheckBox IsChecked="{Binding Path=SelectAllAceptedAddons, Source={x:Static properties:Settings.Default}}"
-                      Style="{StaticResource OnOffCheckBoxStyle}"
+            <magic:MagCheckBox IsChecked="{Binding Path=SelectAllAceptedAddons, Source={x:Static properties:Settings.Default}}"
                       Background="YellowGreen"
                       Foreground="Black"
                       Margin="3,0,3,3"
