@@ -98,7 +98,6 @@
                 </GroupStyle>
             </ListView.GroupStyle>
         </ListView>-->
-      
         <DataGrid Grid.Row="0" x:Name="ServerDatagrid" 
               AutoGenerateColumns="False"
               Background="{x:Null}"
@@ -111,49 +110,13 @@
               SelectionMode="Single"
                 
               FontSize="14" MouseDoubleClick="ServerDatagrid_MouseDoubleClick" SelectionChanged="ServerDatagrid_SelectionChanged"
-              RowStyle="{StaticResource DataGridRowStyle}" 
+               RowStyle="{StaticResource DataGridRowStyle}"
               
               EnableColumnVirtualization = "True"
               EnableRowVirtualization = "True"
               MaxWidth="2560"
               MaxHeight="1600"
               VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560" BorderThickness="0"  >
-            <!--<ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Vertical"  VirtualizingPanel.IsVirtualizing="False"   />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>-->
-            <!--<DataGrid.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.Panel>
-                        <ItemsPanelTemplate>
-                            <DataGridRowsPresenter/>
-                        </ItemsPanelTemplate>
-                    </GroupStyle.Panel>
-                    <GroupStyle.ContainerStyle>
-                        <Style TargetType="{x:Type GroupItem}">
-                            <Setter Property="Margin" Value="0,0,0,0"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <Expander IsExpanded="True" BorderThickness="0"  MaxWidth="2560" MaxHeight="1600">
-                                            <Expander.Header>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock FontWeight="Bold" Text="{Binding Path=Name}"  Width="100"/>
-                                                    <TextBlock FontWeight="Bold" Text="{Binding Path=ItemCount}"/>
-                                                </StackPanel>
-                                            </Expander.Header>
-                                            <Expander.Content>
-                                                <ItemsPresenter MaxWidth="2560" MaxHeight="1600" VirtualizingStackPanel.IsVirtualizing="True" />
-                                            </Expander.Content>
-                                        </Expander>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </GroupStyle.ContainerStyle>
-                </GroupStyle>
-            </DataGrid.GroupStyle>-->
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
                     <DataGridTemplateColumn.Header>

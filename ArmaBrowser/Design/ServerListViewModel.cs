@@ -31,5 +31,7 @@ namespace ArmaBrowser.Design
         }
 
         public IEnumerable<ServerItem> ServerItemsView { get; private set; }
+
+        public ServerItem SelectedServerItem { get; set; }
     }
 }

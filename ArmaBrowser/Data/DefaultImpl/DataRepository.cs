@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using ArmaBrowser.Helper;
+
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
@@ -139,7 +139,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             var result = new List<IArmaAddon>(addonFolders.Count());
             foreach (var addonFolder in addonFolders)
             {
-                var item = new ArmaAddOn
+                var item = new ArmaAddon
                 {
                     Name = Path.GetFileName(addonFolder),
                     ModName = Path.GetFileName(addonFolder),

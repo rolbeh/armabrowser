@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
 using System.Text;
-using ArmaBrowser.Helper;
+
 
 namespace ArmaBrowser
 {

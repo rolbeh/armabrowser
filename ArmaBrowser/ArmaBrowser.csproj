@@ -34,11 +34,11 @@
     <ProductName>ArmaBrowser</ProductName>
     <PublisherName>ArmaBrowser</PublisherName>
     <SuiteName>ArmaBrowser</SuiteName>
-    <MinimumRequiredVersion>0.8.0.97</MinimumRequiredVersion>
+    <MinimumRequiredVersion>0.8.1.101</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>98</ApplicationRevision>
-    <ApplicationVersion>0.8.0.%2a</ApplicationVersion>
+    <ApplicationRevision>102</ApplicationRevision>
+    <ApplicationVersion>0.8.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -132,8 +132,7 @@
     </ApplicationDefinition>
     <Compile Include="ArmaBrowserCommands.cs" />
     <Compile Include="Data\DataManager.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaAddOn.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaBrowserServerJsonRepository.cs" />
+    <Compile Include="Data\DefaultImpl\ArmaAddon.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
     <Compile Include="Data\DefaultImpl\Helper\PathHelper.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddon.cs" />
@@ -154,7 +153,6 @@
     <Compile Include="Data\Intf\ISteamGameServerPlayer.cs" />
     <Compile Include="Design\ServerItem.cs" />
     <Compile Include="Design\ServerListViewModel.cs" />
-    <Compile Include="Helper\SystemExtention.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
     <Compile Include="Logic\DefaultImpl\Helper\PriorityScheduler.cs" />

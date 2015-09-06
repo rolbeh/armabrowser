@@ -16,7 +16,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ArmaBrowser.Data.DefaultImpl.Rest;
-using ArmaBrowser.Helper;
 using ArmaBrowser.Logic;
 using RestSharp;
 using RestSharp.Deserializers;
@@ -339,15 +338,16 @@ namespace ArmaBrowser.Data.DefaultImpl
                 Debug.WriteLine(exception);
             }
         }
-
+         
         internal void DownloadAddon(IAddon addon, string addonPubKeyHash, string targetFolder)
         {
-            var request = new RestRequest("/Addons/DownloadAddon", Method.POST);
+            var request = new RestRequest("/addonfiles/" + addonPubKeyHash+".zip", Method.GET);
             var tmpfile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+            var md5Hash = "";
 
-            request.AddParameter("hash", addonPubKeyHash)
-                .AddHeader("ACCEPT", "application/zip")
-                .htua();
+            //request.AddParameter("hash", addonPubKeyHash)
+            //    .AddHeader("ACCEPT", "application/zip")
+            //    .htua();
 
             request.ResponseWriter = (res, stream) =>
             {
@@ -356,10 +356,15 @@ namespace ArmaBrowser.Data.DefaultImpl
                 if (hLen != null)
                     int.TryParse(hLen.Value, out fileLen);
 
-                var s = stream as System.IO.Compression.GZipStream;
+                var md5Header = res.Headers.FirstOrDefault(h => "Content-MD5".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
+                if (md5Header != null)
+                    md5Hash = md5Header.Value;
+
+                var s = stream;//as System.IO.Compression.GZipStream;
                 var myAddon = addon as Addon;
-                if (res.StatusCode == HttpStatusCode.OK &&
-                    "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase))
+                if (res.StatusCode == HttpStatusCode.OK 
+                    //&& "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase)
+                    )
                 {
                     try
                     {
@@ -379,6 +384,9 @@ namespace ArmaBrowser.Data.DefaultImpl
                                 myAddon.ProgressValue = progress > 0 ? progress : 1;
                             } while (len > 0);
                             tmpfs.Flush();
+                            if (myAddon != null)
+                                myAddon.ProgressValue = 0;
+
                         }
                     }
                     finally
@@ -392,15 +400,27 @@ namespace ArmaBrowser.Data.DefaultImpl
             RestClient.ClearHandlers();
             var response = ExecuteRequest(request);
 
+            if (!string.IsNullOrEmpty(md5Hash))
+            {
+                using (var md5 = MD5.Create())
+                {
+                    var calc = md5.FromFile(tmpfile);
+                    if (calc != md5Hash)
+                    {
+                        Debug.WriteLine("MD5 Check Fail");
+                    }
+                }
+            }
+
             if (File.Exists(tmpfile))
             {
                 try
                 {
-                using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
-                using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
-                {
-                    archive.ExtractToDirectory(targetFolder);
-                }
+                    using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
+                    using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
+                    {
+                        archive.ExtractToDirectory(targetFolder);
+                    }
 
                 }
                 finally
@@ -470,7 +490,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             using (var rsa = new RSACryptoServiceProvider())
             {
                 rsa.ImportCspBlob(PubBlob);
-                Debug.WriteLine(A + " \"" + time.ToUniversalTime().ToString("r") + "\" " + V + " " + Properties.Settings.Default.Id);
+                //Debug.WriteLine(A + " \"" + time.ToUniversalTime().ToString("r") + "\" " + V + " " + Properties.Settings.Default.Id);
                 appkey = Convert.ToBase64String(rsa.Encrypt(Encoding.ASCII.GetBytes(A + " \"" + time.ToUniversalTime().ToString("r") + "\" " + V + " " + Properties.Settings.Default.Id), false));
             }
 

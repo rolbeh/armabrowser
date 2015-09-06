@@ -72,12 +72,15 @@ namespace ArmaBrowser.ViewModel
 
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
 
+            _serverItemsView.IsLiveSorting = true;
+
             // Sorting
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "GroupName", Direction = System.ComponentModel.ListSortDirection.Ascending });
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "CurrentPlayerCount", Direction = System.ComponentModel.ListSortDirection.Descending });
 
             // Grouping           
-            _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
+            if (_serverItemsView.GroupDescriptions != null)
+                _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
 
             return _serverItemsView;
         }
@@ -227,7 +230,7 @@ namespace ArmaBrowser.ViewModel
         async void RefreshServerInfoAsync(IServerItem[] serverItems)
         {
             await _context.RefreshServerInfoAsync(serverItems);
-            ServerItemsView.Refresh();       
+            //ServerItemsView.Refresh(); // LostFocus Problem      
         }
 
         void _serverItems_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
