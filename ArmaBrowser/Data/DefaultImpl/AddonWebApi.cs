@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Pipes;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,8 +15,6 @@ using ArmaBrowser.Data.DefaultImpl.Rest;
 using ArmaBrowser.Logic;
 using RestSharp;
 using RestSharp.Deserializers;
-using RestSharp.Extensions;
-using RestSharp.Serializers;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
@@ -37,41 +31,9 @@ namespace ArmaBrowser.Data.DefaultImpl
 #endif
 
         private RestClient _client;
-        private readonly Guid _installationsId;
-        private static TimeSpan _offset = new TimeSpan();
+        private static TimeSpan _offset;
         private static string _ver;
-
-
-        public AddonWebApi()
-        {
-            _installationsId = new Guid(Properties.Settings.Default.Id.FromHexString());
-        }
-
-        private string GenerateByteArraCode()
-        {
-            var result = new StringBuilder("new byte[] {");
-            var byteCount = 0;
-            using (var file = new FileStream("testpublic.blob", FileMode.Open))
-            {
-                while (file.Position < file.Length)
-                {
-                    byteCount++;
-                    result.AppendFormat("0x{0:X00},", file.ReadByte());
-
-                    if (byteCount > 0 && byteCount % 2 == 0)
-                        result.Append(" ");
-
-                    if (byteCount > 0 && byteCount % 16 == 0)
-                    {
-                        result.Append(Environment.NewLine);
-                    }
-                }
-            }
-            result.AppendLine("};");
-
-            return result.ToString();
-        }
-
+        
         private RestClient RestClient
         {
             get
@@ -179,6 +141,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                 _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
                 request = request.htua(_offset);
 
+                // ReSharper disable once RedundantAssignment
                 queryResult = RestClient.Execute(request);
             }
 
@@ -206,7 +169,6 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                     return o;
                 }
-                ;
             }
             catch (Exception exception)
             {
@@ -256,7 +218,6 @@ namespace ArmaBrowser.Data.DefaultImpl
             try
             {
                 var key = addon.KeyNames.FirstOrDefault();
-                RestAddonUri item = null;
                 if (key != null)
                 {
                     var hash = key.PubK.ToBase64().ComputeSha1Hash();
@@ -265,13 +226,12 @@ namespace ArmaBrowser.Data.DefaultImpl
 
 
                     var a = addon;
-                    const string ZipFilePath = "tmp.zip";
-                    if (File.Exists(ZipFilePath)) File.Delete(ZipFilePath);
-                    ZipFile.CreateFromDirectory(a.Path, ZipFilePath, CompressionLevel.Optimal, true);
-                    FileParameter headerFileParam;
-                    using (var fs = new FileStream(ZipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
+                    const string zipFilePath = "tmp.zip";
+                    if (File.Exists(zipFilePath)) File.Delete(zipFilePath);
+                    ZipFile.CreateFromDirectory(a.Path, zipFilePath, CompressionLevel.Optimal, true);
+                    using (var fs = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
                     {
-                        headerFileParam = new FileParameter
+                        var headerFileParam = new FileParameter
                         {
                             ContentLength = fs.Length,
                             Name = hash,
@@ -283,6 +243,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                         Action<Stream> d = delegate(Stream stream)
                         {
                             var buffer = new byte[2048];
+                          
+                            // ReSharper disable AccessToDisposedClosure
                             var readLen = fs.Read(buffer, 0, buffer.Length);
                             var totalTransmittedCount = 0L;
                             var aAitem = addon as Addon;
@@ -310,6 +272,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                                 if (aAitem != null)
                                     aAitem.ProgressValue = 0;
                             }
+                            // ReSharper restore AccessToDisposedClosure
                         };
 
                         headerFileParam.Writer = d;
@@ -327,6 +290,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                         if (restResult.StatusCode == HttpStatusCode.OK)
                         {
                             addon.IsEasyInstallable = true;
+                            // ReSharper disable once RedundantJumpStatement
                             return;
                         }
                     }
@@ -370,10 +334,10 @@ namespace ArmaBrowser.Data.DefaultImpl
                     {
 
                         var buffer = new byte[1024 * 8];
-                        var len = 0;
                         var downloadLen = 0;
                         using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Write))
                         {
+                            int len;
                             do
                             {
                                 len = s.Read(buffer, 0, buffer.Length);
@@ -398,7 +362,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             };
 
             RestClient.ClearHandlers();
-            var response = ExecuteRequest(request);
+            ExecuteRequest(request);
 
             if (!string.IsNullOrEmpty(md5Hash))
             {
@@ -515,6 +479,7 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             using (var hashAlg = HashAlgorithm.Create(@"SHA1"))
             {
+                if (hashAlg == null) throw new NotImplementedException("SHA1");
                 return hashAlg.ComputeHash(b).ToHexString();
             }
 
