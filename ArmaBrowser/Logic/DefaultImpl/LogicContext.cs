@@ -17,7 +17,7 @@ using ArmaBrowser.Data.DefaultImpl.Rest;
 
 namespace ArmaBrowser.Logic
 {
-    class LogicContext : LogicModelBase, ILogicContext
+    class LogicContext : ObjectNotify, ILogicContext
     {
         #region Fields
 
@@ -181,7 +181,7 @@ namespace ArmaBrowser.Logic
                        foreach (var recentlyItem in recently)
                            dest.Add(recentlyItem);
 
-                   }, UiTask.TaskScheduler);
+                   }, UiTask.UiTaskScheduler);
 
 
             _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
@@ -299,7 +299,7 @@ namespace ArmaBrowser.Logic
                 var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item);
             }
             state.Reset.Set();
-            UiTask.Run((ctx) => _reloadThreads.Remove(ctx), state);
+            UiTask.Run((ctx) => _reloadThreads.Remove(ctx), state).Wait();
         }
 
         public void ReloadServerItem(System.Net.IPEndPoint iPEndPoint, CancellationToken cancellationToken)
@@ -681,7 +681,7 @@ namespace ArmaBrowser.Logic
         }
     }
 
-    class LoadingServerListContext : LogicModelBase
+    class LoadingServerListContext : ObjectNotify
     {
         private int _progressValue;
         private int _ping;
@@ -703,6 +703,17 @@ namespace ArmaBrowser.Logic
                 if (value == _progressValue) return;
                 _progressValue = value;
                 OnPropertyChanged();
+                OnPropertyChanged("Procent");
+            }
+        }
+
+
+        public double Procent
+        {
+            get
+            {
+                if (MaximumValue <= 0) return 0;
+                return ProgressValue/(MaximumValue*1d);
             }
         }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Logic
 {
-    class ServerItem : LogicModelBase, IServerItem, ArmaBrowser.Data.IServerQueryAddress
+    class ServerItem : ObjectNotify, IServerItem, ArmaBrowser.Data.IServerQueryAddress
     {
         //const string imageUrl = "http://arma3.swec.se/images/flags/png/{0}.png";
         #region Fields

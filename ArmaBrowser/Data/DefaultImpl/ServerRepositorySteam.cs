@@ -11,9 +11,9 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     sealed class ServerRepositorySteam : IServerRepository
     {
-        public static string SteamGameNameFilter = "Arma3";
+        public const string SteamGameNameFilter = "Arma3";
 
-        static Encoding CharEncoding = Encoding.GetEncoding(1252);
+        static readonly Encoding CharEncoding = Encoding.GetEncoding(1252);
         private System.Exception _excetion;
 
         #region IServerRepository
@@ -191,8 +191,6 @@ namespace ArmaBrowser.Data.DefaultImpl
                 {
                     udp.Connect(gameServerQueryEndpoint);
 
-                    udp.AllowNatTraversal(true);
-                    udp.Client.ReceiveTimeout = 300;
                     udp.AllowNatTraversal(true);
                     udp.Client.ReceiveTimeout = 300;
 
@@ -395,8 +393,10 @@ namespace ArmaBrowser.Data.DefaultImpl
 
                 for (int i = 0; i < ruleCount; i++)
                 {
-                    var key = ReadStringNullTerminated(respose, ref offset);
-                    var value = ReadStringNullTerminated(respose, ref offset);
+                    string key;
+                    offset += respose.ReadStringNullTerminated(offset, out key);
+                    string value;
+                    offset += respose.ReadStringNullTerminated(offset, out value);
                     if (!string.IsNullOrEmpty(key))
                         item.KeyValues.Add(key, value);
                 }
@@ -446,7 +446,9 @@ namespace ArmaBrowser.Data.DefaultImpl
                     var p = new ServerQueryRequest.Player();
                     p.Idx = respose[offset];
                     offset += 1;
-                    p.Name = ReadStringNullTerminated(respose, ref offset);
+                    string s;
+                    offset += respose.ReadStringNullTerminated(offset, out s);
+                    p.Name = s;
                     p.Score = BitConverter.ToInt32(respose, offset);
                     offset += 4;
                     p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(respose, offset)));

@@ -53,7 +53,7 @@ namespace ArmaBrowser
             AutoJoinView.Visibility = Visibility.Collapsed;
             TabListBox.SelectedIndex = 0;
             Test.Freeze();
-
+             
         }
 
         private void GlobalKeyborad_OnGotKeyboard(object sender, KeyboardFocusChangedEventArgs args)

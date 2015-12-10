@@ -5,7 +5,7 @@ using ArmaBrowser.Data;
 
 namespace ArmaBrowser.Logic
 {
-    class Addon : LogicModelBase, IAddon
+    class Addon : ObjectNotify, IAddon
     {
 
         private bool _isActive;

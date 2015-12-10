@@ -259,35 +259,22 @@
                         <RowDefinition/>
                         <RowDefinition Height="171"/>
                     </Grid.RowDefinitions>
-
-                    <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False">
+                    
+                    <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False" >
                         <UIElement.Effect>
-                            <!--<Shader:Glow x:Name="GlowShader" Threshold="0.6" GlowFactor="2"/>-->
+                            
                             <Shader:multishader_frag x:Name="GlowShader" 
                                                      Master="2.6"
-                                                     BlurRadius="3.3"
+                                                     BlurRadius="3.4"
                                                      GlowIntensity="0.7"
                                                      NoiseIntensity="0.7"
-                                                     DirectionHorizontal="7.1"
+                                                     DirectionHorizontal="0"
                                                      TextureHeight="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}"
                                                      TextureWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}" BlurIntensity="2.5"/>
                         </UIElement.Effect>
                     </Image>
-
-                    <!--<ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
-                                  Opacity="0.8"
-                                  ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="viewModel:LogEntry">
-                                <TextBlock Width="108" Height="18" 
-                                           Text="{Binding Text}"
-                                           FontFamily="Consolas"
-                                           Foreground="#FFC9744D"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>-->
-
-                    <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="120" Opacity="0.7"
+                    
+                    <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"
                                   ItemsSource="{Binding ReloadContexts, Mode=OneWay}" >
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -640,46 +627,8 @@
     </Grid>
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.MouseEnter">
-            <!--<BeginStoryboard>
-                <Storyboard RepeatBehavior="Forever">
-                    <DoubleAnimation Storyboard.TargetName="GradientStop1" Storyboard.TargetProperty="Offset"
-                        AutoReverse="True"
-                        From="0"
-                        To="1"
-                        Duration="0:0:0:10.2">
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>-->
-            <BeginStoryboard>
-                <Storyboard RepeatBehavior="Forever">
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="GlowShader" 
-                                                   Storyboard.TargetProperty="DirectionHorizontal" 
-                                                   Timeline.DesiredFrameRate="24"
-                                                   Duration="0:0:0:20">
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.3" Value="-20"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.6" Value="6"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:4.8" Value="0.0001"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.3" Value="6"/>
-                    </DoubleAnimationUsingKeyFrames>
-                    <!--<DoubleAnimationUsingKeyFrames Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="BlurRadius"
-                                                   AutoReverse="True"
-                                                   Duration="0:0:0:2.5"
-                                                   Timeline.DesiredFrameRate="24">
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.95" Value="3.2"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:1.4" Value="8.1"/>
-                    </DoubleAnimationUsingKeyFrames>-->
-                    <!--DoubleAnimation Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="DirectionHorizontal"
-                        AutoReverse="False"
-                        From="0.0002"
-                        To="-20"
-                        Duration="0:0:0:0.1"/>
-                    <DoubleAnimation Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="DirectionHorizontal"
-                        AutoReverse="False"
-                        From="-20"
-                        To="20"
-                        Duration="0:0:0:0.1"/>-->
-                </Storyboard>
-            </BeginStoryboard>
+            
+           
         </EventTrigger>
     </Window.Triggers>
     <WStyle:WindowTitle.TitleToolbar>

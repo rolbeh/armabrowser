@@ -9,12 +9,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
-using ArmaBrowser.Data.DefaultImpl.Rest;
+using System.Windows.Data;  
 
 namespace ArmaBrowser.ViewModel
 {
-    class ServerListViewModel : LogicModelBase
+    class ServerListViewModel : ObjectNotify
     {
         #region Fields
 
