@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Name>ArmaWebSite</Name>
+    <ProjectGuid>4a8770a9-657c-4008-ab8b-f3459575549e</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ArmaWebSite</RootNamespace>
+    <ProjectTypeGuids>{A0786B88-2ADB-4C21-ABE8-AA2D79766269}</ProjectTypeGuids>
+    <AssemblyName>ArmaWebSite</AssemblyName>
+    <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+    <Server>Custom</Server>
+    <PublishEvent>BeforeRun</PublishEvent>
+    <PHPDevAutoPort>True</PHPDevAutoPort>
+    <PHPDevPort>64646</PHPDevPort>
+    <PHPDevHostName>localhost</PHPDevHostName>
+    <IISProjectUrl>http://localhost:64646/</IISProjectUrl>
+    <CustomServerUrl>http://homeserver/arma/</CustomServerUrl>
+    <PublishBeforeDebugProfile>armahome</PublishBeforeDebugProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <IncludeDebugInformation>true</IncludeDebugInformation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <IncludeDebugInformation>false</IncludeDebugInformation>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Classes\compatibility.php" />
+    <Compile Include="Classes\Controller.php" />
+    <Compile Include="Classes\DB.php" />
+    <Compile Include="Classes\Exceptions.php" />
+    <Compile Include="Classes\Html.php" />
+    <Compile Include="Classes\Model\AddonKey.php" />
+    <Compile Include="CheckEntryScript.php" />
+    <Compile Include="Models\Addon.php" />
+    <Compile Include="Classes\Model\ClientInstallation.php" />
+    <Compile Include="config.php" />
+    <Compile Include="Controllers\HomeController.php" />
+    <Compile Include="Controllers\MarvesController.php" />
+    <Compile Include="core.php" />
+    <Compile Include="index.php" />
+    <Compile Include="Layout\default.php" />
+    <Compile Include="Models\MarvesViewModel.php" />
+    <Compile Include="Route.php" />
+    <Compile Include="Views\Marves\AddonsTableAjax.php" />
+    <Compile Include="Views\Marves\details.php" />
+    <Compile Include="Views\Marves\Index.php" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Classes\Model\" />
+    <Folder Include="Content\css\" />
+    <Folder Include="Models\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Classes\" />
+    <Folder Include="Content\" />
+    <Folder Include="Layout\" />
+    <Folder Include="js\" />
+    <Folder Include="Views\" />
+    <Folder Include="Views\Home\" />
+    <Folder Include="Views\Marves\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\ArmaBrowser.png" />
+    <Content Include="Content\ArmaBrowseradd.png" />
+    <Content Include="Content\ArmaBrowser_fbprofil.png" />
+    <Content Include="Content\css\styles.css" />
+    <Content Include="Content\f.png" />
+    <Content Include="Content\favicon.ico" />
+    <Content Include="Content\previewicon.jpg" />
+    <Content Include="Content\Red-signin_Short_base_44dp.png" />
+    <Content Include="downloadOnce.htm" />
+    <Content Include="favicon.ico" />
+    <Content Include="js\ajax.js" />
+    <Content Include="js\jquery-2.1.4.min.js" />
+    <Content Include="Views\Home\Index.php" />
+    <Content Include="XMLFile1.xml">
+      <Publishable>False</Publishable>
+    </Content>
+  </ItemGroup>
+</Project>
