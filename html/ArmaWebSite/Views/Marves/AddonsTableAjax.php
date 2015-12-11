@@ -37,7 +37,7 @@ if (!(is_array($viewbag->Addons))) {
                             <td><?php echo $value->KeyTag; ?></td>
                             <td><?php echo $value->Lastsighting->format('d.m.Y'); ?></td>
                             
-                            <td><?php echo $value->EasyDownload? Html::A($this->GetControllerUrl().'Download?h='.$value->PubkHash,'Download','title="'.Helper::humanFileSize($value->Filesize,'MB').'"') : ''; ?></td>
+                            <td><?php echo $value->EasyDownload? Html::A($this->GetControllerUrl().'Download/'.Html::titleToUrlPathSegment($value->Name).'?h='.$value->PubkHash,'Download','title="'.Helper::humanFileSize($value->Filesize,'MB').'"') : ''; ?></td>
                         </tr>
                         <?php
                     }                    
