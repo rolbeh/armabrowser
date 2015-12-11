@@ -33,7 +33,7 @@ if (!(is_array($viewbag->Addons))) {
                     foreach ($viewbag->Addons as $value)
                     {
                         ?><tr>
-                            <td><?php echo $value->EasyDownload? Html::A($this->GetControllerUrl().'details?h='.$value->PubkHash,$value->Name) : $value->Name; ?></td>
+                            <td><?php echo $value->EasyDownload? Html::A($this->GetControllerUrl().'details/'.Html::titleToUrlPathSegment($value->Name).'?h='.$value->PubkHash, $value->Name) : $value->Name; ?></td>
                             <td><?php echo $value->KeyTag; ?></td>
                             <td><?php echo $value->Lastsighting->format('d.m.Y'); ?></td>
                             

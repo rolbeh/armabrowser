@@ -20,6 +20,19 @@ class Html
     static function A($link, $text, $appendAttrs = ''){
         return '<a href="'.$link.'" '.$appendAttrs.'>'.$text.'</a>';
     }
+
+    /**
+     * Summary of titleToUrlPathSegment
+     * @param string $string 
+     * @return string 
+     */
+    static function titleToUrlPathSegment($string){
+        
+        $string = preg_replace('/[\ \_]/', '-', $string);
+        $string = str_replace('.', '_', $string);
+
+        return preg_replace('/[^A-Za-z0-9\-\_]/', '', $string);
+    }
 }
 
 class Helper{
@@ -39,4 +52,6 @@ class Helper{
             return number_format($size/(1<<10),2)."KB";
         return number_format($size)." bytes";
     }
+
+    
 }
