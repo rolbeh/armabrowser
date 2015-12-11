@@ -26,22 +26,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Classes\compatibility.php" />
-    <Compile Include="Classes\Controller.php" />
+    <Compile Include="Core\Controller.php" />
     <Compile Include="Classes\DB.php" />
-    <Compile Include="Classes\Exceptions.php" />
+    <Compile Include="Core\Exceptions.php" />
     <Compile Include="Classes\Html.php" />
     <Compile Include="Classes\Model\AddonKey.php" />
     <Compile Include="CheckEntryScript.php" />
     <Compile Include="Models\Addon.php" />
     <Compile Include="Classes\Model\ClientInstallation.php" />
-    <Compile Include="config.php" />
+    <Compile Include="Core\config.php" />
     <Compile Include="Controllers\HomeController.php" />
     <Compile Include="Controllers\MarvesController.php" />
-    <Compile Include="core.php" />
+    <Compile Include="Core\core.php" />
     <Compile Include="index.php" />
     <Compile Include="Layout\default.php" />
     <Compile Include="Models\MarvesViewModel.php" />
-    <Compile Include="Route.php" />
+    <Compile Include="Core\Route.php" />
     <Compile Include="Views\Marves\AddonsTableAjax.php" />
     <Compile Include="Views\Marves\details.php" />
     <Compile Include="Views\Marves\Index.php" />
@@ -55,6 +55,7 @@
     <Folder Include="Content\" />
     <Folder Include="Layout\" />
     <Folder Include="js\" />
+    <Folder Include="Core\" />
     <Folder Include="Views\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Marves\" />

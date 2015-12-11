@@ -8,7 +8,7 @@ include_once('Classes/Controller.php');
  * @name $this
  */
  
-if (!($this instanceof Controller)) { throw new Exception("Invalid operation, expect class Controller"); }
+if (!($this instanceof Core\Controller)) { throw new Exception("Invalid operation, expect class Controller"); }
 
 ?>
             <h1 class="title">Arma 3 Server Browser Version 0.8.0</h1>

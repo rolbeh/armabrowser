@@ -2,7 +2,7 @@
 
 include_once('Models/MarvesViewModel.php');
 
-Route::AddRoute('/Marves', 'Marves');
+Core\Route::AddRoute('/Marves', 'Marves');
 
 /**
  * Marves is the addon manager
@@ -12,7 +12,7 @@ Route::AddRoute('/Marves', 'Marves');
  * @version 1.0
  * @author Fake
  */
-class MarvesController extends Controller
+class MarvesController extends Core\Controller
 {
 
     /**

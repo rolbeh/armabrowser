@@ -1,7 +1,7 @@
 <?php
 
 
-Route::AddRoute('/Home', 'Home');
+Core\Route::AddRoute('/Home', 'Home');
 
 /**
  * Home short summary.
@@ -11,7 +11,7 @@ Route::AddRoute('/Home', 'Home');
  * @version 1.0
  * @author Fake
  */
-class HomeController extends Controller
+class HomeController extends Core\Controller
 {
     public function Index(){
 

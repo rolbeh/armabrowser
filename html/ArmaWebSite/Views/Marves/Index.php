@@ -14,7 +14,7 @@ require_once 'Controllers/MarvesController.php';
 $viewbag = $this->ViewModel;
 
 if (!(is_array($viewbag->Addons))) { 
-    throw new Exception("unexpect class "); 
+    throw new Exception("Addons empty "); 
 }
 ?>
 <h1 class="title">Marves - Arma 3 Addons repository</h1>

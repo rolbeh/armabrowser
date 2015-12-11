@@ -1,14 +1,14 @@
 <?php 
 require_once 'Classes/Html.php';
-include_once('Classes/Exceptions.php');
-include_once('Classes/Controller.php');
+include_once('Core/Exceptions.php');
+include_once('Core/Controller.php');
 
 /**
- * @global Controller Controller-Base class
+ * @global Core\Controller Controller-Base class
  * @name $this
  */
  
-if (!($this instanceof Controller)) { throw new Exception("Invalid operation, expect class Controller"); }
+if (!($this instanceof Core\Controller)) { throw new UnexpectedValueException("Invalid operation, expect class Controller"); }
 
 ?>
 <!DOCTYPE html>

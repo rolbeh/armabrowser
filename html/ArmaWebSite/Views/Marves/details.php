@@ -16,7 +16,7 @@ require_once 'Controllers/MarvesController.php';
 $viewbag = $this->ViewModel;
 
 if (!(is_array($viewbag))) { 
-    throw new Exception("unexpect class "); 
+    throw new Exception("Viewbag empty "); 
 }
 ?>
 <h1 class="title">File: <?php echo $viewbag['item']['name']; ?> for Arma 3</h1>

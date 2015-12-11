@@ -8,7 +8,7 @@ $GLOBALS['StartMicrotime'] = microtime(true);
 //    ob_start();
 //}
 
-require_once  'core.php';
+require_once  'Core/core.php';
 
 include_once  'Classes/compatibility.php';
 require_once  'Classes/DB.php';
@@ -16,7 +16,7 @@ require_once  'Classes/DB.php';
 require_once  'Controllers/HomeController.php';
 require_once  'Controllers/MarvesController.php';
 
-$route = Route::GetRoute();
+$route = Core\Route::GetRoute();
 
 $route->submit();
 

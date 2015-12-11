@@ -1,4 +1,7 @@
 <?php
+// Core/NullExceptions.php
+
+namespace Core;
 
 /**
  * NullExceptions short summary.
@@ -8,7 +11,7 @@
  * @version 1.0
  * @author Fake
  */
-class NullExceptions extends Exception
+class NullExceptions extends \Exception
 {
     
 }

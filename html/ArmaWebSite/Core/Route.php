@@ -1,7 +1,11 @@
 <?php
-// router.php
+// Core/Route.php
 
+namespace Core;
 
+/**
+ * Handle the URL
+ */
 class Route{
 
     private $_uri = array();
@@ -72,6 +76,8 @@ class Route{
             
             if (method_exists($controller, $m) && is_callable(array($controller, $m)))
             {
+                if (!($controller instanceof Controller)) { throw new \Exception("Invalid operation, expect class Controller"); }
+
                 $controller->ViewPath = 'Views'. DIRECTORY_SEPARATOR . $controllerName .  DIRECTORY_SEPARATOR . $m . '.php';
                 $controller->$m();
                 //call_user_func(array($controller, $m));

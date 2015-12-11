@@ -1,5 +1,7 @@
 <?php
+// Core/Controller.php
 
+namespace Core;
 /**
  * Controller short summary.
  *
