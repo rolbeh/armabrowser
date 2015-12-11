@@ -34,7 +34,9 @@
     <Compile Include="CheckEntryScript.php" />
     <Compile Include="Models\Addon.php" />
     <Compile Include="Classes\Model\ClientInstallation.php" />
-    <Compile Include="Core\config.php" />
+    <Compile Include="Core\config.php">
+      <Publishable>False</Publishable>
+    </Compile>
     <Compile Include="Controllers\HomeController.php" />
     <Compile Include="Controllers\MarvesController.php" />
     <Compile Include="Core\core.php" />

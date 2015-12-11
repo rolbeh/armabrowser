@@ -1,6 +1,6 @@
 <?php
 
-require_once 'Classes/Exceptions.php';
+require_once 'Core/Exceptions.php';
 require_once 'Models/Addon.php';
 
 /**
