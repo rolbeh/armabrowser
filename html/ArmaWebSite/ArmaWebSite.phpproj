@@ -49,6 +49,7 @@
     <Compile Include="Views\Marves\Index.php" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="armasquad\" />
     <Folder Include="Classes\Model\" />
     <Folder Include="Content\css\" />
     <Folder Include="Models\" />
@@ -63,6 +64,9 @@
     <Folder Include="Views\Marves\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="armasquad\Squad.dtd" />
+    <Content Include="armasquad\squad.paa" />
+    <Content Include="armasquad\squad.xml" />
     <Content Include="Content\ArmaBrowser.png" />
     <Content Include="Content\ArmaBrowseradd.png" />
     <Content Include="Content\ArmaBrowser_fbprofil.png" />
@@ -73,11 +77,9 @@
     <Content Include="Content\Red-signin_Short_base_44dp.png" />
     <Content Include="downloadOnce.htm" />
     <Content Include="favicon.ico" />
+    <Content Include="google962dcdb719250a8c.html" />
     <Content Include="js\ajax.js" />
     <Content Include="js\jquery-2.1.4.min.js" />
     <Content Include="Views\Home\Index.php" />
-    <Content Include="XMLFile1.xml">
-      <Publishable>False</Publishable>
-    </Content>
   </ItemGroup>
 </Project>

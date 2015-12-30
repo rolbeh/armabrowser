@@ -29,7 +29,7 @@ class MarvesController extends Core\Controller
 
     public function Index(){
         
-        $this->SetTitle("Marves - Arma 3 Addons repository");
+        $this->SetTitle(DEFAULT_TITLE . "Marves - Arma 3 Addons repository");
         $dbResult = DB::GetUsedAddons();
 
         foreach ($dbResult as $value)
@@ -274,6 +274,7 @@ class MarvesController extends Core\Controller
             }
         }
         
+        $this->SetTitle(DEFAULT_TITLE . "Marves - Details of " . $viewBag['item']['name']);
         $this->ViewModel = $viewBag;
         header('Content-Type: text/html');
         $this->RenderView();
