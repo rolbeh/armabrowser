@@ -93,7 +93,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
@@ -105,11 +105,13 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Magic">
-      <HintPath>..\..\AD\Magic.net\Magic\bin\Release\Magic.dll</HintPath>
+    <Reference Include="Magic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\magic\Magic\bin\Release\Magic.dll</HintPath>
     </Reference>
-    <Reference Include="Magic.Controls">
-      <HintPath>..\..\AD\Magic.net\Magic.Controls\bin\Release\Magic.Controls.dll</HintPath>
+    <Reference Include="Magic.Controls, Version=0.0.1.1, Culture=neutral, PublicKeyToken=155175993645f89f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\magic\Magic.Controls\bin\Release\Magic.Controls.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Expression.Controls" />
     <Reference Include="Microsoft.Expression.Interactions" />
@@ -196,8 +198,8 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
-    <None Include="..\armabrowser.org.pfx">
-      <Link>armabrowser.org.pfx</Link>
+    <None Include="..\..\armabrowser.org.pfx">
+      <Link>Properties\armabrowser.org.pfx</Link>
     </None>
     <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
