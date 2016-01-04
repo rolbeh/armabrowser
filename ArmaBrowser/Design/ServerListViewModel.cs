@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ArmaBrowser.Design
 {
-    class ServerListViewModel
+    class DesignServerListViewModel
     {
-        public ServerListViewModel()
+        public DesignServerListViewModel()
         {
             ServerItemsView = new ServerItem[]
             { 

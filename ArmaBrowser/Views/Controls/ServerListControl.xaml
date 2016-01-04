@@ -8,7 +8,7 @@
              xmlns:controls="clr-namespace:ArmaBrowser.Views.Controls"
              mc:Ignorable="d design"
              d:DesignHeight="300" d:DesignWidth="700" 
-             d:DataContext="{d:DesignInstance Type=design:ServerListViewModel, IsDesignTimeCreatable=True}"
+             d:DataContext="{d:DesignInstance Type=design:DesignServerListViewModel, IsDesignTimeCreatable=True}"
              >
     <FrameworkElement.Resources>
 
