@@ -203,27 +203,26 @@ namespace ArmaBrowser.ViewModel
 
             UiTask.Initialize();
             _context = new LogicContext();
-            _context.ServerItems.CollectionChanged += _serverItems_CollectionChanged;
-            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
-            {
-                _context.PropertyChanged += Context_PropertyChanged;
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
+
+            _context.ServerItems.CollectionChanged += _serverItems_CollectionChanged;           
+            _context.PropertyChanged += Context_PropertyChanged;
                 
-                TextFilter = Properties.Settings.Default.TextFilter;
-                _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
+            TextFilter = Properties.Settings.Default.TextFilter;
+            _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
 
-                LookForInstallation();
+            LookForInstallation();
 
-                var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
-                var serverItems = _context.AddServerItems(recentlyHosts);
-                foreach (var item in serverItems)
-                {
-                    item.LastPlayed = DateTime.Now;
-                }
-                RefreshServerInfoAsync(serverItems);
-               
-
-                Task.Run((Action)EndlessRefreshSelecteItem);
+            string[] recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
+            IServerItem[] recentlyServerItems = _context.AddServerItems(recentlyHosts);
+            foreach (var item in recentlyServerItems)
+            {
+                item.LastPlayed = DateTime.Now;
             }
+            var refreshRecentlyServerItemsTask = _context.RefreshServerInfoAsync(recentlyServerItems);
+            refreshRecentlyServerItemsTask.ContinueWith((t,o) => ServerItemsView.Refresh(), null, TaskScheduler.FromCurrentSynchronizationContext());
+            
+            Task.Run((Action)EndlessRefreshSelecteItem);
         }
 
         async void RefreshServerInfoAsync(IServerItem[] serverItems)

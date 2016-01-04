@@ -35,7 +35,7 @@ namespace ArmaBrowser.Logic
             {
                 _isFavorite = value;
                 OnPropertyChanged();
-                GroupName = ServerItemGroup.Recently;
+                GroupName = ServerItemGroup.Favorite;
             }
         }
 
