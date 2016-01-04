@@ -25,6 +25,19 @@
     <IncludeDebugInformation>false</IncludeDebugInformation>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="api\4\Auth.php" />
+    <Compile Include="api\4\Classes\DB.php" />
+    <Compile Include="api\4\Classes\Exceptions.php" />
+    <Compile Include="api\4\Classes\Model\AddonKey.php" />
+    <Compile Include="api\4\Classes\Model\ClientAddon.php" />
+    <Compile Include="api\4\Classes\Model\ClientInstallation.php" />
+    <Compile Include="api\4\config.php" />
+    <Compile Include="api\4\controller\Addons.php" />
+    <Compile Include="api\4\controller\contact.php" />
+    <Compile Include="api\4\controller\home.php" />
+    <Compile Include="api\4\Includes.php" />
+    <Compile Include="api\4\index.php" />
+    <Compile Include="api\4\route.php" />
     <Compile Include="Classes\compatibility.php" />
     <Compile Include="Core\Controller.php" />
     <Compile Include="Classes\DB.php" />
@@ -49,6 +62,11 @@
     <Compile Include="Views\Marves\Index.php" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="api\4\" />
+    <Folder Include="api\4\Classes\" />
+    <Folder Include="api\4\Classes\Model\" />
+    <Folder Include="api\4\controller\" />
+    <Folder Include="api\4\SQL\" />
     <Folder Include="armasquad\" />
     <Folder Include="Classes\Model\" />
     <Folder Include="Content\css\" />
@@ -59,11 +77,14 @@
     <Folder Include="Layout\" />
     <Folder Include="js\" />
     <Folder Include="Core\" />
+    <Folder Include="api\" />
     <Folder Include="Views\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Marves\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="api\4\.htaccess" />
+    <Content Include="api\4\SQL\tables.sql" />
     <Content Include="armasquad\Squad.dtd" />
     <Content Include="armasquad\squad.paa" />
     <Content Include="armasquad\squad.xml" />
