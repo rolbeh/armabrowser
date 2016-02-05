@@ -195,7 +195,7 @@
                       />
             <StackPanel Orientation="Horizontal" >
                 <Image Grid.Column="1" Source="/Img/cert24.png" Stretch="None"  Margin="3,0,1,0" Height="19"  IsHitTestVisible="False"/>
-                <TextBlock VerticalAlignment="Center" Padding="4" IsHitTestVisible="False">Activate all accepted</TextBlock>
+                <TextBlock VerticalAlignment="Center" Padding="4" IsHitTestVisible="False">Activate all accepted addons</TextBlock>
             </StackPanel>
 
         </StackPanel>

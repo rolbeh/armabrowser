@@ -85,15 +85,23 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerListCommand" Padding="2" Margin="0" VerticalAlignment="Stretch" 
+                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerList" Padding="2" Margin="0,4" VerticalAlignment="Stretch" 
                             FontSize="16"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}"
                             Foreground="Black" FontWeight="ExtraBlack"
                             Content="{Binding Path=Command.Text, RelativeSource={RelativeSource Self}}">
                     </Button>
+                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.StopReloadServerList" Padding="2" Margin="0,4" VerticalAlignment="Stretch" 
+                            FontSize="16"
+                            BorderThickness="0" 
+                            BorderBrush="{x:Null}"
+                            Foreground="Black" FontWeight="ExtraBlack"
+                            Content="{Binding Path=Command.Text, RelativeSource={RelativeSource Self}}"
+                            Visibility="{Binding Path=LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    </Button>
                     <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
+                        <TextBlock Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
                                    FontStyle="Italic"
                                    FontSize="18"
                                    IsHitTestVisible="False"
@@ -263,7 +271,7 @@
                     <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False" >
                         <UIElement.Effect>
                             
-                            <Shader:multishader_frag x:Name="GlowShader" 
+                            <Shader:multishader_frag
                                                      Master="2.6"
                                                      BlurRadius="3.4"
                                                      GlowIntensity="0.7"
@@ -493,7 +501,7 @@
 
 
 
-                <Button Grid.Row="0" x:Name="PreferencesContextMenuButton"
+                <Button Grid.Row="0"
                                 Foreground="{StaticResource ForegroundNormalBrush}"
                                 HorizontalAlignment="Right"
                                 FontSize="18"
@@ -511,7 +519,7 @@
                                 <MenuItem Header="Arma 3 user addon folder" Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=Arma3UserAddonFolder}"/>
                                 <MenuItem Header="Arma 3 Steam folder"  Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=ArmaPath}"/>
                             </MenuItem>
-                            <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddonsCommand" />
+                            <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddons" />
                             
                         </ContextMenu>
                     </Button.ContextMenu>
@@ -543,7 +551,7 @@
                              Foreground="{StaticResource ForegroundNormalBrush}"
                              FontSize="14"
                              />
-                    <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom" Height="40">
+                    <StackPanel  Orientation="Vertical" Grid.Row="1" VerticalAlignment="Bottom" Height="40">
                         <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="start Arma without Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
                         <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="as Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
                     </StackPanel>
@@ -644,6 +652,12 @@
                                Foreground="#FFCDE2F3"
                                RequestNavigate="PoweredByHyperlink_RequestNavigate"
                                >Google+</Hyperlink>
+            </TextBlock>
+            <TextBlock Margin="5,5,0,0" Height="30">
+                    <Hyperlink NavigateUri="https://www.facebook.com/armabrowser/" 
+                               Foreground="#FFCDE2F3"
+                               RequestNavigate="PoweredByHyperlink_RequestNavigate"
+                               >Facebook</Hyperlink>
             </TextBlock>
             <TextBlock Margin="5,5,0,0" Height="30" Text="{Binding Version, StringFormat='Version {0}'}" />
             <!--<Button Background="{x:Null}"  x:Name="appbar_settings"

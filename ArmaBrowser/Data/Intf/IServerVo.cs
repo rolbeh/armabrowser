@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magic.Annotations;
 
 namespace ArmaBrowser.Data
 {
@@ -35,6 +36,7 @@ namespace ArmaBrowser.Data
 
         int Ping { get;}
 
+        [CanBeNull]
         IEnumerable<ISteamGameServerPlayer> Players { get; }
 
         string Keywords { get; }

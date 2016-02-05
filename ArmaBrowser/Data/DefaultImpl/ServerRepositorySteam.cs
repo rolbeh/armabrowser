@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Magic.Annotations;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
@@ -71,7 +73,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                             var sendlen = udp.Send(bytes, bytes.Length);
 #if DEBUG
                             if (sendlen != bytes.Length)
-                                Debug.WriteLine("IServerRepository.GetServerList - sendlen != bytes.Length");
+                                Trace.WriteLine("IServerRepository.GetServerList - sendlen != bytes.Length");
 #endif
 
                             roundtrips++;
@@ -284,12 +286,14 @@ namespace ArmaBrowser.Data.DefaultImpl
                             item.GameID = br.ReadInt64();
 
                         // https://community.bistudio.com/wiki/STEAMWORKSquery
+                        // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
                     }
 
                     RequestRules(item, udp);
 
                     if (item.CurrentPlayerCount > 0)
                     {
+                        udp.Client.ReceiveTimeout = Math.Max(300, Convert.ToInt32((6d * item.CurrentPlayerCount)));
                         RequestPlayers(item, udp);
                     }
                 }
@@ -322,7 +326,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                             Keywords = item.Keywords,
                             CurrentPlayers = new string[0],
                             Ping = item.Ping,
-                            Players = item.Players.Cast<ISteamGameServerPlayer>().ToArray(),
+                            Players = item.Players?.Cast<ISteamGameServerPlayer>().ToArray(),
                             Mods = GetValue("modNames", item.KeyValues),
                             Modhashs = GetValue("modHashes", item.KeyValues),
                             Signatures = GetValue("sigNames", item.KeyValues),
@@ -410,57 +414,67 @@ namespace ArmaBrowser.Data.DefaultImpl
             }
         }
 
-        private static void RequestPlayers(ServerQueryRequest item, System.Net.Sockets.UdpClient udp)
+        private static void RequestPlayers(ServerQueryRequest item, UdpClient udp)
         {
             const byte playerRequestByte = 0x55;
+            const byte playerRequestChallengeByte = 0x41;
+            const byte reponseHeanderByte = 0x44;
             try
             {
                 IPEndPoint endp = null;
 
                 var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, playerRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
                 var sendlen = udp.Send(challengeRequest, 9);
+                if ( sendlen != 9) 
+                    return;
 
-                var respose = udp.Receive(ref endp); // challenge response
+                var challengeRespose = udp.Receive(ref endp); // challenge response
 
-                if (respose[4] != 0x41)
+                if (challengeRespose[4] != playerRequestChallengeByte)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error in RequestPlayers - Challenge response");
+                    System.Diagnostics.Trace.WriteLine("Error in RequestPlayers - Challenge response");
                     return;
                 }
 
-                respose[4] = playerRequestByte;
-                sendlen = udp.Send(respose, 9);
-                respose = udp.Receive(ref endp);
+                challengeRespose[4] = playerRequestByte; // change to player request
+                sendlen = udp.Send(challengeRespose, 9);
+                if (sendlen != 9)
+                    return;
 
-                if (respose[4] != 0x44)
+                var playerRespose = udp.Receive(ref endp);
+
+                if (playerRespose[4] != reponseHeanderByte)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error in RequestPlayers - Players response");
+                    System.Diagnostics.Trace.WriteLine("Error in RequestPlayers - Players response");
                     return;
                 }
 
-                byte playerCount = respose[5];
+                byte playerCount = playerRespose[5];
                 var offset = 6;
+                var result = new List<ServerQueryRequest.Player>(byte.MaxValue);
                 for (byte i = 0; i < playerCount; i++)
                 {
 
                     var p = new ServerQueryRequest.Player();
-                    p.Idx = respose[offset];
+                    p.Idx = playerRespose[offset];
                     offset += 1;
                     string s;
-                    offset += respose.ReadStringNullTerminated(offset, out s);
+                    offset += playerRespose.ReadStringNullTerminated(offset, out s);
                     p.Name = s;
-                    p.Score = BitConverter.ToInt32(respose, offset);
+                    p.Score = BitConverter.ToInt32(playerRespose, offset);
                     offset += 4;
-                    p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(respose, offset)));
+                    p.OnlineTime = TimeSpan.FromSeconds(Convert.ToDouble(BitConverter.ToSingle(playerRespose, offset)));
 
                     offset += 4;
-                    item.Players.Add(p);
+                    result.Add(p);
                 }
+                item.Players = result;
+                return;
             }
-            catch
+            catch (Exception)
             {
-
-
+                // ignored
+                return;
             }
         }
 
@@ -505,7 +519,6 @@ namespace ArmaBrowser.Data.DefaultImpl
             {
                 Keywords = string.Empty;
                 KeyValues = new Dictionary<string, string>();
-                Players = new List<Player>(byte.MaxValue);
             }
 
             public byte ProtocolVersion;
@@ -547,7 +560,8 @@ namespace ArmaBrowser.Data.DefaultImpl
                 public byte Idx { get; set; }
             }
 
-            public List<Player> Players { get; private set; }
+            [CanBeNull]
+            public List<Player> Players { get; internal set; }
         }
 
 

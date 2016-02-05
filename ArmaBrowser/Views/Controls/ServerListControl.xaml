@@ -108,13 +108,13 @@
               IsSynchronizedWithCurrentItem="False"
               SelectedItem="{Binding Path=SelectedServerItem}"
               SelectionMode="Single"
-                
               FontSize="14" MouseDoubleClick="ServerDatagrid_MouseDoubleClick" SelectionChanged="ServerDatagrid_SelectionChanged"
                RowStyle="{StaticResource DataGridRowStyle}"
               
               EnableColumnVirtualization = "True"
               EnableRowVirtualization = "True"
               MaxWidth="2560"
+
               MaxHeight="1600"
               VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560" BorderThickness="0"  >
             <DataGrid.Columns>

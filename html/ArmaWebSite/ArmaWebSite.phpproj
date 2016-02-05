@@ -83,7 +83,9 @@
     <Folder Include="Views\Marves\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="api\4\.htaccess" />
+    <Content Include="api\4\.htaccess">
+      <Publishable>False</Publishable>
+    </Content>
     <Content Include="api\4\SQL\tables.sql" />
     <Content Include="armasquad\Squad.dtd" />
     <Content Include="armasquad\squad.paa" />

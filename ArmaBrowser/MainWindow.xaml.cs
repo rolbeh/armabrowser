@@ -67,10 +67,11 @@ namespace ArmaBrowser
 
         }
 
-        void win_SourceInitialized(object sender, EventArgs e)
+        private void win_SourceInitialized(object sender, EventArgs e)
         {
             System.IntPtr handle = (new WinInterop.WindowInteropHelper(this)).Handle;
-            WinInterop.HwndSource.FromHwnd(handle).AddHook(new WinInterop.HwndSourceHook(Win.WindowProc));
+            var hwndSource = WinInterop.HwndSource.FromHwnd(handle);
+            hwndSource?.AddHook(new WinInterop.HwndSourceHook(Win.WindowProc));
         }
 
         private void MainWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

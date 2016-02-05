@@ -35,28 +35,28 @@ namespace ArmaBrowser.Logic
             OnPropertyChanged("ArmaVersion");
         }
 
-        public async void ReloadServerItems(IEnumerable<IPEndPoint> lastAddresses, CancellationToken cancellationToken)
+        public void ReloadServerItems(IEnumerable<IPEndPoint> lastAddresses, CancellationToken cancellationToken)
         {
             var dest = ServerItems;
             var recently = dest.Where(srv => srv.LastPlayed.HasValue).ToArray();
-                //.Select(srv => new System.Net.IPEndPoint(srv.Host, srv.Port))
+            //.Select(srv => new System.Net.IPEndPoint(srv.Host, srv.Port))
 
             try
             {
-                await UiTask.Run(() => dest.Clear(), cancellationToken);
+                UiTask.Run(() => dest.Clear(), cancellationToken).Wait(cancellationToken);
             }
             catch (OperationCanceledException)
             {
-                Debug.WriteLine("Reloading canceled");
+                Trace.WriteLine("Reloading canceled");
                 return;
             }
 
-            await RefreshServerInfoAsync(recently)
+            RefreshServerInfoAsync(recently)
                 .ContinueWith(t =>
                 {
                     foreach (var recentlyItem in recently)
                         dest.Add(recentlyItem);
-                }, UiTask.UiTaskScheduler);
+                }, UiTask.UiTaskScheduler).Wait(cancellationToken);
 
 
             _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
@@ -97,46 +97,21 @@ namespace ArmaBrowser.Logic
 
             if (_serverIPListe.Length == 0) return;
 
-            var waitArray = new ManualResetEventSlim[threadCount + 1];
+            var waitArray = new WaitHandle[threadCount + 1];
 
             for (var i = 0; i < threadCount; i++)
             {
-                var reset = new ManualResetEventSlim(false);
-                waitArray[i] = reset;
-
-                var thread = new Thread(LoadingServerList)
-                {
-                    Name = "UDP" + (i + 1),
-                    IsBackground = true,
-                    Priority = ThreadPriority.Lowest
-                };
-                var threadContext = new LoadingServerListContext
-                {
-                    Dest = dest,
-                    Ips = _serverIPListe.Skip(blockCount*i).Take(blockCount).ToArray(),
-                    Reset = reset,
-                    Token = token
-                };
-                UiTask.Run(ReloadThreads.Add, threadContext);
-                thread.Start(threadContext);
+                var threadContext = NewThread(dest, token, blockCount, i);
+                waitArray[i] = threadContext.Reset;
             }
-            // den Rest als extra Thread starten
-            var lastreset = new ManualResetEventSlim(false);
-            waitArray[waitArray.Length - 1] = lastreset;
 
+            // for the rest a single thread
             {
-                var thread = new Thread(LoadingServerList) {IsBackground = true, Priority = ThreadPriority.Lowest};
-                var threadContext = new LoadingServerListContext
-                {
-                    Dest = dest,
-                    Ips = _serverIPListe.Skip(blockCount*threadCount).ToArray(),
-                    Reset = lastreset
-                };
-                UiTask.Run(ReloadThreads.Add, threadContext);
-                thread.Start(threadContext);
+                var threadContext = NewThread(dest, token, blockCount, waitArray.Length - 1);
+                waitArray[waitArray.Length - 1] = threadContext.Reset;
             }
 
-            WaitHandle.WaitAll(waitArray.Select(r => r.WaitHandle).ToArray());
+            WaitHandle.WaitAll(waitArray);
         }
 
         public void ReloadServerItem(IPEndPoint iPEndPoint, CancellationToken cancellationToken)
@@ -144,12 +119,12 @@ namespace ArmaBrowser.Logic
             var dest = ServerItems;
             try
             {
-                UiTask.Run(() => dest.Clear(), cancellationToken).Wait();
+                UiTask.Run(() => dest.Clear(), cancellationToken).Wait(cancellationToken);
             }
 
             catch (OperationCanceledException)
             {
-                Debug.WriteLine("Reloading canceled");
+                Trace.WriteLine("Reloading canceled");
                 return;
             }
 
@@ -225,15 +200,18 @@ namespace ArmaBrowser.Logic
             if (runAsAdmin)
                 psInfo.Verb = "runsas";
 
-            Process ps = null;
             try
             {
-                ps = Process.Start(psInfo);
-                ps.EnableRaisingEvents = true;
-                ps.Exited += ps_Exited;
+                var ps = Process.Start(psInfo);
+                if (ps != null)
+                {
+                    ps.EnableRaisingEvents = true;
+                    ps.Exited += ps_Exited;
+                }
             }
             catch (Exception)
             {
+                // ignored
             }
         }
 
@@ -247,6 +225,26 @@ namespace ArmaBrowser.Logic
         public async Task RefreshServerInfoAsync(IServerItem[] items)
         {
             await Task.Run(() => UpdateServerInfo(items));
+        }
+
+        private LoadingServerListContext NewThread(Collection<IServerItem> dest, CancellationToken token, int blockCount,
+            int i)
+        {
+            var thread = new Thread(LoadingServerList)
+            {
+                Name = "UDP" + (i + 1),
+                IsBackground = true,
+                Priority = ThreadPriority.Lowest
+            };
+            var threadContext = new LoadingServerListContext
+            {
+                Dest = dest,
+                Ips = _serverIPListe.Skip(blockCount*i).Take(blockCount).ToArray(),
+                Token = token
+            };
+            UiTask.Run(ReloadThreads.Add, threadContext);
+            thread.Start(threadContext);
+            return threadContext;
         }
 
         private void LoadingServerList(object loadingServerListContext)
@@ -289,7 +287,7 @@ namespace ArmaBrowser.Logic
 
                 var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item);
             }
-            state.Reset.Set();
+            state.Finished();
             UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
 
@@ -359,8 +357,11 @@ namespace ArmaBrowser.Logic
             item.Version = vo.Version;
             item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.Passworded;
             item.Ping = vo.Ping;
-            item.CurrentPlayersText = string.Join(", ", vo.Players.Select(p => p.Name).OrderBy(s => s));
-            item.CurrentPlayers = vo.Players.OrderBy(p => p.Name).ToArray();
+            if (vo.Players != null)
+            {
+                item.CurrentPlayersText = string.Join(", ", vo.Players.Select(p => p.Name).OrderBy(s => s));
+                item.CurrentPlayers = vo.Players.OrderBy(p => p.Name).ToArray();
+            }
         }
 
         internal async void ReloadAddons()
@@ -669,12 +670,23 @@ namespace ArmaBrowser.Logic
 
     internal class LoadingServerListContext : ObjectNotify
     {
+        private readonly ManualResetEvent _reset;
         private int _ping;
         private int _progressValue;
+
+        public LoadingServerListContext()
+        {
+            _reset = new ManualResetEvent(false);
+        }
+
         public IServerVo[] Ips { get; set; }
         public Collection<IServerItem> Dest { get; set; }
         public CancellationToken Token { get; set; }
-        public ManualResetEventSlim Reset { get; set; }
+
+        public WaitHandle Reset
+        {
+            get { return _reset; }
+        }
 
         public int MaximumValue
         {
@@ -712,6 +724,11 @@ namespace ArmaBrowser.Logic
                 _ping = value;
                 OnPropertyChanged();
             }
+        }
+
+        public void Finished()
+        {
+            _reset.Set();
         }
     }
 }

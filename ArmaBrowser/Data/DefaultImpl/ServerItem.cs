@@ -8,11 +8,6 @@ namespace ArmaBrowser.Data.DefaultImpl
 {
     class ServerItem : IServerVo, IServerQueryAddress
     {
-
-        internal ServerItem()
-        {
-            Players = new ISteamGameServerPlayer[0];
-        }
         /// <summary>
         /// Arma3
         /// </summary>

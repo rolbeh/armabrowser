@@ -379,7 +379,7 @@ namespace ArmaBrowser.Logic
                     var calc = md5.FromFile(tmpfile);
                     if (calc != md5Hash)
                     {
-                        Debug.WriteLine("MD5 Check Fail");
+                        Trace.WriteLine("MD5 Check Fail");
                     }
                 }
             }
