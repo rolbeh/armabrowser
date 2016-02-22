@@ -8,7 +8,7 @@
     <RootNamespace>ArmaWebSite</RootNamespace>
     <ProjectTypeGuids>{A0786B88-2ADB-4C21-ABE8-AA2D79766269}</ProjectTypeGuids>
     <AssemblyName>ArmaWebSite</AssemblyName>
-    <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+    <SaveServerSettingsInUserFile>false</SaveServerSettingsInUserFile>
     <Server>Custom</Server>
     <PublishEvent>BeforeRun</PublishEvent>
     <PHPDevAutoPort>True</PHPDevAutoPort>
@@ -17,6 +17,9 @@
     <IISProjectUrl>http://localhost:64646/</IISProjectUrl>
     <CustomServerUrl>http://homeserver/arma/</CustomServerUrl>
     <PublishBeforeDebugProfile>armahome</PublishBeforeDebugProfile>
+    <Runtime>PHP</Runtime>
+    <EnvName>Custom</EnvName>
+    <CustomXdebugPort>9000</CustomXdebugPort>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <IncludeDebugInformation>true</IncludeDebugInformation>
@@ -38,6 +41,19 @@
     <Compile Include="api\4\Includes.php" />
     <Compile Include="api\4\index.php" />
     <Compile Include="api\4\route.php" />
+    <Compile Include="api\5\Auth.php" />
+    <Compile Include="api\5\Classes\DB.php" />
+    <Compile Include="api\5\Classes\Exceptions.php" />
+    <Compile Include="api\5\Classes\Model\AddonKey.php" />
+    <Compile Include="api\5\Classes\Model\ClientAddon.php" />
+    <Compile Include="api\5\Classes\Model\ClientInstallation.php" />
+    <Compile Include="api\5\config.php" />
+    <Compile Include="api\5\controller\Addons.php" />
+    <Compile Include="api\5\controller\contact.php" />
+    <Compile Include="api\5\controller\home.php" />
+    <Compile Include="api\5\Includes.php" />
+    <Compile Include="api\5\index.php" />
+    <Compile Include="api\5\route.php" />
     <Compile Include="Classes\compatibility.php" />
     <Compile Include="Core\Controller.php" />
     <Compile Include="Classes\DB.php" />
@@ -67,6 +83,11 @@
     <Folder Include="api\4\Classes\Model\" />
     <Folder Include="api\4\controller\" />
     <Folder Include="api\4\SQL\" />
+    <Folder Include="api\5\" />
+    <Folder Include="api\5\Classes\" />
+    <Folder Include="api\5\Classes\Model\" />
+    <Folder Include="api\5\controller\" />
+    <Folder Include="api\5\SQL\" />
     <Folder Include="armasquad\" />
     <Folder Include="Classes\Model\" />
     <Folder Include="Content\css\" />
@@ -87,6 +108,7 @@
       <Publishable>False</Publishable>
     </Content>
     <Content Include="api\4\SQL\tables.sql" />
+    <Content Include="api\5\SQL\tables.sql" />
     <Content Include="armasquad\Squad.dtd" />
     <Content Include="armasquad\squad.paa" />
     <Content Include="armasquad\squad.xml" />
