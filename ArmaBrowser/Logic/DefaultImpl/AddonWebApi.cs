@@ -18,10 +18,10 @@ using RestSharp.Deserializers;
 
 namespace ArmaBrowser.Logic
 {
-    class AddonWebApi : IAddonWebApi
+    internal class AddonWebApi : IAddonWebApi
     {
 
-        private const string ApiVer = "4";
+        private const string ApiVer = "5";
 
         //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
 #if DEBUG

@@ -73,38 +73,13 @@
 
     </FrameworkElement.Resources>
     <Grid>
-        <!--<ListView Name="lstProducts" Background="{x:Null}" ItemsSource="{Binding Path=ServerItemsView}" IsSynchronizedWithCurrentItem="False">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel VirtualizingPanel.IsVirtualizing="True"   />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Server" DisplayMemberBinding="{Binding Name}" Width="400"/>
-                    <GridViewColumn Header="Mission" DisplayMemberBinding="{Binding Path=Mission}" Width="auto" />
-                    <GridViewColumn Header="Map" DisplayMemberBinding="{Binding Path=Island}"/>
-                    <GridViewColumn Header="Mode" DisplayMemberBinding="{Binding Path=Mode}"/>
-                    <GridViewColumn Header="Player" DisplayMemberBinding="{Binding Path=CurrentPlayerCount}"/>
-                </GridView>
-            </ListView.View>
-            <ListView.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListView.GroupStyle>
-        </ListView>-->
-        <DataGrid Grid.Row="0" x:Name="ServerDatagrid" 
+        <DataGrid Grid.Row="0" 
               AutoGenerateColumns="False"
               Background="{x:Null}"
               RowHeaderWidth="0"
               IsReadOnly="True"
               GridLinesVisibility="None"
-              ItemsSource="{Binding Path=ServerItemsView}"
+              ItemsSource="{Binding Path=ServerItemsView }"
               IsSynchronizedWithCurrentItem="False"
               SelectedItem="{Binding Path=SelectedServerItem}"
               SelectionMode="Single"
@@ -129,7 +104,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Text" Value="{x:Static sys:String.Empty}"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=Passworded}" Value="true">
+                                        <DataTrigger Binding="{Binding Path=Passworded, Mode=OneWay}" Value="true">
                                             <Setter Property="Text" Value="&#x1f511;"/>        
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -146,18 +121,18 @@
                                 >
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Mission"
-                                Binding="{Binding Mission}" 
+                                Binding="{Binding Mission, Mode=OneWay}" 
                                 Width="*"
                                 MaxWidth="2560"
                                 IsReadOnly="True"
                                 />
                 <DataGridTextColumn Header="Map"
-                                Binding="{Binding Island}" 
+                                Binding="{Binding Island, Mode=OneWay}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 />
                 <DataGridTextColumn  Header="Mode"
-                                Binding="{Binding Mode}" 
+                                Binding="{Binding Mode, Mode=OneWay}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 />
@@ -186,7 +161,7 @@
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn  Header="Ping"
-                                Binding="{Binding Path=Ping}" 
+                                Binding="{Binding Path=Ping, Mode=OneWay}" 
                                 Width="50"
                                 IsReadOnly="True"
                                 >

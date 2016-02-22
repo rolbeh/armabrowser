@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmaBrowser", "ArmaBrowser\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.Net4.Signed", "RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj", "{5FF943A5-260F-4042-B4CE-C4977BAD4EBB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{428D59DC-E78E-4DB8-AF33-912D386941B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationsTest.ArmaBrowser", "IntegrationsTest.ArmaBrowser\IntegrationsTest.ArmaBrowser.csproj", "{7B71B6B7-2175-4653-9311-53F431859316}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,8 +47,27 @@ Global
 		{5FF943A5-260F-4042-B4CE-C4977BAD4EBB}.Release|x64.ActiveCfg = Release|Any CPU
 		{5FF943A5-260F-4042-B4CE-C4977BAD4EBB}.Release|x64.Build.0 = Release|Any CPU
 		{5FF943A5-260F-4042-B4CE-C4977BAD4EBB}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|ARM.Build.0 = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|x64.Build.0 = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Debug|x86.Build.0 = Debug|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|ARM.ActiveCfg = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|ARM.Build.0 = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x64.ActiveCfg = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x64.Build.0 = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7B71B6B7-2175-4653-9311-53F431859316} = {428D59DC-E78E-4DB8-AF33-912D386941B4}
 	EndGlobalSection
 EndGlobal

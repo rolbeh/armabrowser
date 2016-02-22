@@ -2,14 +2,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
-        xmlns:views="clr-namespace:ArmaBrowser.Views"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         xmlns:logic="clr-namespace:ArmaBrowser.Logic"
-        xmlns:properties="clr-namespace:ArmaBrowser.Properties"
         xmlns:armaBrowser="clr-namespace:ArmaBrowser"
         xmlns:controls="clr-namespace:ArmaBrowser.Views.Controls"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
@@ -46,7 +43,9 @@
                 <TextBlock Grid.Column="1" Text="{Binding Path=DisplayText}"/>
             </Grid>
         </DataTemplate>
-
+        <DataTemplate x:Key="LoadingServerListContextDataTemplate" DataType="logic:LoadingServerListContext">
+            <controls:ProgressControl Background="{x:Null}"/>
+        </DataTemplate>
     </Window.Resources>
 
     <Window.DataContext>
@@ -283,26 +282,14 @@
                     </Image>
                     
                     <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"
-                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" >
+                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" ItemTemplate="{DynamicResource LoadingServerListContextDataTemplate}" >
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="logic:LoadingServerListContext">
-                                <controls:ProgressControl Background="{x:Null}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     
-                    <StackPanel Visibility="Hidden" Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20" Orientation="Horizontal" MaxHeight="120" Opacity="0.7">
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                    </StackPanel>
-
                     <controls:ServerListControl Grid.Row="0" BorderThickness="1,1,1,0" BorderBrush="#FF688CAF"/>
 
                     <Border Grid.Row="1" BorderThickness="1,1,1,1" BorderBrush="#FF688CAF">

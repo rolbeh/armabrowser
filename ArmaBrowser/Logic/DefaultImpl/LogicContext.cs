@@ -619,8 +619,7 @@ namespace ArmaBrowser.Logic
 
         public ObservableCollection<IServerItem> ServerItems { get; } = new ObservableCollection<IServerItem>();
 
-        public ObservableCollection<LoadingServerListContext> ReloadThreads { get; } =
-            new ObservableCollection<LoadingServerListContext>();
+        public ObservableCollection<LoadingServerListContext> ReloadThreads { get; } = new ObservableCollection<LoadingServerListContext>();
 
         public ObservableCollection<IPEndPoint> FavoritServerEndPoints
         {

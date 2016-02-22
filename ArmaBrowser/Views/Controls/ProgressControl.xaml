@@ -4,15 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
-             xmlns:converter="clr-namespace:ArmaBrowser.Views.Converter"
              mc:Ignorable="d" 
              Background="Black"
              MinHeight="145" MinWidth="85"
              
              d:DesignHeight="120" d:DesignWidth="521" d:DataContext="{d:DesignInstance Type=logic:LoadingServerListContext }">
-    <FrameworkElement.Resources>
-        <converter:LoadingServerListContextProcentConverter x:Key="LoadingServerListContextProcentConverter"/>
-    </FrameworkElement.Resources>
+     
     <Grid  Margin="5,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="24"/>
@@ -32,9 +29,9 @@
                      Height="100"
                      Background="{x:Null}"
                      Maximum="300"
-                     Value="{Binding Ping}"/>
+                     Value="{Binding Ping, Mode=OneWay}"/>
 
-        <TextBlock Grid.ColumnSpan="5" Grid.Row="0"  Text="{Binding Path=Procent,StringFormat=p, FallbackValue='40 %'}" 
+        <TextBlock Grid.ColumnSpan="5" Grid.Row="0"  Text="{Binding Path=Procent,StringFormat=p, FallbackValue='40 %', Mode=OneWay}" 
                    TextAlignment="Center"
                    FontFamily="Quartz Ms"
                    Foreground="{StaticResource ForegroundNormalBrush}"/>
@@ -44,8 +41,8 @@
                     
                      Background="{x:Null}"
                      Minimum="0"
-                     Maximum="{Binding MaximumValue}"
-                     Value="{Binding ProgressValue}"/>
+                     Maximum="{Binding MaximumValue, Mode=OneWay}"
+                     Value="{Binding ProgressValue, Mode=OneWay}"/>
 
         <ProgressBar Grid.Column="3" Grid.Row="1" Width="20" HorizontalAlignment="Left" Margin="5,0"
                      Orientation="Vertical"
