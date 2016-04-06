@@ -554,25 +554,6 @@ namespace ArmaBrowser.Data.DefaultImpl
             return reader.ReadUInt32();
         }
 
-        [Pure]
-        private static IEnumerable<KeyValuePair<string, string>> ReadRules_1_54(byte[] respose)
-        {
-            var ruleCount = respose[5] + (respose[6] >> 8);
-            var offset = 7;
-
-            for (var i = 0; i < ruleCount; i++)
-            {
-                string key;
-                offset += respose.ReadStringNullTerminated(offset, out key);
-                string value;
-                offset += respose.ReadStringNullTerminated(offset, out value);
-                if (!string.IsNullOrEmpty(key))
-                {
-                    yield return new KeyValuePair<string, string>(key, value);
-                }
-            }
-        }
-
         private static void RequestPlayers(ServerQueryRequest item, UdpClient udp)
         {
             const byte playerRequestByte = 0x55;
