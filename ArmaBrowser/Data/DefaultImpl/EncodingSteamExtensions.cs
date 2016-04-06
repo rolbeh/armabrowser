@@ -33,10 +33,10 @@ namespace System.IO
 
         private static byte EncodeByte([NotNull] BinaryReader reader)
         {
-            var result = reader.ReadByte();
+            byte result = reader.ReadByte();
             if (result == 0x01)
             {
-                var nextByte = (byte) reader.PeekChar();
+                byte nextByte = (byte) reader.PeekChar();
                 switch (nextByte)
                 {
                     case 0x01:
@@ -53,6 +53,18 @@ namespace System.IO
                         break;
                 }
             }
+            if (result == 0x03)
+            {
+                byte nextByte = (byte)reader.PeekChar();
+                switch (nextByte)
+                {
+                    case 0x03:
+                        nextByte = reader.ReadByte();
+                        result = 0x03;
+                        break;
+                }
+            }
+
             return result;
         }
 

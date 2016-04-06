@@ -76,7 +76,7 @@ namespace IntegrationsTest.ArmaBrowser.TestData
         }
 
         [TestMethod]
-        public void SteamByte_Decode_0x00()
+        public void SteamByte_Decode_0102_to_0x00()
         {
             using (var mem = BuildStream(new byte[] { 0x01, 0x02 }))
             using (var br = new BinaryReader(mem))
@@ -101,8 +101,9 @@ namespace IntegrationsTest.ArmaBrowser.TestData
         [TestMethod]
         public void DecodeSteamRuleFile_V_1_56_134627_82_211_2_97()
         {
+            string name = "V_1.56.134627_82.211.2.97";
             byte[] bytes;
-            using (var file = File.OpenRead(@"TestData\ServerRules\V_1.56.134627_188.165.245.178.rdefrag"))
+            using (var file = File.OpenRead($@"TestData\ServerRules\{name}.rdefrag"))
             using (var reader = new BinaryReader(file))
             using (var targetStream = new MemoryStream())
             {
@@ -113,7 +114,7 @@ namespace IntegrationsTest.ArmaBrowser.TestData
 
                 bytes = targetStream.ToArray();
             }
-            File.WriteAllBytes(@"TestData\ServerRules\V_1.56.134627_188.165.245.178.rdecoded", bytes);
+            File.WriteAllBytes($@"TestData\ServerRules\{name}.rdecoded", bytes);
         }
     }
 }

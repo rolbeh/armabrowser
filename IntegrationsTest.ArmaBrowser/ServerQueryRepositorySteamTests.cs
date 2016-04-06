@@ -21,12 +21,13 @@ namespace IntegrationsTest.ArmaBrowser
 
         [TestMethod]
         public void ReadRules_Version_134627_188_165_245_178()
-        {
-            using(FileStream unframedFile =  File.OpenRead(@"TestData\ServerRules\V_1.56.134627_188.165.245.178.rdefrag"))
-            using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
+        { 
+            SteamServerRule[] array;
+            using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.56.134627_188.165.245.178.rdecoded")))
             {
-                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(file).ToArray();
             }
+            Assert.AreEqual(89, array.Length);
         }
 
         [TestMethod]
@@ -43,6 +44,16 @@ namespace IntegrationsTest.ArmaBrowser
         public void ReadRules_Version_134787_90_116_171_48()
         {
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_90.116.171.48.rdefrag"))
+            using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
+            {
+                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+            }
+        }
+
+        [TestMethod]
+        public void ReadRules_Version_134787_62_141_38_102()
+        {
+            using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_62.141.38.102.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
                 ServerRepositorySteam.ReadRuleFile(data).ToArray();
