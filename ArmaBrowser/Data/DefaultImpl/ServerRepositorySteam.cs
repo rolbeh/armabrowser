@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,10 +9,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Magic.Annotations;
+using RestSharp.Extensions;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    sealed class ServerRepositorySteam : IServerRepository
+    internal sealed class ServerRepositorySteam : IServerRepository
     {
         public const string SteamGameNameFilter = "Arma3";
 
@@ -61,6 +63,10 @@ namespace ArmaBrowser.Data.DefaultImpl
                             request += lastEndPoint + "\0";
                             request += "\\gamedir\\" + SteamGameNameFilter;
                             //request += "\\empty\\0";
+
+#if DEBUG
+                            //request += @"\name_match\*EUTW*";
+#endif
 
                             request += "\0";
 
@@ -218,7 +224,9 @@ namespace ArmaBrowser.Data.DefaultImpl
                     {
                         br.ReadInt32();
                         br.ReadByte();
+                        
                         item = new ServerQueryRequest();
+                        item.IpAdresse = gameServerQueryEndpoint.Address.ToString();
                         item.ProtocolVersion = br.ReadByte();
 
                         item.Ping = (int)sw.ElapsedMilliseconds;
@@ -369,13 +377,11 @@ namespace ArmaBrowser.Data.DefaultImpl
             IPEndPoint endp = null;
             try
             {
-
-
                 // Rules auslesen
                 var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, ruleRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
                 var sendlen = udp.Send(challengeRequest, 9);
 
-                var respose = udp.Receive(ref endp);
+                byte[] respose = udp.Receive(ref endp);
 
                 if (respose[4] != 0x41)
                 {
@@ -385,32 +391,223 @@ namespace ArmaBrowser.Data.DefaultImpl
                 respose[4] = ruleRequestByte;
                 sendlen = udp.Send(respose, 9);
                 respose = udp.Receive(ref endp);
+                SteamUnframedBytes unFramed = respose.UnframeSteamBytes_1_56();
+#if DEBUG
+                
+                if (respose.Length > 7)
+                {
+                    using (var file = new FileStream(@"Data\V_"+ item.Version + "_" + item.IpAdresse.ToString() + ".dat", FileMode.OpenOrCreate))
+                    {
+                        file.Write(item.Data, 0, item.Data.Length);
+                        file.SetLength(item.Data.Length);
+                    }
 
+                    using (var file = new FileStream(@"Data\V_" + item.Version + "_" + item.IpAdresse.ToString() + ".rdat", FileMode.OpenOrCreate))
+                    {
+                        file.Write(respose, 0, respose.Length);
+                        file.SetLength(respose.Length);
+                    }
+
+                    using (var file = new FileStream(@"Data\V_" + item.Version + "_" + item.IpAdresse.ToString() + ".rdefrag", FileMode.OpenOrCreate))
+                    {
+                        file.Write(unFramed.Bytes, 0, unFramed.Bytes.Length);
+                        file.SetLength(unFramed.Bytes.Length);
+                    }
+                }
+#endif
                 if (respose[4] != 0x45)
                 {
                     System.Diagnostics.Debug.WriteLine("Error in RequestRules - Rules response");
                     return;
                 }
-
-                int ruleCount = respose[5] + (respose[6] >> 8);
-                int offset = 7;
-
-                for (int i = 0; i < ruleCount; i++)
+                
+                Version version = new Version(item.Version);
+                using (var decodedMem = unFramed.DecodeSteamRuleFile_1_56())
                 {
-                    string key;
-                    offset += respose.ReadStringNullTerminated(offset, out key);
-                    string value;
-                    offset += respose.ReadStringNullTerminated(offset, out value);
-                    if (!string.IsNullOrEmpty(key))
-                        item.KeyValues.Add(key, value);
+                    var mods = ReadRules(decodedMem, version);
+                    foreach (var keyValuePair in mods)
+                    {
+                        item.KeyValues.Add(keyValuePair.Key, keyValuePair.Value);
+                    }
                 }
 
-
-
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Debug.WriteLine(ex);
+                
+                throw;
+            }
+            
+        }
+
+        [Pure]
+        private static IEnumerable<KeyValuePair<string, string>> ReadRules(SteamDecodedBytes respose, Version version)
+        {
+
+            if (version.Major > 0)
+            {
+                if (version.Minor <= 54)
+                {
+                    //return ReadRules_1_54(respose);
+                }
+                if (version.Minor >= 56)
+                {
+                    return ReadRules_1_56(respose);
+                }
+            }
+            return Enumerable.Empty<KeyValuePair<string, string>>();
+        }
+        
+        private static IEnumerable<KeyValuePair<string, string>> ReadRules_1_56(SteamDecodedBytes respose)
+        {
+            return ReadRuleFile(respose).Select(r => new KeyValuePair<string, string>(r.Key, r.Name + ";"));
+        }
+        
+        internal static IEnumerable<SteamServerRule> ReadRuleFile(SteamDecodedBytes steamDecoded)
+        {
+            Stream file = steamDecoded.Data;
+            using (var br = new BinaryReader(file, Encoding.ASCII, true))
+            {
+                var bytes = new byte[file.Length];
+                file.Read(bytes, 0, bytes.Length);
+                
+                var modCount = 0;
+                
+                var attributes = RulesStreamAttributes.Hash | RulesStreamAttributes.PubId;
+                // | RulesStreamAttributes.B1 | RulesStreamAttributes.B2;
+
+                file.Seek(18, SeekOrigin.Begin);
+                Console.Write("ModCount: ");
+                modCount = br.ReadByte();
+                if (modCount == 1 && bytes[file.Position] == 2)
+                {
+                    attributes &= ~RulesStreamAttributes.Hash;
+                    attributes &= ~RulesStreamAttributes.PubId;
+                    file.Position += 1;
+                    modCount = br.ReadByte();
+                }
+                Console.WriteLine(modCount);
+                var count = 0;
+                while (count < modCount && file.Position < file.Length)
+                {
+                    count++;
+
+                    var modHash = uint.MinValue;
+                    var pubId = uint.MinValue;
+                    string modName = null;
+                     
+
+                    Console.WriteLine();
+                    Console.WriteLine($"Mod {count}");
+                    if ((attributes & RulesStreamAttributes.Hash) == RulesStreamAttributes.Hash)
+                    {
+                        modHash = br.ReadUInt32();
+                        switch (modHash)
+                        {
+                            case 0x0101B5DC:
+                                // first byte DC 11011100
+                                //Todo steam rules unkown seq. DC? B5? 01 01 before '@atlas_lhd'
+                                file.Position -= 2;
+                                modHash = br.ReadUInt32();
+                                break;
+                            case 0x088C0303:
+                                // first byte 03 00000011
+                                //Todo steam rules unkown seq. 03? 03? 8C 80 before 'Arma 3'
+                                file.Position -= 3;
+                                modHash = br.ReadUInt32();
+                                break;
+                        }
+                    }
+                    if ((attributes & RulesStreamAttributes.PubId) == RulesStreamAttributes.PubId)
+                    {
+                        pubId = ReadPublisherId(br);
+                    }
+
+                    byte modNameLength = br.ReadByte();
+                    
+                    file.Position -= 1;
+                    if (modNameLength > 0 && file.Position + 1 < file.Length && !bytes[file.Position + 1].IsAscii())
+                        //todo steam rules unkown byte 0x03 in V_1.56.134627_87.98.235.140.rdefrag
+                        file.Position += 1;
+
+                    if (file.Position + modNameLength >= file.Length)
+                    {
+                        break;
+                    }
+
+                    modName = br.ReadString();
+                    
+                    Console.WriteLine($"Mod StrLen: {modNameLength}");
+                    var rule = new SteamServerRule(modHash, pubId, modName)
+                    {
+                        //Key = $"sigNames:{count}-{modCount}"
+                        Key = $"modNames:{count}-{modCount}"
+                    };
+                    yield return rule;
+                    Console.WriteLine(rule);
+                }
+
+                // sigNames
+                if (file.Position < file.Length)
+                {
+                    modCount = br.ReadByte();
+                    count = 0;
+                    while (count < modCount && file.Position < file.Length)
+                    {
+                        count++;
+                        byte modNameLength = br.ReadByte();
+                        file.Position -= 1;
+                        if (modNameLength > 0 && file.Position + 1 < file.Length && !bytes[file.Position + 1].IsAscii())
+                            //todo steam rules unkown byte 0x03 in V_1.56.134627_87.98.235.140.rdefrag
+                            file.Position += 1;
+
+                        if (file.Position + modNameLength >= file.Length)
+                        {
+                            break;
+                        }
+
+                        string modName = br.ReadString();
+
+                        Console.WriteLine($"Mod StrLen: {modNameLength}");
+                        var rule = new SteamServerRule(0, 0, modName)
+                        {
+                            Key = $"sigNames:{count}-{modCount}"
+                        };
+                        yield return rule;
+                        Console.WriteLine(rule);
+                    }
+                }
+
+                file.Dispose();
+            }
+        }
+
+        private static uint ReadPublisherId(BinaryReader reader)
+        {
+            byte len = reader.ReadByte();
+            if (len == 1)
+            {
+                return reader.ReadByte();
+            }
+            return reader.ReadUInt32();
+        }
+
+        [Pure]
+        private static IEnumerable<KeyValuePair<string, string>> ReadRules_1_54(byte[] respose)
+        {
+            var ruleCount = respose[5] + (respose[6] >> 8);
+            var offset = 7;
+
+            for (var i = 0; i < ruleCount; i++)
+            {
+                string key;
+                offset += respose.ReadStringNullTerminated(offset, out key);
+                string value;
+                offset += respose.ReadStringNullTerminated(offset, out value);
+                if (!string.IsNullOrEmpty(key))
+                {
+                    yield return new KeyValuePair<string, string>(key, value);
+                }
             }
         }
 
@@ -491,7 +688,16 @@ namespace ArmaBrowser.Data.DefaultImpl
                 {
                     for (int i = 0; i < count; i++)
                     {
-                        sb.Append(dic[string.Format("{0}:{1}-{2}", keyWord, i, count)]);
+                        try
+                        {
+                            sb.Append(dic[string.Format("{0}:{1}-{2}", keyWord, i + 1, count)]);
+                        }
+                        catch (Exception)
+                        {
+                            
+                            
+                        }
+                        
                     }
                 }
             }
@@ -562,6 +768,8 @@ namespace ArmaBrowser.Data.DefaultImpl
 
             [CanBeNull]
             public List<Player> Players { get; internal set; }
+
+            public string IpAdresse { get; set; }
         }
 
 
