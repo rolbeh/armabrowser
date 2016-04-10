@@ -39,7 +39,7 @@
         </Style>
 
 
-        <DataTemplate x:Key="ServerNameDatatemplate">
+        <DataTemplate x:Key="ServerNameDatatemplate" DataType="design:ServerItem">
                 <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />

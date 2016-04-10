@@ -102,6 +102,7 @@
     <None Include="TestData\ServerRules\V_1.56.134787_188.165.32.82.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\ServerRules\V_1.56.134787_5.9.74.118.rdefrag" />
     <None Include="TestData\ServerRules\V_1.56.134787_62.141.38.102.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -117,6 +118,9 @@
     <None Include="TestData\ServerRules\V_1.56.134787_90.116.171.48.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\ServerRules\V_1.56.135357_81.19.212.115.rdefrag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -128,6 +132,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="TestData\ServerRules\V_1.56.135357_81.19.212.115.rules">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rules">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>

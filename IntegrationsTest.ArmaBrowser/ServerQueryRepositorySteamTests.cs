@@ -20,7 +20,46 @@ namespace IntegrationsTest.ArmaBrowser
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_176.77.11.19.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+                var array = ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+
+                Assert.AreEqual("modNames:1-13", array[0].Key);
+                Assert.AreEqual("Arma 3", array[0].Name);
+
+                Assert.AreEqual("modNames:2-13", array[1].Key);
+                Assert.AreEqual("@bwa3_comp_ace", array[1].Name);
+
+                Assert.AreEqual("modNames:3-13", array[2].Key);
+                Assert.AreEqual("Advanced Combat Environment 3.5.1", array[2].Name);
+
+                Assert.AreEqual("modNames:4-13", array[3].Key);
+                Assert.AreEqual("Bundeswehr Mod", array[3].Name);
+
+                Assert.AreEqual("modNames:5-13", array[4].Key);
+                Assert.AreEqual("RHS: Armed Forces of the Russian Federation", array[4].Name);
+
+                Assert.AreEqual("modNames:6-13", array[5].Key);
+                Assert.AreEqual("@rhs_usf3", array[5].Name);
+
+                Assert.AreEqual("modNames:7-13", array[6].Key);
+                Assert.AreEqual("CUP Terrains - Maps 1.0.1", array[6].Name);
+
+                Assert.AreEqual("modNames:8-13", array[7].Key);
+                Assert.AreEqual("CUP Terrains - Core 1.0.1", array[7].Name);
+
+                Assert.AreEqual("modNames:9-13", array[8].Key);
+                Assert.AreEqual("JSRS3: DragonFyre EDEN 1.2", array[8].Name);
+
+                Assert.AreEqual("modNames:10-13", array[9].Key);
+                Assert.AreEqual("Blastcore: Skies", array[9].Name);
+
+                Assert.AreEqual("modNames:11-13", array[10].Key);
+                Assert.AreEqual("@blastcore_a3", array[10].Name);
+
+                Assert.AreEqual("modNames:12-13", array[11].Key);
+                Assert.AreEqual("MCC Sandbox", array[11].Name);
+
+                Assert.AreEqual("modNames:13-13", array[12].Key);
+                Assert.AreEqual("Community Base Addons v2.3.1", array[12].Name);
             }
         }
 
@@ -30,7 +69,7 @@ namespace IntegrationsTest.ArmaBrowser
             SteamServerRule[] array;
             using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.56.134627_188.165.245.178.rdecoded")))
             {
-                array = ServerRepositorySteam.ReadRuleFile(file).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(file,true).ToArray();
             }
             Assert.AreEqual(89, array.Length);
         }
@@ -38,50 +77,60 @@ namespace IntegrationsTest.ArmaBrowser
         [TestMethod]
         public void ReadRules_Version_134787_188_165_32_82()
         {
+            SteamServerRule[] array;
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_188.165.32.82.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
+            Assert.AreEqual(18, array.Length);
         }
 
         [TestMethod]
         public void ReadRules_Version_134787_90_116_171_48()
         {
+            SteamServerRule[] array;
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_90.116.171.48.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
+            Assert.AreEqual(11, array.Length);
         }
 
         [TestMethod]
         public void ReadRules_Version_134787_62_141_38_102()
         {
+            SteamServerRule[] array;
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_62.141.38.102.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
+            Assert.AreEqual(9, array.Length);
         }
 
         [TestMethod]
         public void ReadRules_Version_134787_5_9_74_118()
         {
+            SteamServerRule[] array;
             using (FileStream unframedFile = File.OpenRead(@"D:\Temp\armabrowserTestData\Rules\V_1.56.134787_5.9.74.118.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
+            Assert.AreEqual(32, array.Length);
         }
 
         [TestMethod]
         public void ReadRules_Version_135288_81_0_236_102()
         {
+            SteamServerRule[] array;
             using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.59.135288_81.0.236.102.rules")))
             {
-                ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
             }
+            Assert.AreEqual(0, array.Length);
         }
 
         [TestMethod]
@@ -90,7 +139,7 @@ namespace IntegrationsTest.ArmaBrowser
             SteamServerRule[] array;
             using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.56.134787_87.229.120.234.rdecoded")))
             {
-                array = ServerRepositorySteam.ReadRuleFile(file).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
             }
 
             Assert.AreEqual("modNames:1-48", array[0].Key);
@@ -244,7 +293,7 @@ namespace IntegrationsTest.ArmaBrowser
             SteamServerRule[] array;
             using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.56.134627_82.211.2.97.rdecoded")))
             {
-                array = ServerRepositorySteam.ReadRuleFile(file).ToArray();
+                array = ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
             }
             
             Assert.AreEqual("modNames:1-38", array[0].Key);
@@ -363,7 +412,18 @@ namespace IntegrationsTest.ArmaBrowser
         }
 
         [TestMethod]
-        public void ReadRules_Temp_Folder()
+        public void ReadRules_Version_135357_81_19_212_115()
+        {
+            SteamServerRule[] array;
+            using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.56.135357_81.19.212.115.rules")))
+            {
+                array = ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
+            }
+
+        }
+
+        [TestMethod]
+        public void ReadRules_Temp_Folder_NoExceptions()
         {
             Assert.IsTrue(Directory.Exists(@"D:\Temp\armabrowserTestData\Rules"));
 

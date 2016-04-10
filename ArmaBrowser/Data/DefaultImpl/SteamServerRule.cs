@@ -27,7 +27,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             sb.Append("Key       : ");
             sb.AppendLine(Key);
             sb.Append("Mod Hash  : ");
-            sb.AppendLine(Hash.ToString());
+            sb.AppendLine(Hash.ToString("x"));
             sb.Append("Mod PubId : ");
             sb.AppendLine(PublisherId.ToString());
             sb.Append("Mod String: ");

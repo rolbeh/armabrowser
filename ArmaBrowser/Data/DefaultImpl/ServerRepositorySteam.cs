@@ -486,22 +486,57 @@ namespace ArmaBrowser.Data.DefaultImpl
         internal static IEnumerable<SteamServerRule> ReadRuleFile(SteamDecodedBytes steamDecoded, bool trace = false)
         {
             Stream file = steamDecoded.Data;
+            file.Seek(0, SeekOrigin.Begin);
             using (var br = new BinaryReader(file, Encoding.ASCII, true))
             {
-                var bytes = new byte[file.Length];
-                file.Read(bytes, 0, bytes.Length);
-                
                 var modCount = 0;
-                
-                file.Seek(18, SeekOrigin.Begin);
+                var versionByte = br.ReadByte();
+                var someExtras = br.ReadByte();
+                var flags1 = br.ReadUInt16();
+                var flags2 = br.ReadUInt16();
+                Trace.WriteLineIf(trace, String.Format("B1: {0:x}", versionByte));
+                Trace.WriteLineIf(trace, String.Format("B2: {0:x}", someExtras));
+                Trace.WriteLineIf(trace, String.Format("Flags1: {0:x}", flags1));
+                Trace.WriteLineIf(trace, String.Format("Flags2: {0:x}", flags2));
+
+                if ((flags1 & 0x01) == 0x01)
+                {
+                    var hash = br.ReadUInt32();
+                    Trace.WriteLineIf(trace, String.Format("DLCHash: {0:x}", hash));
+                }
+
+                if ((flags1 & 0x02) == 0x02)
+                {
+                    var hash = br.ReadUInt32();
+                    Trace.WriteLineIf(trace, String.Format("DLCHash: {0:x}", hash));
+                }
+                if ((flags1 & 0x04) == 0x04)
+                {
+                    var hash = br.ReadUInt32();
+                    Trace.WriteLineIf(trace, String.Format("DLCHash: {0:x}", hash));
+                }
+                if ((flags1 & 0x08) == 0x08)
+                {
+                    var hash = br.ReadUInt32();
+                    Trace.WriteLineIf(trace, String.Format("DLCHash: {0:x}", hash));
+                }
+                if ((flags1 & 0x10) == 0x10)
+                {
+                    var hash = br.ReadUInt32();
+                    Trace.WriteLineIf(trace, String.Format("DLCHash: {0:x}", hash));
+                }
+
+                //file.Seek(18, SeekOrigin.Begin);
+                Trace.WriteLineIf(trace, String.Format("Position: {0}", file.Position));
+
                 Trace.WriteIf(trace, "ModCount: ");
                 modCount = br.ReadByte();
 
                 Trace.WriteLineIf(trace, modCount);
-                var count = 0;
-                while (count < modCount && file.Position < file.Length)
+                var modNr = 0;
+                while (modNr < modCount && file.Position < file.Length)
                 {
-                    count++;
+                    modNr++;
 
                     var modHash = uint.MinValue;
                     var pubId = uint.MinValue;
@@ -509,7 +544,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
 
                     Trace.WriteLineIf(trace, "");
-                    Trace.WriteLineIf(trace, $"Mod {count}");
+                    Trace.WriteLineIf(trace, $"Mod {modNr}");
                     
                     modHash = br.ReadUInt32();
                     pubId = ReadPublisherId(br);
@@ -518,7 +553,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     
                     file.Position -= 1;
                     
-                    if (file.Position + modNameLength >= file.Length)
+                    if (file.Position + modNameLength > file.Length)
                     {
                         break;
                     }
@@ -529,7 +564,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                     var rule = new SteamServerRule(modHash, pubId, modName)
                     {
                         //Key = $"sigNames:{count}-{modCount}"
-                        Key = $"modNames:{count}-{modCount}"
+                        Key = $"modNames:{modNr}-{modCount}"
                     };
                     yield return rule;
                     Trace.WriteLineIf(trace, rule);
@@ -539,13 +574,13 @@ namespace ArmaBrowser.Data.DefaultImpl
                 if (file.Position < file.Length)
                 {
                     modCount = br.ReadByte();
-                    count = 0;
-                    while (count < modCount && file.Position < file.Length)
+                    modNr = 0;
+                    while (modNr < modCount && file.Position < file.Length)
                     {
-                        count++;
+                        modNr++;
                         byte modNameLength = br.ReadByte();
                         
-                        if (file.Position + modNameLength >= file.Length)
+                        if (file.Position + modNameLength > file.Length)
                         {
                             break;
                         }
@@ -555,7 +590,7 @@ namespace ArmaBrowser.Data.DefaultImpl
                         Trace.WriteLineIf(trace, $"Mod StrLen: {modNameLength}");
                         var rule = new SteamServerRule(0, 0, modName)
                         {
-                            Key = $"sigNames:{count}-{modCount}"
+                            Key = $"sigNames:{modNr}-{modCount}"
                         };
                         yield return rule;
                         Trace.WriteLineIf(trace, rule);
