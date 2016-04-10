@@ -11,7 +11,7 @@ require_once 'Classes/Html.php';
 if (!($this instanceof Core\Controller)) { throw new Exception("Invalid operation, expect class Controller"); }
 
 ?>
-            <h1 class="title">Arma 3 Server Browser Version 0.8.0</h1>
+            <h1 class="title">Arma 3 Server Browser Version 2016.4.1.104</h1>
             <span class="date"><?php echo date("F d, Y", strtotime($this->GetPageDate()))?></span>
             <div style="display: block; padding:40px; padding-top:0; vertical-align:top;">
                 <p>Arma Browser is a launcher program for the game Arma 3. It helps you to find Arma III multiplayer server without starting Arma3 before and join your selected server with your installed addons.</p>
@@ -45,6 +45,13 @@ if (!($this instanceof Core\Controller)) { throw new Exception("Invalid operatio
                 </ul>
 
                 <b>Changes:</b>
+                <p>Version 2016.4.1.104 <span style="font-family:Verdana; font-size:6pt; text-align: center; color:black;">10.04.2016</span></p>
+                <ul>
+                    <li>support the new mod management of steam and Arma 3 Bohemia Interactive</li>
+					<li>only server up version 1.56 supported</li>
+                    <li>Userinterface improvements</li>
+                </ul>
+				
                 <p>Version 0.8.0 <span style="font-family:Verdana; font-size:6pt; text-align: center; color:black;">18.08.2015</span></p>
                 <ul>
                     <li>some improvements around addons</li>
@@ -53,7 +60,6 @@ if (!($this instanceof Core\Controller)) { throw new Exception("Invalid operatio
                     <li>Userinterface improvements</li>
                 </ul>
 
-                <b>Changes:</b>
                 <p>Version 0.7.3 <span style="font-family:Verdana; font-size:6pt; text-align: center; color:black;">24.06.2015</span></p>
                 <ul>
                     <li>some improvements around addons</li>

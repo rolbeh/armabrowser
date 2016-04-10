@@ -53,16 +53,13 @@ if (!($this instanceof Core\Controller)) { throw new UnexpectedValueException("I
             <a href="https://plus.google.com/+ArmabrowserOrgofficial/posts" target="blank">
                 <img src="<?php echo $this->GetBaseUrl();?>Content/Red-signin_Short_base_44dp.png" alt="Google + Armabrowser" height="44" width="44" />
             </a>
-            <a href="https://www.facebook.com/armabrowser" target="blank">
-                <img src="<?php echo $this->GetBaseUrl();?>Content/f.png" alt="Facebook Armabrowser" height="44" width="44" />
-            </a>
         </div>
 
         <div style="width: 900px; display: block; border-width: 1px; border-style:solid; border-color:#007acc; padding:40px; vertical-align:top; margin-left: auto; margin-right: auto; margin-top: -130px;">
             
             <ul class="navi">
                 <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'Marves', 'Marves - Addon Repository'); ?></li>
-                <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'downloadOnce.htm', 'Download 0.8.0'); ?></li>
+                <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'downloadOnce.htm', 'Download 2016.1'); ?></li>
                 <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl(), 'Arma browser'); ?></li>
             </ul>        
             <br />

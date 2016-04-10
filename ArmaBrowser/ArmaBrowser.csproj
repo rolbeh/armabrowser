@@ -37,8 +37,8 @@
     <MinimumRequiredVersion>0.8.2.102</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>104</ApplicationRevision>
-    <ApplicationVersion>2016.2.1.%2a</ApplicationVersion>
+    <ApplicationRevision>105</ApplicationRevision>
+    <ApplicationVersion>2016.4.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>

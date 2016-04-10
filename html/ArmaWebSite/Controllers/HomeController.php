@@ -17,7 +17,7 @@ class HomeController extends Core\Controller
 
         $this->SetTitle(DEFAULT_TITLE . "Free");
 
-        $this->SetPageDate(date('c', mktime(00, 00, 00, 8, 18, 15)));
+        $this->SetPageDate(date('c', mktime(00, 00, 00, 10, 04, 2016)));
 
         $this->RenderView();
 
