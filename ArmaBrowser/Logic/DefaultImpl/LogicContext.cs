@@ -101,7 +101,7 @@ namespace ArmaBrowser.Logic
 
             for (var i = 0; i < threadCount; i++)
             {
-                var threadContext = NewThread(dest, token, blockCount, i);
+                LoadingServerListContext threadContext = NewThread(dest, token, blockCount, i);
                 waitArray[i] = threadContext.Reset;
             }
 
@@ -288,7 +288,10 @@ namespace ArmaBrowser.Logic
                 var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item);
             }
             state.Finished();
-            UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
+            Task.Delay(TimeSpan.FromSeconds(0.5))
+                .ContinueWith((t,ctx) => ReloadThreads.Remove((LoadingServerListContext)ctx), state, UiTask.UiTaskScheduler)
+                .Wait();
+            //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
 
         private void OnServerGenerated(IServerVo obj)
@@ -672,6 +675,7 @@ namespace ArmaBrowser.Logic
         private readonly ManualResetEvent _reset;
         private int _ping;
         private int _progressValue;
+        private bool _isRemoving;
 
         public LoadingServerListContext()
         {
@@ -725,8 +729,20 @@ namespace ArmaBrowser.Logic
             }
         }
 
+        public bool IsRemoving
+        {
+            get { return _isRemoving; }
+            private set
+            {
+                if (value == _isRemoving) return;
+                _isRemoving = value;
+                OnPropertyChanged();
+            }
+        }
+
         public void Finished()
         {
+            IsRemoving = true;
             _reset.Set();
         }
     }

@@ -650,16 +650,11 @@ namespace ArmaBrowser.Data.DefaultImpl
                 {
                     for (int i = 0; i < count; i++)
                     {
-                        try
+                        string value;
+                        if (dic.TryGetValue(string.Format("{0}:{1}-{2}", keyWord, i + 1, count), out value))
                         {
-                            sb.Append(dic[string.Format("{0}:{1}-{2}", keyWord, i + 1, count)]);
+                            sb.Append(value);
                         }
-                        catch (Exception)
-                        {
-                            
-                            
-                        }
-                        
                     }
                 }
             }

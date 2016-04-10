@@ -44,7 +44,34 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="LoadingServerListContextDataTemplate" DataType="logic:LoadingServerListContext">
-            <controls:ProgressControl Background="{x:Null}"/>
+            <controls:ProgressControl Background="{x:Null}">
+                <FrameworkElement.Triggers>
+                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     Duration="00:00:02"
+                                                     From="0"
+                                                     To="1" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </FrameworkElement.Triggers>
+            </controls:ProgressControl>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Path=IsRemoving}" Value="true" >
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                      Storyboard.TargetProperty="Opacity" 
+                                      From="1" To="0" Duration="0:0:0.2"
+                                      />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </Window.Resources>
 
@@ -282,7 +309,9 @@
                     </Image>
                     
                     <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"
-                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" ItemTemplate="{DynamicResource LoadingServerListContextDataTemplate}" >
+                                  IsHitTestVisible="False"
+                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" 
+                                  ItemTemplate="{DynamicResource LoadingServerListContextDataTemplate}" >
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />

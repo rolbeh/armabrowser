@@ -20,13 +20,12 @@ namespace ArmaBrowser.Logic
 {
     internal class AddonWebApi : IAddonWebApi
     {
-
-        private const string ApiVer = "5";
-
         //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
 #if DEBUG
+        private const string ApiVer = "4";
         private const string BaseUrl = @"http://homeserver/arma/api/" + ApiVer + @"/";
 #else
+        private const string ApiVer = "4";
         const string BaseUrl = @"http://armabrowser.org/api/" + ApiVer + @"/";
 #endif
 

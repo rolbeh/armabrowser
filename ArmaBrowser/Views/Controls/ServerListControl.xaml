@@ -26,13 +26,8 @@
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
-            <!--<Style.Triggers>
+            <Style.Triggers>
                 <EventTrigger RoutedEvent="Loaded">
-                    <BeginStoryboard >
-                        <Storyboard  AutoReverse="False" >
-                            <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0:0.200" From="0" To="18" />
-                        </Storyboard>
-                    </BeginStoryboard>
                     <BeginStoryboard >
                         <Storyboard   AutoReverse="False" >
                             <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" 
@@ -40,35 +35,35 @@
                         </Storyboard>
                     </BeginStoryboard>
                 </EventTrigger>
-            </Style.Triggers>-->
+            </Style.Triggers>
         </Style>
 
 
         <DataTemplate x:Key="ServerNameDatatemplate">
-            <Grid >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto" />
-                     
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Image Grid.Column="0"   Height="18" Width="23"  Source="{DynamicResource RecentlyBitmapImage}"
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0"   Height="18" Width="23"  Source="{DynamicResource RecentlyBitmapImage}"
                                        SnapsToDevicePixels="True" 
                                        Stretch="None" 
                                        HorizontalAlignment="Left">
-                    <Image.Style>
-                        <Style TargetType="Image">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                </Image>
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
 
-                <TextBlock Grid.Column="1" Text="{Binding Name}"/>
-            </Grid>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+                </Grid>
         </DataTemplate>
 
     </FrameworkElement.Resources>
