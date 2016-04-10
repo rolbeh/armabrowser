@@ -59,7 +59,7 @@ if (!($this instanceof Core\Controller)) { throw new UnexpectedValueException("I
             
             <ul class="navi">
                 <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'Marves', 'Marves - Addon Repository'); ?></li>
-                <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'downloadOnce.htm', 'Download 2016.1'); ?></li>
+                <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl().'downloadOnce.htm', 'Download 2016.4'); ?></li>
                 <li class="navi-item"><?php  echo Html::A( $this->GetBaseUrl(), 'Arma browser'); ?></li>
             </ul>        
             <br />
