@@ -85,18 +85,18 @@ namespace System.IO
 
         internal static SteamUnframedBytes UnframeSteamBytes_1_56([NotNull] this byte[] respose)
         {
-            var fagmentCount = respose[5] + (respose[6] >> 8);
+            var fragmentCount = respose[5] + (respose[6] >> 8);
             var offset = 7;
             var result = new byte[respose.Length];
             var destinationOffset = 0;
-            for (var i = 0; i < fagmentCount; i++)
+            for (var i = 0; i < fragmentCount; i++)
             {
                 var fragmentNr = respose[offset];
-                if (respose[offset + 1] != fagmentCount) throw new InvalidDataException();
+                if (respose[offset + 1] != fragmentCount) throw new InvalidDataException($"expect {fragmentCount} but {respose[offset + 1]} found!");
                 offset += 3;
 
                 var fragmentLen = Array.FindIndex(respose, offset, b => b == 0x0) - offset;
-                if (fragmentNr < fagmentCount)
+                if (fragmentNr < fragmentCount)
                 {
                     if (fragmentLen != 127)
                         throw new InvalidDataException();
@@ -106,7 +106,7 @@ namespace System.IO
                 destinationOffset += fragmentLen;
 
                 offset += fragmentLen + 1;
-                if (fragmentNr == fagmentCount)
+                if (fragmentNr == fragmentCount)
                     break;
             }
             Array.Resize(ref result, destinationOffset);

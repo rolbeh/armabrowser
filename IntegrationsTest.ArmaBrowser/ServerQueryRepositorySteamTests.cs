@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ArmaBrowser.Data.DefaultImpl;
+using ArmaBrowser.Styles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationsTest.ArmaBrowser
@@ -9,13 +12,15 @@ namespace IntegrationsTest.ArmaBrowser
     [TestClass]
     public class ServerQueryRepositorySteamTests
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void ReadRules_Version_134787_176_77_11_19()
         {
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_176.77.11.19.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
         }
 
@@ -36,7 +41,7 @@ namespace IntegrationsTest.ArmaBrowser
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_188.165.32.82.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
         }
 
@@ -46,7 +51,7 @@ namespace IntegrationsTest.ArmaBrowser
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_90.116.171.48.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
             }
         }
 
@@ -56,7 +61,26 @@ namespace IntegrationsTest.ArmaBrowser
             using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_62.141.38.102.rdefrag"))
             using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
-                ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+            }
+        }
+
+        [TestMethod]
+        public void ReadRules_Version_134787_5_9_74_118()
+        {
+            using (FileStream unframedFile = File.OpenRead(@"D:\Temp\armabrowserTestData\Rules\V_1.56.134787_5.9.74.118.rdefrag"))
+            using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
+            {
+                ServerRepositorySteam.ReadRuleFile(data, true).ToArray();
+            }
+        }
+
+        [TestMethod]
+        public void ReadRules_Version_135288_81_0_236_102()
+        {
+            using (SteamDecodedBytes file = new SteamDecodedBytes(File.OpenRead(@"TestData\ServerRules\V_1.59.135288_81.0.236.102.rules")))
+            {
+                ServerRepositorySteam.ReadRuleFile(file, true).ToArray();
             }
         }
 
@@ -212,8 +236,6 @@ namespace IntegrationsTest.ArmaBrowser
 
             Assert.AreEqual("modNames:48-48", array[47].Key);
             Assert.AreEqual("31St Support Unit", array[47].Name);
-
-
         }
 
         [TestMethod]
@@ -338,8 +360,39 @@ namespace IntegrationsTest.ArmaBrowser
 
             Assert.AreEqual("modNames:38-38", array[37].Key);
             Assert.AreEqual("Bundeswehr Mod", array[37].Name);
+        }
 
+        [TestMethod]
+        public void ReadRules_Temp_Folder()
+        {
+            Assert.IsTrue(Directory.Exists(@"D:\Temp\armabrowserTestData\Rules"));
 
+            List<string> failedFiles = new List<string>(100);
+
+            string[] ruleFiles = Directory.GetFiles(@"D:\Temp\armabrowserTestData\Rules");
+            foreach (var ruleFile in ruleFiles)
+            {
+                try
+                {
+                    using (FileStream unframedFile = File.OpenRead(ruleFile))
+                    using (SteamDecodedBytes data = (new SteamUnframedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
+                    {
+                        ServerRepositorySteam.ReadRuleFile(data).ToArray();
+                    }
+                    Trace.WriteLine($"OK!   File '{ruleFile}' ");
+                }
+                catch (Exception)
+                {
+                    failedFiles.Add(ruleFile);
+                    Trace.WriteLine($"FAIL! File '{ruleFile}' ");
+                }
+            }
+
+            foreach (var failedFile in failedFiles)
+            {
+                TestContext.WriteLine($"FAIL! File '{failedFile}' ");
+            }
+            Assert.AreEqual(0, failedFiles.Count);
         }
 
         private static byte[] ToArray(FileStream stream)

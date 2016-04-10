@@ -117,12 +117,20 @@
     <None Include="TestData\ServerRules\V_1.56.134787_90.116.171.48.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rdefrag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ArmaBrowser\ArmaBrowser.csproj">
       <Project>{396D5BF5-9138-4D1D-A2A0-8938E9B7DB76}</Project>
       <Name>ArmaBrowser</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rules">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

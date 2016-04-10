@@ -640,12 +640,6 @@
                                RequestNavigate="PoweredByHyperlink_RequestNavigate"
                                >Google+</Hyperlink>
             </TextBlock>
-            <TextBlock Margin="5,5,0,0" Height="30">
-                    <Hyperlink NavigateUri="https://www.facebook.com/armabrowser/" 
-                               Foreground="#FFCDE2F3"
-                               RequestNavigate="PoweredByHyperlink_RequestNavigate"
-                               >Facebook</Hyperlink>
-            </TextBlock>
             <TextBlock Margin="5,5,0,0" Height="30" Text="{Binding Version, StringFormat='Version {0}'}" />
             <!--<Button Background="{x:Null}"  x:Name="appbar_settings"
                     Click="AppbarSettings_OnClick"

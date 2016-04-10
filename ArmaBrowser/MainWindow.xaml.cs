@@ -48,7 +48,7 @@ namespace ArmaBrowser
             InitializeComponent();
 
             //Keyboard.AddGotKeyboardFocusHandler(this, GlobalKeyborad_OnGotKeyboard);
-            Keyboard.AddLostKeyboardFocusHandler(this, GlobalKeyborad_OnGotKeyboard);
+            //Keyboard.AddLostKeyboardFocusHandler(this, GlobalKeyborad_OnGotKeyboard);
 
             AutoJoinView.Visibility = Visibility.Collapsed;
             TabListBox.SelectedIndex = 0;
@@ -56,16 +56,16 @@ namespace ArmaBrowser
              
         }
 
-        private void GlobalKeyborad_OnGotKeyboard(object sender, KeyboardFocusChangedEventArgs args)
-        {
-            Debug.WriteLine("{0} - {1}  --> {2} - {3}",
-                    args.OldFocus,
-                    args.OldFocus != null ? ((FrameworkElement)args.OldFocus).Name : "", 
-                    args.NewFocus, 
-                    args.NewFocus != null ? ((FrameworkElement)args.NewFocus).Name : ""
-                );
+        //private void GlobalKeyborad_OnGotKeyboard(object sender, KeyboardFocusChangedEventArgs args)
+        //{
+        //    Debug.WriteLine("{0} - {1}  --> {2} - {3}",
+        //            args.OldFocus,
+        //            args.OldFocus != null ? ((FrameworkElement)args.OldFocus).Name : "", 
+        //            args.NewFocus, 
+        //            args.NewFocus != null ? ((FrameworkElement)args.NewFocus).Name : ""
+        //        );
 
-        }
+        //}
 
         private void win_SourceInitialized(object sender, EventArgs e)
         {
