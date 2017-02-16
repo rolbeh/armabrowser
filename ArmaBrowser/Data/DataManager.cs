@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using ArmaBrowser.Data.DefaultImpl;
+using ArmaBrowser.Logic;
 
 namespace ArmaBrowser.Data
 {

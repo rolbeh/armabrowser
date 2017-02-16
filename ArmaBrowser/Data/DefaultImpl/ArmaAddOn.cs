@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    class ArmaAddOn : IArmaAddon
+    class ArmaAddon : IArmaAddon
     {
-        public ArmaAddOn()
+        public ArmaAddon()
         {
             KeyNames = Enumerable.Empty<AddonKey>();
         }

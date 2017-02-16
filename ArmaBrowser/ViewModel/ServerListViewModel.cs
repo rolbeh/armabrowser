@@ -9,12 +9,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
-using ArmaBrowser.Data.DefaultImpl.Rest;
+using System.Windows.Data;  
 
 namespace ArmaBrowser.ViewModel
 {
-    class ServerListViewModel : LogicModelBase
+    class ServerListViewModel : ObjectNotify
     {
         #region Fields
 
@@ -25,7 +24,7 @@ namespace ArmaBrowser.ViewModel
         private IServerItem _selectedServerItem;
         private ICollection<LoadingServerListContext> _reloadContexts; 
         private IAddon _selectedAddon;
-        private uint _loadingBusy;
+        private long _loadingBusy;
         private string _selectedEndPoint;
         private bool _runAsAdmin;
         private bool _launchWithoutHost;
@@ -67,17 +66,20 @@ namespace ArmaBrowser.ViewModel
         private ListCollectionView CreateServerItemsView()
         {
             var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-            _version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            if (xml.Root != null) _version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
 
 
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
+
+            _serverItemsView.IsLiveSorting = true;
 
             // Sorting
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "GroupName", Direction = System.ComponentModel.ListSortDirection.Ascending });
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "CurrentPlayerCount", Direction = System.ComponentModel.ListSortDirection.Descending });
 
             // Grouping           
-            _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
+            if (_serverItemsView.GroupDescriptions != null)
+                _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
 
             return _serverItemsView;
         }
@@ -201,33 +203,32 @@ namespace ArmaBrowser.ViewModel
 
             UiTask.Initialize();
             _context = new LogicContext();
-            _context.ServerItems.CollectionChanged += _serverItems_CollectionChanged;
-            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
-            {
-                _context.PropertyChanged += Context_PropertyChanged;
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
+
+            _context.ServerItems.CollectionChanged += _serverItems_CollectionChanged;           
+            _context.PropertyChanged += Context_PropertyChanged;
                 
-                TextFilter = Properties.Settings.Default.TextFilter;
-                _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
+            TextFilter = Properties.Settings.Default.TextFilter;
+            _selectedEndPoint = Properties.Settings.Default.LastPlayedHost;
 
-                LookForInstallation();
+            LookForInstallation();
 
-                var recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
-                var serverItems = _context.AddServerItems(recentlyHosts);
-                foreach (var item in serverItems)
-                {
-                    item.LastPlayed = DateTime.Now;
-                }
-                RefreshServerInfoAsync(serverItems);
-               
-
-                Task.Run((Action)EndlessRefreshSelecteItem);
+            string[] recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
+            IServerItem[] recentlyServerItems = _context.AddServerItems(recentlyHosts);
+            foreach (var item in recentlyServerItems)
+            {
+                item.LastPlayed = DateTime.Now;
             }
+            var refreshRecentlyServerItemsTask = _context.RefreshServerInfoAsync(recentlyServerItems);
+            refreshRecentlyServerItemsTask.ContinueWith((t,o) => ServerItemsView.Refresh(), null, TaskScheduler.FromCurrentSynchronizationContext());
+            
+            Task.Run((Action)EndlessRefreshSelecteItem);
         }
 
         async void RefreshServerInfoAsync(IServerItem[] serverItems)
         {
             await _context.RefreshServerInfoAsync(serverItems);
-            ServerItemsView.Refresh();       
+            //ServerItemsView.Refresh(); // LostFocus Problem      
         }
 
         void _serverItems_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -259,8 +260,6 @@ namespace ArmaBrowser.ViewModel
                 case "ArmaVersion": //_context.ArmaVersion
                     OnPropertyChanged("ArmaVersion");
                     break;
-                default:
-                    break;
             }
         }
         
@@ -274,33 +273,39 @@ namespace ArmaBrowser.ViewModel
             CancellationToken token = _reloadingCts.Token;
 
             oldsrc.Cancel(false);
-
-            await Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token)
-                .ContinueWith(t =>
+            try
+            {
+                await Task.Factory.StartNew(o => ReloadInternal((CancellationToken)o), token, token).
+                ContinueWith(t =>
                 {
                     if (t.Status == TaskStatus.RanToCompletion)
                         RememberLastVisiblyItems();
-                    
-                }, token);
-            
+
+                });
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
             EndLoading();
         }
         
         public bool LoadingBusy
         {
-            get { return _loadingBusy > 0; }
+            get { return Interlocked.Read( ref _loadingBusy) > 0; }
         }
 
         private void BeginLoading()
         {
-            _loadingBusy++;
+            Interlocked.Add(ref _loadingBusy, +1L);
             OnPropertyChanged("LoadingBusy");
         }
 
         private void EndLoading()
         {
-            if (_loadingBusy > 0)
-                _loadingBusy--;
+            if (Interlocked.Read(ref _loadingBusy) > 0)
+                Interlocked.Add(ref _loadingBusy, -1L);
             OnPropertyChanged("LoadingBusy");
         }
 
@@ -339,19 +344,22 @@ namespace ArmaBrowser.ViewModel
                     if (s[0] == '-')
                     {
                         var s2 = s.Substring(1);
+                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                         result = result && !(item.FullText.IndexOf(s2, StringComparison.CurrentCultureIgnoreCase) > -1);
                         continue;
                     }
                     if (s[0] == '>')
                     {
                         var s2 = s.Substring(1);
-                        var playerCount = 0;
+                        int playerCount;
                         if (Int32.TryParse(s2, out playerCount))
                         {
+                            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                             result = result && item.CurrentPlayerCount > playerCount;
                             continue;
                         }
                     }
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     result = result && (item.FullText.IndexOf(s, StringComparison.CurrentCultureIgnoreCase) > -1);
 
                 }
@@ -376,7 +384,7 @@ namespace ArmaBrowser.ViewModel
             }
             //if (_selectedServerItem.Mods != null)
             //{
-            var sortNr = 1;
+            int sortNr = 1;
             var hostAddons = _selectedServerItem.Mods.Select(m => new { SortNr = sortNr++, ModName = m });
 
             var endpoint = string.Format("{0}:{1}", _selectedServerItem.Host, _selectedServerItem.Port);
@@ -385,8 +393,8 @@ namespace ArmaBrowser.ViewModel
 
             if (hostCfgItem != null)
             {
-                sortNr = 1;
-                hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr++, ModName = m }).ToArray();
+                int sortNr2 = 1;
+                hostAddons = hostCfgItem.PossibleAddons.Split(';').Select(m => new { SortNr = sortNr2++, ModName = m }).ToArray();
             }
 
             var mods = (from mod in Addons
@@ -470,13 +478,6 @@ namespace ArmaBrowser.ViewModel
 
             //});
 
-        }
-
-        public void AddAddonUri()
-        {
-            IAddon addon = null;
-            string uri = null;
-            _context.AddAddonUri(addon, uri);
         }
 
         public string ArmaPath

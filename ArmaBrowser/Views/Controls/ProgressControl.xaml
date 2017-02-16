@@ -6,42 +6,47 @@
              xmlns:logic="clr-namespace:ArmaBrowser.Logic"
              mc:Ignorable="d" 
              Background="Black"
-             MinHeight="120" MinWidth="85"
-             d:DesignHeight="120" d:DesignWidth="85" d:DataContext="{d:DesignInstance Type=logic:LoadingServerListContext }">
+             MinHeight="145" MinWidth="85"
+             
+             d:DesignHeight="120" d:DesignWidth="521" d:DataContext="{d:DesignInstance Type=logic:LoadingServerListContext }">
+     
     <Grid  Margin="5,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
-        <!--<Rectangle Grid.Column="1" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
-                   Height="50"/>-->
-        <ProgressBar Grid.Column="1" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+
+        <ProgressBar Grid.Column="1" Grid.Row="1" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
                      Orientation="Vertical"
                      Height="100"
                      Background="{x:Null}"
                      Maximum="300"
-                     Value="{Binding Ping}"/>
+                     Value="{Binding Ping, Mode=OneWay}"/>
 
-        <!--<Rectangle Grid.Column="2" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
-                   Height="100"/>-->
-
-        <ProgressBar Grid.Column="2" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+        <TextBlock Grid.ColumnSpan="5" Grid.Row="0"  Text="{Binding Path=Procent,StringFormat=p, FallbackValue='40 %', Mode=OneWay}" 
+                   TextAlignment="Center"
+                   FontFamily="Quartz Ms"
+                   Foreground="{StaticResource ForegroundNormalBrush}"/>
+        
+        <ProgressBar Grid.Column="2" Grid.Row="1" Width="20" HorizontalAlignment="Left" Margin="5,0"
                      Orientation="Vertical"
-                     Height="100"
+                    
                      Background="{x:Null}"
                      Minimum="0"
-                     Maximum="{Binding MaximumValue}"
-                     Value="{Binding ProgressValue}"/>
+                     Maximum="{Binding MaximumValue, Mode=OneWay}"
+                     Value="{Binding ProgressValue, Mode=OneWay}"/>
 
-        <!--<Rectangle Grid.Column="3" Width="20" HorizontalAlignment="Left" Margin="5,0" Fill="WhiteSmoke" VerticalAlignment="Bottom"
-                   Height="60"/>-->
-        
-        <ProgressBar Grid.Column="3" Width="20" HorizontalAlignment="Left" Margin="5,0" VerticalAlignment="Bottom"
+        <ProgressBar Grid.Column="3" Grid.Row="1" Width="20" HorizontalAlignment="Left" Margin="5,0"
                      Orientation="Vertical"
-                     Height="100"
+                     
                      Background="{x:Null}"
                      />
     </Grid>

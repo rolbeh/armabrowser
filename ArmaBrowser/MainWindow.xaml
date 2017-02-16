@@ -2,14 +2,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
-        xmlns:views="clr-namespace:ArmaBrowser.Views"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:Data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
         xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         xmlns:logic="clr-namespace:ArmaBrowser.Logic"
-        xmlns:properties="clr-namespace:ArmaBrowser.Properties"
         xmlns:armaBrowser="clr-namespace:ArmaBrowser"
         xmlns:controls="clr-namespace:ArmaBrowser.Views.Controls"
         Title="ARMA III Browser (Community Project by Tackle mail@armabrowser.org)" 
@@ -46,7 +43,36 @@
                 <TextBlock Grid.Column="1" Text="{Binding Path=DisplayText}"/>
             </Grid>
         </DataTemplate>
-
+        <DataTemplate x:Key="LoadingServerListContextDataTemplate" DataType="logic:LoadingServerListContext">
+            <controls:ProgressControl Background="{x:Null}">
+                <FrameworkElement.Triggers>
+                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     Duration="00:00:02"
+                                                     From="0"
+                                                     To="1" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </FrameworkElement.Triggers>
+            </controls:ProgressControl>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Path=IsRemoving}" Value="true" >
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                      Storyboard.TargetProperty="Opacity" 
+                                      From="1" To="0" Duration="0:0:0.2"
+                                      />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
     </Window.Resources>
 
     <Window.DataContext>
@@ -85,15 +111,23 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="127"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerListCommand" Padding="2" Margin="0" VerticalAlignment="Stretch" 
+                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerList" Padding="2" Margin="0,4" VerticalAlignment="Stretch" 
                             FontSize="16"
                             BorderThickness="0" 
                             BorderBrush="{x:Null}"
                             Foreground="Black" FontWeight="ExtraBlack"
                             Content="{Binding Path=Command.Text, RelativeSource={RelativeSource Self}}">
                     </Button>
+                    <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.StopReloadServerList" Padding="2" Margin="0,4" VerticalAlignment="Stretch" 
+                            FontSize="16"
+                            BorderThickness="0" 
+                            BorderBrush="{x:Null}"
+                            Foreground="Black" FontWeight="ExtraBlack"
+                            Content="{Binding Path=Command.Text, RelativeSource={RelativeSource Self}}"
+                            Visibility="{Binding Path=LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    </Button>
                     <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                        <TextBlock x:Name="WaterMark" Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
+                        <TextBlock Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
                                    FontStyle="Italic"
                                    FontSize="18"
                                    IsHitTestVisible="False"
@@ -259,55 +293,32 @@
                         <RowDefinition/>
                         <RowDefinition Height="171"/>
                     </Grid.RowDefinitions>
-
-                    <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False">
+                    
+                    <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False" >
                         <UIElement.Effect>
-                            <!--<Shader:Glow x:Name="GlowShader" Threshold="0.6" GlowFactor="2"/>-->
-                            <Shader:multishader_frag x:Name="GlowShader" 
+                            
+                            <Shader:multishader_frag
                                                      Master="2.6"
-                                                     BlurRadius="3.3"
+                                                     BlurRadius="3.4"
                                                      GlowIntensity="0.7"
                                                      NoiseIntensity="0.7"
-                                                     DirectionHorizontal="7.1"
+                                                     DirectionHorizontal="0"
                                                      TextureHeight="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}"
                                                      TextureWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}" BlurIntensity="2.5"/>
                         </UIElement.Effect>
                     </Image>
-
-                    <!--<ItemsControl HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="300" Width="290" 
-                                  Opacity="0.8"
-                                  ItemsSource="{Binding ActionLog, Mode=OneWay}" Margin="20,20,0,20">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="viewModel:LogEntry">
-                                <TextBlock Width="108" Height="18" 
-                                           Text="{Binding Text}"
-                                           FontFamily="Consolas"
-                                           Foreground="#FFC9744D"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>-->
-
-                    <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="120" Opacity="0.7"
-                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" >
+                    
+                    <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"
+                                  IsHitTestVisible="False"
+                                  ItemsSource="{Binding ReloadContexts, Mode=OneWay}" 
+                                  ItemTemplate="{DynamicResource LoadingServerListContextDataTemplate}" >
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="logic:LoadingServerListContext">
-                                <controls:ProgressControl Background="{x:Null}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     
-                    <StackPanel Visibility="Hidden" Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20" Orientation="Horizontal" MaxHeight="120" Opacity="0.7">
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                        <controls:ProgressControl Background="{x:Null}"/>
-                    </StackPanel>
-
                     <controls:ServerListControl Grid.Row="0" BorderThickness="1,1,1,0" BorderBrush="#FF688CAF"/>
 
                     <Border Grid.Row="1" BorderThickness="1,1,1,1" BorderBrush="#FF688CAF">
@@ -506,7 +517,7 @@
 
 
 
-                <Button Grid.Row="0" x:Name="PreferencesContextMenuButton"
+                <Button Grid.Row="0"
                                 Foreground="{StaticResource ForegroundNormalBrush}"
                                 HorizontalAlignment="Right"
                                 FontSize="18"
@@ -524,7 +535,7 @@
                                 <MenuItem Header="Arma 3 user addon folder" Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=Arma3UserAddonFolder}"/>
                                 <MenuItem Header="Arma 3 Steam folder"  Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=ArmaPath}"/>
                             </MenuItem>
-                            <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddonsCommand" />
+                            <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddons" />
                             
                         </ContextMenu>
                     </Button.ContextMenu>
@@ -556,7 +567,7 @@
                              Foreground="{StaticResource ForegroundNormalBrush}"
                              FontSize="14"
                              />
-                    <StackPanel  Orientation="Vertical" Grid.Row="2" VerticalAlignment="Bottom" Height="40">
+                    <StackPanel  Orientation="Vertical" Grid.Row="1" VerticalAlignment="Bottom" Height="40">
                         <CheckBox IsChecked="{Binding LaunchWithoutHost}" Content="start Arma without Server"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
                         <CheckBox  IsChecked="{Binding RunAsAdmin}" Content="as Administrator"  FontSize="12" Foreground="{StaticResource ForegroundNormalBrush}" Margin="0,3"/>
                     </StackPanel>
@@ -640,46 +651,8 @@
     </Grid>
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.MouseEnter">
-            <!--<BeginStoryboard>
-                <Storyboard RepeatBehavior="Forever">
-                    <DoubleAnimation Storyboard.TargetName="GradientStop1" Storyboard.TargetProperty="Offset"
-                        AutoReverse="True"
-                        From="0"
-                        To="1"
-                        Duration="0:0:0:10.2">
-                    </DoubleAnimation>
-                </Storyboard>
-            </BeginStoryboard>-->
-            <BeginStoryboard>
-                <Storyboard RepeatBehavior="Forever">
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="GlowShader" 
-                                                   Storyboard.TargetProperty="DirectionHorizontal" 
-                                                   Timeline.DesiredFrameRate="24"
-                                                   Duration="0:0:0:20">
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.3" Value="-20"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.6" Value="6"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:4.8" Value="0.0001"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.3" Value="6"/>
-                    </DoubleAnimationUsingKeyFrames>
-                    <!--<DoubleAnimationUsingKeyFrames Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="BlurRadius"
-                                                   AutoReverse="True"
-                                                   Duration="0:0:0:2.5"
-                                                   Timeline.DesiredFrameRate="24">
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:0.95" Value="3.2"/>
-                        <SplineDoubleKeyFrame KeyTime="0:0:0:1.4" Value="8.1"/>
-                    </DoubleAnimationUsingKeyFrames>-->
-                    <!--DoubleAnimation Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="DirectionHorizontal"
-                        AutoReverse="False"
-                        From="0.0002"
-                        To="-20"
-                        Duration="0:0:0:0.1"/>
-                    <DoubleAnimation Storyboard.TargetName="GlowShader" Storyboard.TargetProperty="DirectionHorizontal"
-                        AutoReverse="False"
-                        From="-20"
-                        To="20"
-                        Duration="0:0:0:0.1"/>-->
-                </Storyboard>
-            </BeginStoryboard>
+            
+           
         </EventTrigger>
     </Window.Triggers>
     <WStyle:WindowTitle.TitleToolbar>

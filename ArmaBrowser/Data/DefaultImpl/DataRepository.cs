@@ -1,50 +1,18 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using ArmaBrowser.Helper;
+using ArmaBrowser.Logic;
+using Microsoft.Win32;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
-    sealed class DataRepository : IArma3DataRepository
+    internal sealed class DataRepository : IArma3DataRepository
     {
-        public IServerVo[] GetServerList()
-        {
-            throw new NotImplementedException();
-            //const string url = "http://arma3.swec.se/server/list.xml";
-            //try
-            //{
-            //    using (var webClient = new WebClient())
-            //    {
-            //        var bytes = webClient.DownloadData(url);
-            //        using (var mem = new MemoryStream(bytes, false))
-            //        {
-            //            return ParseArmaSwecServerlist.GetServerList(mem);
-            //        }
-            //    }
-            //}
-            //catch
-            //{
-            //    if (File.Exists("Serverlist.xml"))
-            //    {
-            //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
-            //        {
-            //            return ParseArmaSwecServerlist.GetServerList(fs);
-            //        }
-            //    }
-            //    return new IServerVo[0];
-            //}
-
-
-        }
-
         /// <summary>
-        /// Get the path of installation of Arma3
+        ///     Get the path of installation of Arma3
         /// </summary>
         /// <remarks>For the determination the Steam config files will used.</remarks>
         /// <returns>The path of the installation of Arma3, or an emty string</returns>
@@ -67,15 +35,13 @@ namespace ArmaBrowser.Data.DefaultImpl
                             Logger.Default.PushLine(@"found");
                             return Path.GetDirectoryName(testPath);
                         }
-                        else
-                            Logger.Default.PushLine(@"not found");
+                        Logger.Default.PushLine(@"not found");
                     }
-
 
 
                     // Multi-Locations 
                     Logger.Default.Push(@"steam library config - ");
-                    var libraryConfigPath = System.IO.Path.Combine(steamFolder.ToString(), "SteamApps", "libraryfolders.vdf");
+                    var libraryConfigPath = Path.Combine(steamFolder.ToString(), "SteamApps", "libraryfolders.vdf");
                     if (File.Exists(libraryConfigPath))
                     {
                         Logger.Default.PushLine(@"found");
@@ -83,25 +49,26 @@ namespace ArmaBrowser.Data.DefaultImpl
                         {
                             var xml = reader.ToXml();
                             Logger.Default.Push(@"Arma 3 in library location - ");
-                            foreach (var item in xml.DocumentElement.ChildNodes.Cast<XmlElement>())
+                            if (xml.DocumentElement != null)
                             {
-                                var valueNode = item.ChildNodes.OfType<XmlText>().FirstOrDefault();
-                                if (valueNode != null)
+                                foreach (var item in xml.DocumentElement.ChildNodes.Cast<XmlElement>())
                                 {
-                                    var folder = valueNode.Value.ToString();
-
-                                    var testPath = Path.Combine(folder, "SteamApps", "common", "ARMA 3", "arma3.exe");
-                                    if (File.Exists(testPath))
+                                    var valueNode = item.ChildNodes.OfType<XmlText>().FirstOrDefault();
+                                    if (valueNode != null)
                                     {
-                                        Logger.Default.PushLine(@"found");
-                                        return Path.GetDirectoryName(testPath);
+                                        var folder = valueNode.Value;
+
+                                        var testPath = Path.Combine(folder, "SteamApps", "common", "ARMA 3", "arma3.exe");
+                                        if (File.Exists(testPath))
+                                        {
+                                            Logger.Default.PushLine(@"found");
+                                            return Path.GetDirectoryName(testPath);
+                                        }
                                     }
                                 }
                             }
                             Logger.Default.PushLine(@"not found");
-
                         }
-
                     }
                     else
                         Logger.Default.PushLine(@"not found");
@@ -139,11 +106,11 @@ namespace ArmaBrowser.Data.DefaultImpl
             var result = new List<IArmaAddon>(addonFolders.Count());
             foreach (var addonFolder in addonFolders)
             {
-                var item = new ArmaAddOn
+                var item = new ArmaAddon
                 {
                     Name = Path.GetFileName(addonFolder),
                     ModName = Path.GetFileName(addonFolder),
-                    DisplayText = Path.GetFileName(addonFolder).Replace("@", ""),
+                    DisplayText = Path.GetFileName(addonFolder)?.Replace("@", ""),
                     Path = addonFolder
                 };
                 var addonModcpp = Path.Combine(addonFolder, "mod.cpp");
@@ -192,7 +159,12 @@ namespace ArmaBrowser.Data.DefaultImpl
                                     var keyLen = br.ReadInt32();
                                     var bytes = br.ReadBytes(keyLen);
 
-                                    keys.Add(new AddonKey() { Name = sb.ToString(), PubK = bytes, Hash = bytes.ToBase64().ComputeSha1Hash()});
+                                    keys.Add(new AddonKey
+                                    {
+                                        Name = sb.ToString(),
+                                        PubK = bytes,
+                                        Hash = bytes.ToBase64().ComputeSha1Hash()
+                                    });
                                     break;
                                 }
                             }
@@ -225,12 +197,38 @@ namespace ArmaBrowser.Data.DefaultImpl
             return result.ToArray();
         }
 
-        //public IServerRepository ServerListManager()
-        //{
+        public IServerVo[] GetServerList()
+        {
+            throw new NotImplementedException();
+            //const string url = "http://arma3.swec.se/server/list.xml";
+            //try
+            //{
+            //    using (var webClient = new WebClient())
+            //    {
+            //        var bytes = webClient.DownloadData(url);
+            //        using (var mem = new MemoryStream(bytes, false))
+            //        {
+            //            return ParseArmaSwecServerlist.GetServerList(mem);
+            //        }
+            //    }
+            //}
+            //catch
+            //{
+            //    if (File.Exists("Serverlist.xml"))
+            //    {
+            //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
+            //        {
+            //            return ParseArmaSwecServerlist.GetServerList(fs);
+            //        }
+            //    }
+            //    return new IServerVo[0];
+            //}
+        }
+
         //    return new ServerRepositoryStream();
+        //{
+
+        //public IServerRepository ServerListManager()
         //}
     }
-
-
-
 }

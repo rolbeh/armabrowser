@@ -3,29 +3,29 @@
  * 
  * This is a quick and dirty implementation
  */
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using Magic.Annotations;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
     internal class SteamConfigReader : IDisposable
     {
-        readonly System.IO.Stream _file;
-        bool _disposed;
+        public enum ElementType
+        {
+            Array,
+            Attribute
+        }
+
+        private readonly Stream _file;
+        private bool _disposed;
 
         public SteamConfigReader(string filepath)
         {
-            _file = new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
-        }
-
-        ~SteamConfigReader()
-        {
-            Dispose();
+            _file = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         #region IDisposable
@@ -41,13 +41,18 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         #endregion IDisposable
 
+        ~SteamConfigReader()
+        {
+            Dispose();
+        }
+
         public string GetValueOf(string firstPart)
         {
             if (firstPart == null) throw new ArgumentNullException("path");
 
             _file.Position = 0;
 
-            using (var reader = new System.IO.StreamReader(_file, Encoding.ASCII, false, 1024 * 1024, true))
+            using (var reader = new StreamReader(_file, Encoding.ASCII, false, 1024*1024, true))
             {
                 while (!reader.EndOfStream)
                 {
@@ -56,22 +61,25 @@ namespace ArmaBrowser.Data.DefaultImpl
                     if (line != null && line.StartsWith(firstPart))
                     {
                         line = line.TrimStart();
-                        return line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries)[1].Replace("\"", string.Empty).Replace(@"\\", @"\");
+                        return
+                            line.Split(new[] {'\t'}, StringSplitOptions.RemoveEmptyEntries)[1].Replace("\"",
+                                string.Empty).Replace(@"\\", @"\");
                     }
                 }
                 return string.Empty;
             }
         }
 
+        [NotNull]
         public XmlDocument ToXml()
         {
             var doc = new XmlDocument();
-            XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
-            XmlElement root = doc.DocumentElement;
+            var xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            var root = doc.DocumentElement;
             doc.InsertBefore(xmlDeclaration, root);
-            using (var reader = new System.IO.StreamReader(_file, Encoding.ASCII, false, 1024 * 1024, true))
+            using (var reader = new StreamReader(_file, Encoding.ASCII, false, 1024*1024, true))
             {
-                root = ReadNextElements(reader, doc) as XmlElement;
+                root = ReadNextElements(reader, doc);
                 doc.AppendChild(root);
             }
 
@@ -79,15 +87,15 @@ namespace ArmaBrowser.Data.DefaultImpl
             return doc;
         }
 
-        XmlElement ReadNextElements(TextReader reader, XmlNode parent)
+        private XmlElement ReadNextElements(TextReader reader, XmlNode parent)
         {
-            var doc = parent.OwnerDocument ?? ((XmlDocument)parent);
+            var doc = parent.OwnerDocument ?? (XmlDocument) parent;
             var charbuffer = new char[1];
             if (reader.Read(charbuffer, 0, 1) == 0) return null;
-            while (charbuffer[0] == 9/*Tabulator*/
-                    || charbuffer[0] == ' '
-                    || char.IsControl(charbuffer[0])
-            )
+            while (charbuffer[0] == 9 /*Tabulator*/
+                   || charbuffer[0] == ' '
+                   || char.IsControl(charbuffer[0])
+                )
             {
                 if (reader.Read(charbuffer, 0, 1) == 0) break;
             }
@@ -96,12 +104,15 @@ namespace ArmaBrowser.Data.DefaultImpl
             {
                 var s = ReadUntilNextQuota(reader);
                 var element = doc.CreateElement("Node");
-                var att = element.OwnerDocument.CreateAttribute("Name");
-                att.Value = s;
-                element.Attributes.Append(att);
-                while (ReadElementContent(reader, element))
+                if (element.OwnerDocument != null)
                 {
+                    var att = element.OwnerDocument.CreateAttribute("Name");
+                    att.Value = s;
+                    element.Attributes.Append(att);
 
+                    while (ReadElementContent(reader, element))
+                    {
+                    }
                 }
                 return element;
             }
@@ -109,20 +120,20 @@ namespace ArmaBrowser.Data.DefaultImpl
             throw new Exception("unexpect char '" + token + "'");
         }
 
-        private bool ReadElementContent(TextReader reader, XmlElement element)
+        private bool ReadElementContent([NotNull] TextReader reader, [NotNull] XmlElement element)
         {
             var charbuffer = new char[1];
             do
             {
                 if (reader.Read(charbuffer, 0, 1) == 0) return false;
-            }
-            while (charbuffer[0] == ' ' || char.IsControl(charbuffer[0]));
+            } while (charbuffer[0] == ' ' || char.IsControl(charbuffer[0]));
 
             var token = charbuffer[0];
             if (token == '"')
             {
                 var s = ReadUntilNextQuota(reader);
-                element.AppendChild(element.OwnerDocument.CreateTextNode(s));
+                if (element.OwnerDocument != null)
+                    element.AppendChild(element.OwnerDocument.CreateTextNode(s));
                 return true;
             }
 
@@ -130,7 +141,6 @@ namespace ArmaBrowser.Data.DefaultImpl
             {
                 while (ReadNextElement(reader, element))
                 {
-
                 }
                 return true;
             }
@@ -142,7 +152,7 @@ namespace ArmaBrowser.Data.DefaultImpl
             throw new Exception("unexpect char '" + token + "'");
         }
 
-        private bool ReadNextElement(TextReader reader, XmlElement element)
+        private bool ReadNextElement([NotNull] TextReader reader,[NotNull] XmlElement element)
         {
             var token = MoveToNextStop(reader);
             if (token == '}') return false;
@@ -150,6 +160,8 @@ namespace ArmaBrowser.Data.DefaultImpl
             if (token != '"') throw new Exception("unexpect char '" + token + "'");
 
             var s = ReadUntilNextQuota(reader);
+            if (element.OwnerDocument == null) throw new InvalidOperationException("OwnerDocument is null!");
+
             var child = element.OwnerDocument.CreateElement("Node");
             var att = element.OwnerDocument.CreateAttribute("Name");
             att.Value = s;
@@ -163,9 +175,8 @@ namespace ArmaBrowser.Data.DefaultImpl
             var charbuffer = new char[1];
             do
             {
-                if (reader.Read(charbuffer, 0, 1) == 0) return (char)0;
-            }
-            while (!(charbuffer[0] == '"' || charbuffer[0] == '}'));
+                if (reader.Read(charbuffer, 0, 1) == 0) return (char) 0;
+            } while (!(charbuffer[0] == '"' || charbuffer[0] == '}'));
             return charbuffer[0];
         }
 
@@ -180,66 +191,6 @@ namespace ArmaBrowser.Data.DefaultImpl
                 if (reader.Read(charbuffer, 0, 1) == 0) break;
             }
             return sb.ToString();
-        }
-
-
-        //public Element GetElement(string path)
-        //{
-        //    if (path == null) throw new ArgumentNullException("path");
-
-        //    if (path.StartsWith("/"))
-        //    {
-        //        _file.Position = 0;
-        //    }
-        //    var pathParts = path.Split(new []{'/'}, StringSplitOptions.RemoveEmptyEntries);
-        //    for (int i = 0; i < pathParts.Length; i++)
-        //    {
-        //        var loopItem = ReadLine();
-        //        while (true)
-        //        {
-        //            if (loopItem.Name == pathParts[i] && loopItem.level == i)
-        //            {
-        //                ReadLine();
-        //                break;
-        //            }
-        //            loopItem = ReadLine();
-        //        }
-        //    }
-
-        //    return _currentElement;
-        //}
-
-        //Element ReadLine()
-        //{
-        //    var pos = _file.Position;
-        //    using (var reader = new System.IO.StreamReader(_file, Encoding.ASCII, false, 1024*1024, true))
-        //    {
-        //        var line = reader.ReadLine();
-        //        var a = line.Split(new[] { '"' }, StringSplitOptions.RemoveEmptyEntries);
-        //        var nextChar = reader.Peek();
-        //        var result = new Element(a[0])
-        //        {
-        //            StartPos = pos,
-        //            EndPos = _file.Position,
-        //            Value = null
-        //        };
-        //        switch (nextChar)
-        //        {
-        //            case '{':
-        //                result.ElementType = ElementType.Array;
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //        return result;
-        //    }
-        //}
-
-
-        public enum ElementType
-        {
-            Array,
-            Attribute
         }
 
         public struct Element
@@ -267,9 +218,9 @@ namespace ArmaBrowser.Data.DefaultImpl
                 EndPos = 0;
                 Value = null;
                 level = 0;
-                ElementType = SteamConfigReader.ElementType.Array;
+                ElementType = ElementType.Array;
                 Name = name.TrimStart();
-                for (int i = 0; i < name.Length; i++)
+                for (var i = 0; i < name.Length; i++)
                 {
                     if (name[i] != '\t')
                     {
@@ -284,8 +235,5 @@ namespace ArmaBrowser.Data.DefaultImpl
                 return Name;
             }
         }
-
     }
-
-
 }

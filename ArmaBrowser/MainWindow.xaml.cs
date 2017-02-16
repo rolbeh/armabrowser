@@ -1,6 +1,7 @@
 ﻿using ArmaBrowser.Logic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace ArmaBrowser
         private CancellationTokenSource _joinServerCancellationTokenSrc;
         public MainWindow()
         {
+           
 
             _joinServerCancellationTokenSrc = new CancellationTokenSource();
             this.SourceInitialized += new EventHandler(win_SourceInitialized);
@@ -45,16 +47,31 @@ namespace ArmaBrowser
 
             InitializeComponent();
 
+            //Keyboard.AddGotKeyboardFocusHandler(this, GlobalKeyborad_OnGotKeyboard);
+            //Keyboard.AddLostKeyboardFocusHandler(this, GlobalKeyborad_OnGotKeyboard);
+
             AutoJoinView.Visibility = Visibility.Collapsed;
             TabListBox.SelectedIndex = 0;
             Test.Freeze();
-
+             
         }
 
-        void win_SourceInitialized(object sender, EventArgs e)
+        //private void GlobalKeyborad_OnGotKeyboard(object sender, KeyboardFocusChangedEventArgs args)
+        //{
+        //    Debug.WriteLine("{0} - {1}  --> {2} - {3}",
+        //            args.OldFocus,
+        //            args.OldFocus != null ? ((FrameworkElement)args.OldFocus).Name : "", 
+        //            args.NewFocus, 
+        //            args.NewFocus != null ? ((FrameworkElement)args.NewFocus).Name : ""
+        //        );
+
+        //}
+
+        private void win_SourceInitialized(object sender, EventArgs e)
         {
             System.IntPtr handle = (new WinInterop.WindowInteropHelper(this)).Handle;
-            WinInterop.HwndSource.FromHwnd(handle).AddHook(new WinInterop.HwndSourceHook(Win.WindowProc));
+            var hwndSource = WinInterop.HwndSource.FromHwnd(handle);
+            hwndSource?.AddHook(new WinInterop.HwndSourceHook(Win.WindowProc));
         }
 
         private void MainWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

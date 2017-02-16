@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ArmaBrowser</RootNamespace>
     <AssemblyName>ArmaBrowser</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -34,11 +34,11 @@
     <ProductName>ArmaBrowser</ProductName>
     <PublisherName>ArmaBrowser</PublisherName>
     <SuiteName>ArmaBrowser</SuiteName>
-    <MinimumRequiredVersion>0.8.0.97</MinimumRequiredVersion>
+    <MinimumRequiredVersion>0.8.2.102</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
-    <ApplicationRevision>98</ApplicationRevision>
-    <ApplicationVersion>0.8.0.%2a</ApplicationVersion>
+    <ApplicationRevision>105</ApplicationRevision>
+    <ApplicationVersion>2016.4.2.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -53,6 +53,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -93,7 +94,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
@@ -105,6 +106,14 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Magic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\magic\Magic\bin\Release\Magic.dll</HintPath>
+    </Reference>
+    <Reference Include="Magic.Controls, Version=0.0.1.1, Culture=neutral, PublicKeyToken=155175993645f89f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\magic\Magic.Controls\bin\Release\Magic.Controls.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Expression.Controls" />
     <Reference Include="Microsoft.Expression.Interactions" />
     <Reference Include="PresentationFramework.Classic" />
@@ -132,18 +141,21 @@
     </ApplicationDefinition>
     <Compile Include="ArmaBrowserCommands.cs" />
     <Compile Include="Data\DataManager.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaAddOn.cs" />
-    <Compile Include="Data\DefaultImpl\ArmaBrowserServerJsonRepository.cs" />
+    <Compile Include="Data\DefaultImpl\ArmaAddon.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
+    <Compile Include="Data\DefaultImpl\EncodingSteamExtensions.cs" />
     <Compile Include="Data\DefaultImpl\Helper\PathHelper.cs" />
+    <Compile Include="Data\DefaultImpl\MgArrayExtensions.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddon.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddonInfoResult.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddonKey.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddonUri.cs" />
+    <Compile Include="Data\DefaultImpl\RulesStreamAttributes.cs" />
     <Compile Include="Data\DefaultImpl\ServerItem.cs" />
     <Compile Include="Data\DefaultImpl\ServerRepositorySteam.cs" />
     <Compile Include="Data\DefaultImpl\SteamConfigReader.cs" />
-    <Compile Include="Data\DefaultImpl\AddonWebApi.cs" />
+    <Compile Include="Data\DefaultImpl\SteamServerRule.cs" />
+    <Compile Include="Logic\DefaultImpl\AddonWebApi.cs" />
     <Compile Include="Data\Intf\Asb\IHostItem.cs" />
     <Compile Include="Data\Intf\IAddonWebApi.cs" />
     <Compile Include="Data\Intf\IArmaAddOn.cs" />
@@ -154,7 +166,6 @@
     <Compile Include="Data\Intf\ISteamGameServerPlayer.cs" />
     <Compile Include="Design\ServerItem.cs" />
     <Compile Include="Design\ServerListViewModel.cs" />
-    <Compile Include="Helper\SystemExtention.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Logic\DefaultImpl\Addon.cs" />
     <Compile Include="Logic\DefaultImpl\Helper\PriorityScheduler.cs" />
@@ -162,10 +173,9 @@
     <Compile Include="Logic\DefaultImpl\ServerItem.cs" />
     <Compile Include="Logic\Intf\IAddon.cs" />
     <Compile Include="Logic\Intf\ILogicContext.cs" />
+    <Compile Include="Logic\Intf\IProgressState.cs" />
     <Compile Include="Logic\Intf\IServerItem.cs" />
     <Compile Include="Logic\Intf\ServerItemGroup.cs" />
-    <Compile Include="Logic\LogicModelBase.cs" />
-    <Compile Include="Logic\UiTask.cs" />
     <Compile Include="HostConfigCollection.cs" />
     <Page Include="Styles\ArmaBorwserViewBoxIcons.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -193,11 +203,10 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
-    <None Include="..\armabrowser.org.pfx">
-      <Link>armabrowser.org.pfx</Link>
+    <None Include="..\..\armabrowser.org.pfx">
+      <Link>Properties\armabrowser.org.pfx</Link>
     </None>
     <None Include="Shader\notused\Glow.cs" />
-    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -210,6 +219,7 @@
     <Compile Include="UserControl1.xaml.cs">
       <DependentUpon>UserControl1.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\ProgressState.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
     <Compile Include="Views\Controls\AddonListControl.xaml.cs">
       <DependentUpon>AddonListControl.xaml</DependentUpon>
@@ -232,6 +242,7 @@
     <Compile Include="Views\Controls\AutoJoinControl.xaml.cs">
       <DependentUpon>AutoJoinControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Converter\LoadingServerListContextProcentConverter.cs" />
     <Compile Include="Views\Converter\ShowShareAddonConverter.cs" />
     <Compile Include="Win32.cs" />
     <Page Include="MainWindow.xaml">
@@ -339,10 +350,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rbsoft.Controls\rbsoft.Controls.csproj">
-      <Project>{7A3A64E8-FB0A-4300-A6FE-0D9C7DBD1E11}</Project>
-      <Name>rbsoft.Controls</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
       <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
       <Name>RestSharp.Net4.Signed</Name>
