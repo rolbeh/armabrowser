@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Magic.Steam;
+﻿using System.Collections.Generic;
+using System.Net;
 
-namespace ArmaBrowser.Data.DefaultImpl
+namespace Magic.Steam.Queries
 {
-    class ServerItem : ISteamGameServer, IServerQueryAddress
+    public class SteamGameServer : ISteamGameServer
     {
         /// <summary>
         /// Arma3
@@ -56,7 +52,7 @@ namespace ArmaBrowser.Data.DefaultImpl
         /// <summary>
         /// Anzahl der aktuellen Spieler
         /// </summary>
-        public int CurrentPlayerCount  { get; set; }
+        public int CurrentPlayerCount { get; set; }
 
         /// <summary>
         /// maximale Spieleranzahl
@@ -83,5 +79,11 @@ namespace ArmaBrowser.Data.DefaultImpl
         public string Keywords { get; set; }
 
         public bool VerifySignatures { get; set; }
+    }
+
+    public class SteamGameServerQueryEndPoint
+    {
+        public IPAddress Host { get; set; }
+        public int QueryPort { get; internal set; }
     }
 }

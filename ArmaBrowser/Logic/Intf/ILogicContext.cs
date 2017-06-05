@@ -30,7 +30,7 @@ namespace ArmaBrowser.Logic
 
         //void TestJson();
 
-        event EventHandler<string> LiveAction;
+        //event EventHandler<string> LiveAction;
 
         string ArmaVersion { get; }
     }

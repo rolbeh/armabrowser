@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magic.Steam;
 
 namespace ArmaBrowser.Logic
 {
@@ -95,7 +96,7 @@ namespace ArmaBrowser.Logic
         /// </summary>
         string CurrentPlayersText { get; }
 
-        Data.ISteamGameServerPlayer[] CurrentPlayers { get; }
+        ISteamGameServerPlayer[] CurrentPlayers { get; }
 
         /// <summary>
         /// QueryPort für Serverstates

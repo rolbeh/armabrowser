@@ -143,7 +143,6 @@
     <Compile Include="Data\DataManager.cs" />
     <Compile Include="Data\DefaultImpl\ArmaAddon.cs" />
     <Compile Include="Data\DefaultImpl\DataRepository.cs" />
-    <Compile Include="Data\DefaultImpl\EncodingSteamExtensions.cs" />
     <Compile Include="Data\DefaultImpl\Helper\PathHelper.cs" />
     <Compile Include="Data\DefaultImpl\MgArrayExtensions.cs" />
     <Compile Include="Data\DefaultImpl\Rest\RestAddon.cs" />
@@ -162,8 +161,6 @@
     <Compile Include="Data\Intf\IDataRepository.cs" />
     <Compile Include="Data\Intf\IServerList.cs" />
     <Compile Include="Data\Intf\IServerQueryAddress.cs" />
-    <Compile Include="Data\Intf\IServerVo.cs" />
-    <Compile Include="Data\Intf\ISteamGameServerPlayer.cs" />
     <Compile Include="Design\ServerItem.cs" />
     <Compile Include="Design\ServerListViewModel.cs" />
     <Compile Include="Logger.cs" />
@@ -353,6 +350,10 @@
     <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
       <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
       <Name>RestSharp.Net4.Signed</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SteamServerQueries\Magic.Steam.ServerQueries.csproj">
+      <Project>{4F4350D7-FA03-47C9-A85D-6B86260E4F67}</Project>
+      <Name>Magic.Steam.ServerQueries</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

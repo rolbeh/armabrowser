@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Magic.Steam.Queries;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationsTest.ArmaBrowser.TestData
@@ -7,6 +8,8 @@ namespace IntegrationsTest.ArmaBrowser.TestData
     [TestClass]
     public sealed class EncodingSteamExtensionsTests
     {
+        const int RuleReponseByte = 0x45;
+
         private Stream BuildStream(uint value)
         {
             var mem = new MemoryStream();
@@ -67,7 +70,7 @@ namespace IntegrationsTest.ArmaBrowser.TestData
         [TestMethod]
         public void SteamByte_Decode_0x01()
         {
-            using (var mem = BuildStream(new byte[] { 0x01, 0x01 }))
+            using (var mem = BuildStream(new byte[] {0x01, 0x01}))
             using (var br = new BinaryReader(mem))
             {
                 Assert.AreEqual(0x1, br.ReadSteamByte());
@@ -78,7 +81,7 @@ namespace IntegrationsTest.ArmaBrowser.TestData
         [TestMethod]
         public void SteamByte_Decode_0102_to_0x00()
         {
-            using (var mem = BuildStream(new byte[] { 0x01, 0x02 }))
+            using (var mem = BuildStream(new byte[] {0x01, 0x02}))
             using (var br = new BinaryReader(mem))
             {
                 Assert.AreEqual(0x0, br.ReadSteamByte());
@@ -89,13 +92,17 @@ namespace IntegrationsTest.ArmaBrowser.TestData
         [TestMethod]
         public void UnFrameRuleFile_V_1_56_134627_82_211_2_97()
         {
-            byte[] bytes;
+            byte[] rawBytes;
             using (var file = File.OpenRead(@"TestData\ServerRules\V_1.56.134627_82.211.2.97.rdat"))
             {
-                bytes = new byte[file.Length];
-                file.Read(bytes, 0, bytes.Length);
+                rawBytes = new byte[file.Length];
+                file.Read(rawBytes, 0, rawBytes.Length);
             }
-            bytes = bytes.UnframeSteamBytes_1_56().Bytes;
+
+            var bytes = rawBytes.DefragmentSteamBytes_1_56().Bytes;
+
+            Assert.AreEqual(995, bytes.Length);
+
         }
 
         [TestMethod]
@@ -114,6 +121,108 @@ namespace IntegrationsTest.ArmaBrowser.TestData
 
                 bytes = targetStream.ToArray();
             }
+            File.WriteAllBytes($@"TestData\ServerRules\{name}.rdecoded", bytes);
+        }
+
+
+        [TestMethod]
+        public void UnFrameRuleFile_V_1_70_141838_91_121_245_89()
+        {
+            byte[] rawBytes;
+            using (var file = File.OpenRead(@"TestData\ServerRules\V_1.70.141838_91.121.245.89.rdat"))
+            {
+                rawBytes = new byte[file.Length];
+                file.Read(rawBytes, 0, rawBytes.Length);
+            }
+
+            Assert.AreEqual(RuleReponseByte, rawBytes[4]);
+
+            var bytes = rawBytes.DefragmentSteamBytes_1_56().Bytes;
+
+            Assert.AreEqual(355, bytes.Length);
+        }
+
+        [TestMethod]
+        public void DecodeSteamRuleFile_V_1_70_141838_91_121_245_89()
+        {
+            string name = "V_1.70.141838_91.121.245.89";
+            byte[] bytes;
+            byte[] rawBytes;
+
+            using (var file = File.OpenRead(@"TestData\ServerRules\" + name + ".rdat"))
+            {
+                rawBytes = new byte[file.Length];
+                file.Read(rawBytes, 0, rawBytes.Length);
+            }
+
+            using (var file = new MemoryStream(rawBytes.DefragmentSteamBytes_1_56().Bytes, false))
+            using (var reader = new BinaryReader(file))
+            using (var targetStream = new MemoryStream())
+            {
+                while (file.Position < file.Length)
+                {
+                    targetStream.WriteByte(reader.ReadSteamByte());
+                }
+
+                bytes = targetStream.ToArray();
+            }
+
+            File.WriteAllBytes($@"TestData\ServerRules\{name}.rdecoded", bytes);
+        }
+
+        [TestMethod]
+        public void DecodeSteamRuleFile_V_1_56_134787_90_116_171_48()
+        {
+            string name = "V_1.56.134787_90.116.171.48";
+            byte[] bytes;
+            byte[] unframedBytes;
+
+            using (var unframedfile = File.OpenRead(@"TestData\ServerRules\" + name + ".rdat"))
+            {
+                unframedBytes = new byte[unframedfile.Length];
+                unframedfile.Read(unframedBytes, 0, unframedBytes.Length);
+            }
+
+            using (var file = new MemoryStream(unframedBytes.DefragmentSteamBytes_1_56().Bytes, false))
+            using (var reader = new BinaryReader(file))
+            using (var targetStream = new MemoryStream())
+            {
+                while (file.Position < file.Length)
+                {
+                    targetStream.WriteByte(reader.ReadSteamByte());
+                }
+
+                bytes = targetStream.ToArray();
+            }
+
+            File.WriteAllBytes($@"TestData\ServerRules\{name}.rdecoded", bytes);
+        }
+
+        [TestMethod]
+        public void DecodeSteamRuleFile_V_1_68_141067_138_201_222_105()
+        {
+            string name = "V_1.68.141067_138.201.222.105";
+            byte[] bytes;
+            byte[] rawBytes;
+
+            using (var file = File.OpenRead(@"TestData\ServerRules\" + name + ".rdat"))
+            {
+                rawBytes = new byte[file.Length];
+                file.Read(rawBytes, 0, rawBytes.Length);
+            }
+
+            using (var file = new MemoryStream(rawBytes.DefragmentSteamBytes_1_56().Bytes, false))
+            using (var reader = new BinaryReader(file))
+            using (var targetStream = new MemoryStream())
+            {
+                while (file.Position < file.Length)
+                {
+                    targetStream.WriteByte(reader.ReadSteamByte());
+                }
+
+                bytes = targetStream.ToArray();
+            }
+
             File.WriteAllBytes($@"TestData\ServerRules\{name}.rdecoded", bytes);
         }
     }

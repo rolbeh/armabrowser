@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmaBrowser", "ArmaBrowser\ArmaBrowser.csproj", "{396D5BF5-9138-4D1D-A2A0-8938E9B7DB76}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{428D59DC-E78E-4DB8-AF33-912D386941B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationsTest.ArmaBrowser", "IntegrationsTest.ArmaBrowser\IntegrationsTest.ArmaBrowser.csproj", "{7B71B6B7-2175-4653-9311-53F431859316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Magic.Steam.ServerQueries", "SteamServerQueries\Magic.Steam.ServerQueries.csproj", "{4F4350D7-FA03-47C9-A85D-6B86260E4F67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,22 @@ Global
 		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x64.Build.0 = Release|Any CPU
 		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x86.ActiveCfg = Release|Any CPU
 		{7B71B6B7-2175-4653-9311-53F431859316}.Release|x86.Build.0 = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|ARM.Build.0 = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|ARM.Build.0 = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|x64.Build.0 = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F4350D7-FA03-47C9-A85D-6B86260E4F67}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ArmaBrowser.Data;
 using ArmaBrowser.Logic;
+using Magic.Steam;
 
 namespace ArmaBrowser.Design
 {

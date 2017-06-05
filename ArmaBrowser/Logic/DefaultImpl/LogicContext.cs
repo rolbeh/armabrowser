@@ -13,6 +13,7 @@ using ArmaBrowser.Data;
 using ArmaBrowser.Data.DefaultImpl;
 using ArmaBrowser.Data.DefaultImpl.Rest;
 using ArmaBrowser.Properties;
+using Magic.Steam;
 
 namespace ArmaBrowser.Logic
 {
@@ -294,7 +295,7 @@ namespace ArmaBrowser.Logic
             //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
 
-        private void OnServerGenerated(IServerVo obj)
+        private void OnServerGenerated(ISteamGameServer obj)
         {
             if (LiveAction != null)
             {
@@ -311,7 +312,7 @@ namespace ArmaBrowser.Logic
                 if (serverItem.QueryPort == 0) return;
 
 
-                IServerVo dataItem = null;
+                ISteamGameServer dataItem = null;
                 try
                 {
                     dataItem =
@@ -328,7 +329,7 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        private void AssignProperties(ServerItem item, IServerVo vo)
+        private void AssignProperties(ServerItem item, ISteamGameServer vo)
         {
             var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);
@@ -612,7 +613,7 @@ namespace ArmaBrowser.Logic
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
         private string _armaPath;
         private string _armaVersion;
-        private IServerVo[] _serverIPListe;
+        private ISteamGameServer[] _serverIPListe;
 
         public event EventHandler<string> LiveAction;
 
@@ -682,7 +683,7 @@ namespace ArmaBrowser.Logic
             _reset = new ManualResetEvent(false);
         }
 
-        public IServerVo[] Ips { get; set; }
+        public ISteamGameServer[] Ips { get; set; }
         public Collection<IServerItem> Dest { get; set; }
         public CancellationToken Token { get; set; }
 

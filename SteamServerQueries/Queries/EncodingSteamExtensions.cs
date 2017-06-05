@@ -1,37 +1,39 @@
-using Magic.Annotations;
 
-namespace System.IO
+using System;
+using System.IO;
+
+namespace Magic.Steam.Queries
 {
-    internal static class EncodingSteamExtensions
+    public static class EncodingSteamExtensions
     {
-        public static uint ReadSteamUInt32([NotNull] this BinaryReader reader)
+        public static uint ReadSteamUInt32(this BinaryReader reader)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
-            var b = EncodeByte(reader);
+            var b = DecodeByte(reader);
             uint result = b;
 
-            b = EncodeByte(reader);
+            b = DecodeByte(reader);
             result += (uint) (b << 8);
 
-            b = EncodeByte(reader);
+            b = DecodeByte(reader);
             result += (uint) (b << 16);
 
-            b = EncodeByte(reader);
+            b = DecodeByte(reader);
             result += (uint) (b << 24);
 
 
             return result;
         }
 
-        public static byte ReadSteamByte([NotNull] this BinaryReader reader)
+        public static byte ReadSteamByte(this BinaryReader reader)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
-            return EncodeByte(reader);
+            return DecodeByte(reader);
         }
 
-        private static byte EncodeByte([NotNull] BinaryReader reader)
+        private static byte DecodeByte(BinaryReader reader)
         {
             byte result = reader.ReadByte();
             if (result == 0x01)
@@ -68,7 +70,7 @@ namespace System.IO
             return result;
         }
 
-        public static SteamDecodedBytes DecodeSteamRuleFile_1_56([NotNull] this SteamUnframedBytes unframed)
+        public static SteamDecodedBytes DecodeSteamRuleFile_1_56(this SteamDefragmentedBytes unframed)
         {
             using (Stream file = new MemoryStream(unframed.Bytes, false))
             using (var reader = new BinaryReader(file))
@@ -83,7 +85,7 @@ namespace System.IO
             }
         }
 
-        internal static SteamUnframedBytes UnframeSteamBytes_1_56([NotNull] this byte[] respose)
+        public static SteamDefragmentedBytes DefragmentSteamBytes_1_56(this byte[] respose)
         {
             var fragmentCount = respose[5] + (respose[6] >> 8);
             var offset = 7;
@@ -110,75 +112,7 @@ namespace System.IO
                     break;
             }
             Array.Resize(ref result, destinationOffset);
-            return new SteamUnframedBytes(result);
+            return new SteamDefragmentedBytes(result);
         }
-    }
-
-    internal class SteamUnframedBytes
-    {
-        public SteamUnframedBytes([NotNull] byte[] bytes)
-        {
-            Bytes = bytes;
-        }
-
-        [NotNull]
-        public byte[] Bytes { get; }
-    }
-
-    internal class SteamDecodedBytes : IDisposable
-    {
-        private readonly Stream _decodedStream;
-        private readonly bool _leaveOpen;
-
-        public SteamDecodedBytes([NotNull] byte[] decodedBytes)
-        {
-            Data = new MemoryStream(decodedBytes);
-            _leaveOpen = false;
-        }
-
-        public SteamDecodedBytes([NotNull] Stream decodedStream, bool leaveOpen = false)
-        {
-            _decodedStream = decodedStream;
-            _leaveOpen = leaveOpen;
-            Data = decodedStream;
-        }
-
-        [NotNull]
-        public Stream Data { get; private set; }
-
-        #region IDisposable Support
-
-        private bool disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    if (!_leaveOpen)
-                      Data?.Dispose();
-                    Data = null;
-                }
-                
-                disposedValue = true;
-            }
-        }
-
-
-        // ~SteamDecodedBytes() {
-        //   Dispose(false);
-        // }
-
-        // Dieser Code wird hinzugefügt, um das Dispose-Muster richtig zu implementieren.
-        public void Dispose()
-        {
-            // Ändern Sie diesen Code nicht. Fügen Sie Bereinigungscode in Dispose(bool disposing) weiter oben ein.
-            Dispose(true);
-            // TODO: Auskommentierung der folgenden Zeile aufheben, wenn der Finalizer weiter oben überschrieben wird.
-            // GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

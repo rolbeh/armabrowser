@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using Magic.Steam;
 
 namespace ArmaBrowser.Data
 {
@@ -11,8 +8,8 @@ namespace ArmaBrowser.Data
     {
         IPEndPoint[] GetServerEndPoints();
 
-        IServerVo[] GetServerList(Action<IServerVo> itemGenerated = null);
+        ISteamGameServer[] GetServerList(Action<ISteamGameServer> itemGenerated = null);
 
-        IServerVo GetServerInfo(IPEndPoint gameServerQueryEndpoint);
+        ISteamGameServer GetServerInfo(IPEndPoint gameServerQueryEndpoint);
     }
 }

@@ -124,11 +124,30 @@
     <None Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\ServerRules\V_1.68.141067_138.201.222.105.rdat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\ServerRules\V_1.68.141067_138.201.222.105.rdefrag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\ServerRules\V_1.70.141838_31.214.203.70.rdat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\ServerRules\V_1.70.141838_91.121.245.89.rdat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\ServerRules\V_1.70.141838_91.121.245.89.rdefrag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ArmaBrowser\ArmaBrowser.csproj">
       <Project>{396D5BF5-9138-4D1D-A2A0-8938E9B7DB76}</Project>
       <Name>ArmaBrowser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SteamServerQueries\Magic.Steam.ServerQueries.csproj">
+      <Project>{4F4350D7-FA03-47C9-A85D-6B86260E4F67}</Project>
+      <Name>Magic.Steam.ServerQueries</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +155,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="TestData\ServerRules\V_1.59.135288_81.0.236.102.rules">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestData\ServerRules\V_1.62.137494_151.80.99.159.rules">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestData\ServerRules\V_1.70.141838_91.121.245.89.rules">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using ArmaBrowser.Logic;
+using Magic.Steam;
 using Microsoft.Win32;
 
 namespace ArmaBrowser.Data.DefaultImpl
@@ -197,33 +198,33 @@ namespace ArmaBrowser.Data.DefaultImpl
             return result.ToArray();
         }
 
-        public IServerVo[] GetServerList()
-        {
-            throw new NotImplementedException();
-            //const string url = "http://arma3.swec.se/server/list.xml";
-            //try
-            //{
-            //    using (var webClient = new WebClient())
-            //    {
-            //        var bytes = webClient.DownloadData(url);
-            //        using (var mem = new MemoryStream(bytes, false))
-            //        {
-            //            return ParseArmaSwecServerlist.GetServerList(mem);
-            //        }
-            //    }
-            //}
-            //catch
-            //{
-            //    if (File.Exists("Serverlist.xml"))
-            //    {
-            //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
-            //        {
-            //            return ParseArmaSwecServerlist.GetServerList(fs);
-            //        }
-            //    }
-            //    return new IServerVo[0];
-            //}
-        }
+        //public ISteamGameServer[] GetServerList()
+        //{
+        //    throw new NotImplementedException();
+        //    //const string url = "http://arma3.swec.se/server/list.xml";
+        //    //try
+        //    //{
+        //    //    using (var webClient = new WebClient())
+        //    //    {
+        //    //        var bytes = webClient.DownloadData(url);
+        //    //        using (var mem = new MemoryStream(bytes, false))
+        //    //        {
+        //    //            return ParseArmaSwecServerlist.GetServerList(mem);
+        //    //        }
+        //    //    }
+        //    //}
+        //    //catch
+        //    //{
+        //    //    if (File.Exists("Serverlist.xml"))
+        //    //    {
+        //    //        using (var fs = new FileStream("Serverlist.xml", FileMode.Open))
+        //    //        {
+        //    //            return ParseArmaSwecServerlist.GetServerList(fs);
+        //    //        }
+        //    //    }
+        //    //    return new IServerVo[0];
+        //    //}
+        //}
 
         //    return new ServerRepositoryStream();
         //{

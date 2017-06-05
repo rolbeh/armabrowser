@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magic.Steam;
 
 namespace ArmaBrowser.Logic
 {
@@ -21,7 +22,7 @@ namespace ArmaBrowser.Logic
         private int _maxPlayers;
         private string _name;
         private string _mode;
-        private Data.ISteamGameServerPlayer[] _currentPlayers;
+        private ISteamGameServerPlayer[] _currentPlayers;
         private int _ping;
         private DateTime? _lastPlayed;
         private bool _isFavorite;
@@ -191,7 +192,7 @@ namespace ArmaBrowser.Logic
             get { return string.Format("{0}/{1}", _playersNum, _maxPlayers); }
         }
 
-        public Data.ISteamGameServerPlayer[] CurrentPlayers
+        public ISteamGameServerPlayer[] CurrentPlayers
         {
             get { return _currentPlayers; }
             internal set
