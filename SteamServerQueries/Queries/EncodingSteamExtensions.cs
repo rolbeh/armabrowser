@@ -38,7 +38,9 @@ namespace Magic.Steam.Queries
             byte result = reader.ReadByte();
             if (result == 0x01)
             {
-                byte nextByte = (byte) reader.PeekChar();
+                long orgPos = reader.BaseStream.Position;
+                byte nextByte = (byte) reader.BaseStream.ReadByte();
+                reader.BaseStream.Position = orgPos;
                 switch (nextByte)
                 {
                     case 0x01:
@@ -57,7 +59,9 @@ namespace Magic.Steam.Queries
             }
             if (result == 0x03)
             {
-                byte nextByte = (byte)reader.PeekChar();
+                long orgPos = reader.BaseStream.Position;
+                byte nextByte = (byte)reader.BaseStream.ReadByte();
+                reader.BaseStream.Position = orgPos;
                 switch (nextByte)
                 {
                     case 0x03:
