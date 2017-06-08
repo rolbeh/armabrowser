@@ -3,5 +3,5 @@
 	url = https://github.com/restsharp/RestSharp.git
 [submodule "magic"]
 	path = magic
-url=https://github.com/rolbeh/Magic.net.git
+url=https://github.com/sonabit/Magic.net.git
 	branch = master
