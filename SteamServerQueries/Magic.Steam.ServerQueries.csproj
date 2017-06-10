@@ -33,7 +33,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\key\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -55,7 +55,7 @@
     <Compile Include="Queries\SteamServerRule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\armabrowser.org.pfx">
+    <None Include="..\key\armabrowser.org.pfx">
       <Link>armabrowser.org.pfx</Link>
     </None>
   </ItemGroup>

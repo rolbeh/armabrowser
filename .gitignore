@@ -66,21 +66,16 @@ packages/
 
 #Test files
 *.testsettings
-AnyCPU_ReleaseSetupFiles/setup.msi
-ArmaBrowser/rbsoftware.pfx
-ArmaBrowser/test.txt
-UnitTestProject1/armabrowser.public.snk
-UnitTestProject1/armabrowser.snk
-armabrowser.org.crt
-armabrowser.org.key
-armabrowser.org.pfx
-armabrowser.public.snk
-armabrowser.snk
-rbsoftware.pfx
-setup-cache/cacheIndex.txt
-setup-cache/part1/disk1.cab
-setup-cache/part1/output-info.ini
-setup-cache/part11/disk1.cab
-setup-cache/part11/output-info.ini
+
+
+
+*.msi
+*.crt
+*.key
+*.snk
+*.pfx
+
+*setup-cache/
 setup.aip
+
 *.DotSettings

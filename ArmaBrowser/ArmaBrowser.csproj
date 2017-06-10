@@ -90,12 +90,6 @@
   <PropertyGroup>
     <StartupObject>ArmaBrowser.App</StartupObject>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
   <PropertyGroup />
@@ -104,6 +98,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\key\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Magic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -200,8 +200,8 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
-    <None Include="..\..\armabrowser.org.pfx">
-      <Link>Properties\armabrowser.org.pfx</Link>
+    <None Include="..\key\armabrowser.org.pfx">
+      <Link>armabrowser.org.pfx</Link>
     </None>
     <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
