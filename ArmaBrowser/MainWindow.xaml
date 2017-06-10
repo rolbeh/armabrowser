@@ -4,7 +4,6 @@
         xmlns:viewModel="clr-namespace:ArmaBrowser.ViewModel"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:Shader="clr-namespace:ArmaBrowser.Shader"
         xmlns:WStyle="clr-namespace:ArmaBrowser.Styles"
         xmlns:logic="clr-namespace:ArmaBrowser.Logic"
         xmlns:armaBrowser="clr-namespace:ArmaBrowser"
@@ -295,17 +294,6 @@
                     </Grid.RowDefinitions>
                     
                     <Image Source="Img/ArmA_3_Logo.png" Opacity=".9" IsHitTestVisible="False" >
-                        <UIElement.Effect>
-                            
-                            <Shader:multishader_frag
-                                                     Master="2.6"
-                                                     BlurRadius="3.4"
-                                                     GlowIntensity="0.7"
-                                                     NoiseIntensity="0.7"
-                                                     DirectionHorizontal="0"
-                                                     TextureHeight="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}"
-                                                     TextureWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}" BlurIntensity="2.5"/>
-                        </UIElement.Effect>
                     </Image>
                     
                     <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"

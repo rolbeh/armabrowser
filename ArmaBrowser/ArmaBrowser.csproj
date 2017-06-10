@@ -106,13 +106,9 @@
     <AssemblyOriginatorKeyFile>..\key\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Magic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\magic\Magic\bin\Release\Magic.dll</HintPath>
-    </Reference>
-    <Reference Include="Magic.Controls, Version=0.0.1.1, Culture=neutral, PublicKeyToken=155175993645f89f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\magic\Magic.Controls\bin\Release\Magic.Controls.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Expression.Controls" />
     <Reference Include="Microsoft.Expression.Interactions" />
@@ -203,15 +199,11 @@
     <None Include="..\key\armabrowser.org.pfx">
       <Link>armabrowser.org.pfx</Link>
     </None>
-    <None Include="Shader\notused\Glow.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Shader\multishader_frag.cs" />
-    <None Include="Shader\notused\Shader.cs" />
-    <Compile Include="Shader\ShaderHelper.cs" />
     <Compile Include="Styles\VS2012WindowStyle.cs" />
     <Compile Include="UserControl1.xaml.cs">
       <DependentUpon>UserControl1.xaml</DependentUpon>
@@ -292,6 +284,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -332,21 +325,20 @@
     <Resource Include="Img\ArmaBrowser32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\notused\Shader.fx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shader\notused\Glow.fx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Effect Include="Shader\multishader_frag.fx" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\magic\Magic.Controls\Magic.Controls.csproj">
+      <Project>{ba84b818-eaaa-45f5-bd1f-eb13d5b7a29c}</Project>
+      <Name>Magic.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\magic\Magic\Magic.csproj">
+      <Project>{d835b407-6ed1-402d-b34d-8f46a81a5ddd}</Project>
+      <Name>Magic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
       <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
       <Name>RestSharp.Net4.Signed</Name>

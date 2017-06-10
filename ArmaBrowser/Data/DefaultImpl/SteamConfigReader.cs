@@ -8,7 +8,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Magic.Annotations;
+using JetBrains.Annotations;
 
 namespace ArmaBrowser.Data.DefaultImpl
 {
