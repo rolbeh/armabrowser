@@ -34,12 +34,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\key\armabrowser.org.pfx</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
@@ -66,9 +60,6 @@
     <Compile Include="ServerQueryRepositorySteamTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\key\armabrowser.org.pfx">
-      <Link>armabrowser.org.pfx</Link>
-    </None>
     <None Include="packages.config" />
     <None Include="TestData\ServerRules\1.54.133741.rdat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

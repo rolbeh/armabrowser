@@ -13,8 +13,6 @@ namespace IntegrationsTest.ArmaBrowser
         [TestMethod]
         public void Upload_With_Big_Folder_Test()
         {
-            var context = new AddonWebApi();
-
             //context.UploadAddon();
         }
     }
