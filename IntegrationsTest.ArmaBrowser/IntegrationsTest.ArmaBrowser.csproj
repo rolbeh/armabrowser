@@ -98,7 +98,9 @@
     <None Include="TestData\ServerRules\V_1.56.134787_188.165.32.82.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TestData\ServerRules\V_1.56.134787_5.9.74.118.rdefrag" />
+    <None Include="TestData\ServerRules\V_1.56.134787_5.9.74.118.rdefrag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TestData\ServerRules\V_1.56.134787_62.141.38.102.rdefrag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

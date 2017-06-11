@@ -114,7 +114,7 @@ namespace IntegrationsTest.ArmaBrowser
         public void ReadRules_Version_134787_5_9_74_118()
         {
             SteamServerRule[] array;
-            using (FileStream unframedFile = File.OpenRead(@"D:\Temp\armabrowserTestData\Rules\V_1.56.134787_5.9.74.118.rdefrag"))
+            using (FileStream unframedFile = File.OpenRead(@"TestData\ServerRules\V_1.56.134787_5.9.74.118.rdefrag"))
             using (SteamDecodedBytes data = (new SteamDefragmentedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
             {
                 array = ServerQueries.ReadRuleFile(data, true).ToArray();
