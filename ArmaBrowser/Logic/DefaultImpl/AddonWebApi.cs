@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,66 +14,50 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArmaBrowser.Data;
 using ArmaBrowser.Data.DefaultImpl.Rest;
-using RestSharp;
-using RestSharp.Deserializers;
+using Newtonsoft.Json;
 
 namespace ArmaBrowser.Logic
 {
-    internal class AddonWebApi : IAddonWebApi
+    internal static class AddonWebApi
     {
         //private const string BaseUrl = @"http://armabrowsertest.fakeland.de/";
 #if DEBUG
         private const string ApiVer = "4";
-        private const string BaseUrl = @"http://homeserver/arma/api/" + ApiVer + @"/";
+        //private const string BaseUrl = @"http://homeserver/arma/api/" + ApiVer + @"/";
+        const string BaseUrl = @"http://armabrowser.org/api/" + ApiVer + @"/";
 #else
         private const string ApiVer = "4";
         const string BaseUrl = @"http://armabrowser.org/api/" + ApiVer + @"/";
 #endif
 
-        private RestClient _client;
+        private static HttpClient _client;
         private static TimeSpan _offset;
         private static string _ver;
 
-        private RestClient RestClient
+        private static HttpClient RestClient
         {
             get
             {
                 if (_client == null)
                 {
-                    _client = new RestClient(BaseUrl);
+                    HttpClientHandler handler = new HttpClientHandler()
+                    {
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                    };
+
+                    _client = new HttpClient(handler) {BaseAddress = new Uri(BaseUrl, UriKind.Absolute) };
 #if DEBUG
-                    _client.AddDefaultParameter(new Parameter() { Name = "XDEBUG_SESSION_START", Value = "3B978CA5", Type = ParameterType.QueryString });
+                    _client.DefaultRequestHeaders.Add("XDEBUG_SESSION_START", "3B978CA5");
 #endif
-                    _client.ClearHandlers();
-                    _client.AddHandler("application/json", new JsonDeserializer());
+                    //_client.ClearHandlers();
+                    //_client.AddHandler("application/json", new JsonDeserializer());
 
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "Accept-Language",
-                        Value = Thread.CurrentThread.CurrentUICulture.Name,
-                        Type = ParameterType.HttpHeader
-                    });
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "Accept-Encoding",
-                        Value = "gzip,deflate,text/plain",
-                        Type = ParameterType.HttpHeader
-                    });
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "APPI",
-                        Value = Properties.Settings.Default.Id,
-                        Type = ParameterType.HttpHeader
-                    });
-
+                    _client.DefaultRequestHeaders.Add("Accept-Language", Thread.CurrentThread.CurrentUICulture.Name);
+                    _client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip,deflate");
+                    _client.DefaultRequestHeaders.Add("Accept", "application/json");
+                    _client.DefaultRequestHeaders.Add("APPI", Properties.Settings.Default.Id);
                     var ver = GetAppVersion();
-
-                    _client.AddDefaultParameter(new Parameter()
-                    {
-                        Name = "ClientVer",
-                        Value = ver,
-                        Type = ParameterType.HttpHeader
-                    });
+                    _client.DefaultRequestHeaders.Add("ClientVer", ver);
                 }
                 return _client;
             }
@@ -89,34 +74,24 @@ namespace ArmaBrowser.Logic
         }
 
 
-        private IRestResponse ExecuteRequest(IRestRequest request)
+        private static async Task<HttpResponseMessage> ExecuteRequest(HttpRequestMessage request)
         {
-            var restResult = RestClient.Execute(request);
+            var restResult = await RestClient.SendAsync(request);
 
             if (restResult.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var dateString =
-                    (string)
-                        restResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase))
-                            .Value;
-                _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
-                _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
+                _offset = restResult.DateOffset();
                 request = request.htua(_offset);
 
-                restResult = _client.Execute(request);
+                restResult = await RestClient.SendAsync(request);
             }
             return restResult;
         }
 
 
-        public async Task PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
+        public static async Task PostInstalledAddonsKeysAsync(IEnumerable<IAddon> addons)
         {
-            await Task.Run(() => PostInstalledAddonsKeys(addons));
-        }
-
-        private void PostInstalledAddonsKeys(IEnumerable<IAddon> addons)
-        {
-            var request = new RestRequest("/Addons", Method.POST).htua();
+            var request = new HttpRequestMessage( HttpMethod.Post,  "Addons").htua();
 
             var restItems = addons.Where(a => a.IsInstalled).Select(a => new RestAddon()
             {
@@ -129,43 +104,24 @@ namespace ArmaBrowser.Logic
 
             request.AddJsonBody(restItems);
 
-            var queryResult = RestClient.Execute(request);
-            if (queryResult.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                var dateString =
-                    (string)
-                        queryResult.Headers.First(h => "Date".Equals(h.Name, StringComparison.CurrentCultureIgnoreCase))
-                            .Value;
-                _offset = DateTime.ParseExact(dateString, "r", CultureInfo.CurrentCulture) - DateTime.UtcNow;
-                _offset = TimeSpan.FromMinutes(Math.Truncate(_offset.TotalMinutes));
-                request = request.htua(_offset);
-
-                // ReSharper disable once RedundantAssignment
-                queryResult = RestClient.Execute(request);
-            }
-
+            await ExecuteRequest(request);
+            
         }
 
-        public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeyNames)
-        {
-            return await TaskHelper.Run(GetAddonInfos, addonKeyNames);
-        }
-
-        public IEnumerable<RestAddonInfoResult> GetAddonInfos(params string[] addonKeyNames)
+        public static async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeyNames)
         {
             try
             {
-                var request = new RestRequest("/Addons/AddonInfo", Method.POST).htua(_offset);
+                var request = new HttpRequestMessage( HttpMethod.Post, "Addons/AddonInfo").htua(_offset);
 
                 request.AddJsonBody(addonKeyNames);
 
-                var restResult = RestClient.Execute(request);
+                HttpResponseMessage restResult = await RestClient.SendAsync(request);
 
                 if (restResult.StatusCode == HttpStatusCode.OK)
                 {
-                    var j = new JsonDeserializer();
-                    var o = j.Deserialize<List<RestAddonInfoResult>>(restResult);
-
+                    var c = await restResult.Content.ReadAsStringAsync();
+                    var o = JsonConvert.DeserializeObject<List<RestAddonInfoResult>>(c);
                     return o;
                 }
             }
@@ -176,7 +132,7 @@ namespace ArmaBrowser.Logic
             return new RestAddonInfoResult[0];
         }
 
-        public void AddAddonDownloadUri(IAddon addon, string uri)
+        public static void AddAddonDownloadUri(IAddon addon, string uri)
         {
             throw new NotSupportedException();
             //try
@@ -212,193 +168,193 @@ namespace ArmaBrowser.Logic
         }
 
 
-        internal void UploadAddon(IAddon addon)
+        internal static void UploadAddon(IAddon addon)
         {
-            try
-            {
-                var key = addon.KeyNames.FirstOrDefault();
-                if (key != null)
-                {
-                    var hash = key.PubK.ToBase64().ComputeSha1Hash();
+            //try
+            //{
+            //    var key = addon.KeyNames.FirstOrDefault();
+            //    if (key != null)
+            //    {
+            //        var hash = key.PubK.ToBase64().ComputeSha1Hash();
 
-                    IRestRequest request = new RestRequest("/Addons/UploadAddon", Method.POST);
-
-
-                    var a = addon;
-                    const string zipFilePath = "tmp.zip";
-                    if (File.Exists(zipFilePath)) File.Delete(zipFilePath);
-                    ZipFile.CreateFromDirectory(a.Path, zipFilePath, CompressionLevel.Optimal, true);
-                    try
-                    {
-                        using (var fs = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
-                        {
-                            Action<Stream> d = delegate(Stream stream)
-                            {
-                                var buffer = new byte[2048];
-
-                                // ReSharper disable AccessToDisposedClosure
-                                var readLen = fs.Read(buffer, 0, buffer.Length);
-                                var totalTransmittedCount = 0L;
-                                var aAitem = addon as Addon;
-                                try
-                                {
-                                    while (readLen > 0)
-                                    {
-                                        stream.Write(buffer, 0, readLen);
-                                        stream.Flush();
-                                        totalTransmittedCount += readLen;
-
-                                        if (aAitem != null)
-                                        {
-                                            var progress = Convert.ToInt32(totalTransmittedCount * 100L / fs.Length);
-                                            aAitem.ProgressValue = progress > 0 ? progress : 1;
-                                        }
-                                        if (totalTransmittedCount == fs.Length)
-                                            break;
-                                        readLen = fs.Read(buffer, 0, buffer.Length);
-                                    }
-
-                                }
-                                finally
-                                {
-                                    if (aAitem != null)
-                                        aAitem.ProgressValue = 0;
-                                }
-                                // ReSharper restore AccessToDisposedClosure
-                            };
+            //        IRestRequest request = new RestRequest("/Addons/UploadAddon", Method.POST);
 
 
-                            var headerFileParam = new FileParameter
-                            {
-                                ContentLength = fs.Length,
-                                Name = hash,
-                                FileName = addon.Name,
-                                //ContentType = "application/zip",
-                                //Writer = delegate(Stream stream) { fs.CopyTo(stream); }
-                            };
+            //        var a = addon;
+            //        const string zipFilePath = "tmp.zip";
+            //        if (File.Exists(zipFilePath)) File.Delete(zipFilePath);
+            //        ZipFile.CreateFromDirectory(a.Path, zipFilePath, CompressionLevel.Optimal, true);
+            //        try
+            //        {
+            //            using (var fs = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
+            //            {
+            //                Action<Stream> d = delegate(Stream stream)
+            //                {
+            //                    var buffer = new byte[2048];
 
-                            headerFileParam.Writer = d;
+            //                    // ReSharper disable AccessToDisposedClosure
+            //                    var readLen = fs.Read(buffer, 0, buffer.Length);
+            //                    var totalTransmittedCount = 0L;
+            //                    var aAitem = addon as Addon;
+            //                    try
+            //                    {
+            //                        while (readLen > 0)
+            //                        {
+            //                            stream.Write(buffer, 0, readLen);
+            //                            stream.Flush();
+            //                            totalTransmittedCount += readLen;
 
-                            request.Files.Add(headerFileParam);
+            //                            if (aAitem != null)
+            //                            {
+            //                                var progress = Convert.ToInt32(totalTransmittedCount * 100L / fs.Length);
+            //                                aAitem.ProgressValue = progress > 0 ? progress : 1;
+            //                            }
+            //                            if (totalTransmittedCount == fs.Length)
+            //                                break;
+            //                            readLen = fs.Read(buffer, 0, buffer.Length);
+            //                        }
 
-                            //request.AlwaysMultipartFormData = false;
+            //                    }
+            //                    finally
+            //                    {
+            //                        if (aAitem != null)
+            //                            aAitem.ProgressValue = 0;
+            //                    }
+            //                    // ReSharper restore AccessToDisposedClosure
+            //                };
 
-                            request.AddParameter("hash", hash, ParameterType.GetOrPost);
 
-                            request.AddParameter("ACCEPT", "text/plain", ParameterType.HttpHeader);
-                            request = request.htua(_offset);
-                            var restResult = ExecuteRequest(request);
+            //                var headerFileParam = new FileParameter
+            //                {
+            //                    ContentLength = fs.Length,
+            //                    Name = hash,
+            //                    FileName = addon.Name,
+            //                    //ContentType = "application/zip",
+            //                    //Writer = delegate(Stream stream) { fs.CopyTo(stream); }
+            //                };
 
-                            if (restResult.StatusCode == HttpStatusCode.OK)
-                            {
-                                addon.IsEasyInstallable = true;
-                                // ReSharper disable once RedundantJumpStatement
-                                return;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        File.Delete(zipFilePath);
-                    }
-                }
+            //                headerFileParam.Writer = d;
 
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-            }
+            //                request.Files.Add(headerFileParam);
+
+            //                //request.AlwaysMultipartFormData = false;
+
+            //                request.AddParameter("hash", hash, ParameterType.GetOrPost);
+
+            //                request.AddParameter("ACCEPT", "text/plain", ParameterType.HttpHeader);
+            //                request = request.htua(_offset);
+            //                var restResult = ExecuteRequest(request);
+
+            //                if (restResult.StatusCode == HttpStatusCode.OK)
+            //                {
+            //                    addon.IsEasyInstallable = true;
+            //                    // ReSharper disable once RedundantJumpStatement
+            //                    return;
+            //                }
+            //            }
+            //        }
+            //        finally
+            //        {
+            //            File.Delete(zipFilePath);
+            //        }
+            //    }
+
+            //}
+            //catch (Exception exception)
+            //{
+            //    Debug.WriteLine(exception);
+            //}
         }
 
-        internal void DownloadAddon(IAddon addon, string addonPubKeyHash, string targetFolder)
+        internal static void DownloadAddon(IAddon addon, string addonPubKeyHash, string targetFolder)
         {
-            var request = new RestRequest("/addonfiles/" + addonPubKeyHash + ".zip", Method.GET);
-            var tmpfile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-            var md5Hash = "";
+        //    var request = new RestRequest("/addonfiles/" + addonPubKeyHash + ".zip", Method.GET);
+        //    var tmpfile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+        //    var md5Hash = "";
 
-            //request.AddParameter("hash", addonPubKeyHash)
-            //    .AddHeader("ACCEPT", "application/zip")
-            //    .htua();
+        //    //request.AddParameter("hash", addonPubKeyHash)
+        //    //    .AddHeader("ACCEPT", "application/zip")
+        //    //    .htua();
 
-            request.ResponseWriter = (res, stream) =>
-            {
-                int fileLen = -1;
-                var hLen = res.Headers.FirstOrDefault(h => "Content-Length".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
-                if (hLen != null)
-                    int.TryParse(hLen.Value, out fileLen);
+        //    request.ResponseWriter = (res, stream) =>
+        //    {
+        //        int fileLen = -1;
+        //        var hLen = res.Headers.FirstOrDefault(h => "Content-Length".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
+        //        if (hLen != null)
+        //            int.TryParse(hLen.Value, out fileLen);
 
-                var md5Header = res.Headers.FirstOrDefault(h => "Content-MD5".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
-                if (md5Header != null)
-                    md5Hash = md5Header.Value;
+        //        var md5Header = res.Headers.FirstOrDefault(h => "Content-MD5".Equals(h.Name, StringComparison.OrdinalIgnoreCase));
+        //        if (md5Header != null)
+        //            md5Hash = md5Header.Value;
 
-                var s = stream;//as System.IO.Compression.GZipStream;
-                var myAddon = addon as Addon;
-                if (res.StatusCode == HttpStatusCode.OK
-                    //&& "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase)
-                    )
-                {
-                    try
-                    {
+        //        var s = stream;//as System.IO.Compression.GZipStream;
+        //        var myAddon = addon as Addon;
+        //        if (res.StatusCode == HttpStatusCode.OK
+        //            //&& "application/zip".Equals(res.ContentType, StringComparison.OrdinalIgnoreCase)
+        //            )
+        //        {
+        //            try
+        //            {
 
-                        var buffer = new byte[1024 * 8];
-                        var downloadLen = 0;
-                        using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Write))
-                        {
-                            int len;
-                            do
-                            {
-                                len = s.Read(buffer, 0, buffer.Length);
-                                tmpfs.Write(buffer, 0, len);
-                                downloadLen += len;
-                                if (myAddon == null || downloadLen <= 0) continue;
-                                var progress = Convert.ToInt32(downloadLen * 100L / fileLen);
-                                myAddon.ProgressValue = progress > 0 ? progress : 1;
-                            } while (len > 0);
-                            tmpfs.Flush();
-                            if (myAddon != null)
-                                myAddon.ProgressValue = 0;
+        //                var buffer = new byte[1024 * 8];
+        //                var downloadLen = 0;
+        //                using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Write))
+        //                {
+        //                    int len;
+        //                    do
+        //                    {
+        //                        len = s.Read(buffer, 0, buffer.Length);
+        //                        tmpfs.Write(buffer, 0, len);
+        //                        downloadLen += len;
+        //                        if (myAddon == null || downloadLen <= 0) continue;
+        //                        var progress = Convert.ToInt32(downloadLen * 100L / fileLen);
+        //                        myAddon.ProgressValue = progress > 0 ? progress : 1;
+        //                    } while (len > 0);
+        //                    tmpfs.Flush();
+        //                    if (myAddon != null)
+        //                        myAddon.ProgressValue = 0;
 
-                        }
-                    }
-                    finally
-                    {
-                        if (myAddon != null)
-                            myAddon.ProgressValue = 0;
-                    }
-                }
-            };
+        //                }
+        //            }
+        //            finally
+        //            {
+        //                if (myAddon != null)
+        //                    myAddon.ProgressValue = 0;
+        //            }
+        //        }
+        //    };
 
-            RestClient.ClearHandlers();
-            ExecuteRequest(request);
+        //    RestClient.ClearHandlers();
+        //    ExecuteRequest(request);
 
-            if (!string.IsNullOrEmpty(md5Hash))
-            {
-                using (var md5 = MD5.Create())
-                {
-                    var calc = md5.FromFile(tmpfile);
-                    if (calc != md5Hash)
-                    {
-                        Trace.WriteLine("MD5 Check Fail");
-                    }
-                }
-            }
+        //    if (!string.IsNullOrEmpty(md5Hash))
+        //    {
+        //        using (var md5 = MD5.Create())
+        //        {
+        //            var calc = md5.FromFile(tmpfile);
+        //            if (calc != md5Hash)
+        //            {
+        //                Trace.WriteLine("MD5 Check Fail");
+        //            }
+        //        }
+        //    }
 
-            if (File.Exists(tmpfile))
-            {
-                try
-                {
-                    using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
-                    using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
-                    {
-                        archive.ExtractToDirectory(targetFolder);
-                    }
+        //    if (File.Exists(tmpfile))
+        //    {
+        //        try
+        //        {
+        //            using (var tmpfs = new FileStream(tmpfile, FileMode.Open, FileAccess.Read))
+        //            using (ZipArchive archive = new ZipArchive(tmpfs, ZipArchiveMode.Read, true))
+        //            {
+        //                archive.ExtractToDirectory(targetFolder);
+        //            }
 
-                }
-                finally
-                {
-                    File.Delete(tmpfile);
-                }
-            }
+        //        }
+        //        finally
+        //        {
+        //            File.Delete(tmpfile);
+        //        }
+        //    }
 
         }
     }
@@ -451,7 +407,7 @@ namespace ArmaBrowser.Logic
 
         [SecurityCritical]
         // ReSharper disable once InconsistentNaming
-        internal static IRestRequest htua(this IRestRequest request, TimeSpan offset = default(TimeSpan))
+        internal static HttpRequestMessage htua(this HttpRequestMessage request, TimeSpan offset = default(TimeSpan))
         {
             var time = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour,
                 DateTime.Now.Minute, 0).ToUniversalTime().Add(offset);
@@ -465,15 +421,21 @@ namespace ArmaBrowser.Logic
                 appkey = Convert.ToBase64String(rsa.Encrypt(Encoding.ASCII.GetBytes(A + " \"" + time.ToUniversalTime().ToString("r") + "\" " + V + " " + Properties.Settings.Default.Id), false));
             }
 
-            var param = request.Parameters.FirstOrDefault(p => p.Name == AhK);
-            if (param == null)
-            {
-                param = new Parameter() { Name = AhK, Type = ParameterType.HttpHeader };
-                request.AddParameter(param);
-            }
-            param.Value = appkey;
-
+            request.Headers.Remove(AhK);
+            request.Headers.Add(AhK, appkey);
+            
             return request;
+        }
+
+        internal static TimeSpan DateOffset(this HttpResponseMessage response)
+        {
+            if (!response.Headers.Date.HasValue)
+            {
+                return TimeSpan.Zero;
+            }
+
+            var offset = response.Headers.Date.Value.DateTime - DateTime.UtcNow;
+            return TimeSpan.FromMinutes(Math.Truncate(offset.TotalMinutes));
         }
 
         internal static string ComputeSha1Hash(this string s)
@@ -490,6 +452,11 @@ namespace ArmaBrowser.Logic
                 return hashAlg.ComputeHash(b).ToHexString();
             }
 
+        }
+
+        internal static void AddJsonBody(this HttpRequestMessage request, object content)
+        {
+            request.Content = new StringContent(JsonConvert.SerializeObject(content));
         }
 
     }

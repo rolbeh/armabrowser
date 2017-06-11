@@ -112,6 +112,10 @@
     </Reference>
     <Reference Include="Microsoft.Expression.Controls" />
     <Reference Include="Microsoft.Expression.Interactions" />
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationFramework.Classic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -338,10 +342,6 @@
     <ProjectReference Include="..\magic\Magic\Magic.csproj">
       <Project>{d835b407-6ed1-402d-b34d-8f46a81a5ddd}</Project>
       <Name>Magic</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RestSharp\RestSharp.Net4\RestSharp.Net4.Signed.csproj">
-      <Project>{5ff943a5-260f-4042-b4ce-c4977bad4ebb}</Project>
-      <Name>RestSharp.Net4.Signed</Name>
     </ProjectReference>
     <ProjectReference Include="..\SteamServerQueries\Magic.Steam.ServerQueries.csproj">
       <Project>{4F4350D7-FA03-47C9-A85D-6B86260E4F67}</Project>

@@ -23,11 +23,6 @@ namespace ArmaBrowser.Data
         {
             return new ServerRepositorySteam();
         }
-
-        public static IAddonWebApi CreateNewArmaBrowserServerRepository()
-        {
-            return new AddonWebApi();
-        }
     }
 }
 

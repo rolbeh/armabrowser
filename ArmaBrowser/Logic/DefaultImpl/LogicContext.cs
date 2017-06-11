@@ -389,9 +389,8 @@ namespace ArmaBrowser.Logic
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
                         Environment.SpecialFolderOption.DoNotVerify) + Path.DirectorySeparatorChar + @"ArmaBrowser" +
                     Path.DirectorySeparatorChar + "Arma 3" + Path.DirectorySeparatorChar + "Addons", false);
-
-            IAddonWebApi addonWebApi = new AddonWebApi();
-            var t = addonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray());
+            
+            AddonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray()).Wait(0);
         }
 
         private async Task ReloadAddonsAsync(string path, bool isArmaDefaultPath)
@@ -451,8 +450,7 @@ namespace ArmaBrowser.Logic
 
         public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
         {
-            var webapi = new AddonWebApi();
-            return await webapi.GetAddonInfosAsync(addonKeynames);
+            return await AddonWebApi.GetAddonInfosAsync(addonKeynames);
         }
 
         internal void AddAddonUri(IAddon addon, string uri)
@@ -464,18 +462,13 @@ namespace ArmaBrowser.Logic
             //});
         }
 
-        internal static void UploadAddon(IAddon addon)
+        internal static async Task UploadAddonAsync(IAddon addon)
         {
-            Task.Run(() =>
-            {
-                var webapi = new AddonWebApi();
-
-                var infos = webapi.GetAddonInfos(addon.KeyNames.Select(k => k.Hash).ToArray());
+                IEnumerable<RestAddonInfoResult> infos = await AddonWebApi.GetAddonInfosAsync(addon.KeyNames.Select(k => k.Hash).ToArray());
                 if (infos.Count() == 0 || infos.Any(a => a.easyinstall))
                     return;
 
-                webapi.UploadAddon(addon);
-            });
+            AddonWebApi.UploadAddon(addon);
         }
 
         internal async void DownloadAddonAsync(IAddon addon)
@@ -492,8 +485,7 @@ namespace ArmaBrowser.Logic
                         "Arma 3" +
                         Path.DirectorySeparatorChar + "Addons" + Path.DirectorySeparatorChar;
                     var hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
-                    var webapi = new AddonWebApi();
-                    webapi.DownloadAddon(addon, hash, targetFolder);
+                    AddonWebApi.DownloadAddon(addon, hash, targetFolder);
 
                     var addons = _defaultDataRepository.GetInstalledAddons(targetFolder);
                     var item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));

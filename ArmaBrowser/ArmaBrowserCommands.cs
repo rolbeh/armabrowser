@@ -94,7 +94,7 @@ namespace ArmaBrowser
             {
                 //if (PathHelper.CalculateFolderSize(addon.Path) < (1024*1024*20))
                 {
-                    LogicContext.UploadAddon(addon);
+                    LogicContext.UploadAddonAsync(addon).Wait(0);
                 }
                 //else
                 //{
