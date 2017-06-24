@@ -135,7 +135,7 @@ namespace ArmaBrowser.Logic
             var item = new ServerItem();
             AssignProperties(item, vo);
 
-            UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
+            UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item).Wait(0);
         }
 
 
@@ -182,8 +182,11 @@ namespace ArmaBrowser.Logic
 
         public void Open(IServerItem serverItem, IAddon[] addons, bool runAsAdmin = false)
         {
-            var addonArgs = string.Format(" \"-mod={0}\"",
-                string.Join(";", addons.Select(i => i.CommandlinePath).ToArray()));
+            string addonArgs = string.Empty;
+            if (addons.Any())
+            {
+                addonArgs = $@" ""-mod={string.Join(";", addons.Select(i => i.CommandlinePath).ToArray())}""";
+            }
 
             var serverArgs = serverItem != null
                 ? string.Format(" -connect={0} -port={1}", serverItem.Host, serverItem.Port)
@@ -192,7 +195,7 @@ namespace ArmaBrowser.Logic
             var psInfo = new ProcessStartInfo
             {
                 FileName = Path.Combine(path, "arma3battleye.exe"),
-                Arguments = " 2 1 1 -skipintro -noSplash -noPause -world=empty " + addonArgs + serverArgs,
+                Arguments = " 2 1 1 -exe Arma3_x64 -skipintro -noSplash -noPause -world=empty " + addonArgs + serverArgs,
                 // -malloc=system
                 WorkingDirectory = path,
                 UseShellExecute = true
@@ -243,7 +246,7 @@ namespace ArmaBrowser.Logic
                 Ips = _serverIPListe.Skip(blockCount*i).Take(blockCount).ToArray(),
                 Token = token
             };
-            UiTask.Run(ReloadThreads.Add, threadContext);
+            UiTask.Run(ReloadThreads.Add, threadContext).Wait(0);
             thread.Start(threadContext);
             return threadContext;
         }
