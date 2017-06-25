@@ -30,7 +30,7 @@ VIProductVersion                 "${expv_1}.${expv_2}.${expv_3}.${expv_4}"
 VIAddVersionKey ProductName      "ArmaBrowser"
 VIAddVersionKey Comments         ""
 VIAddVersionKey CompanyName      "armabrowser.org"
-VIAddVersionKey LegalCopyright   "2015"
+VIAddVersionKey LegalCopyright   "2017"
 VIAddVersionKey FileDescription  ""
 VIAddVersionKey FileVersion      "$version"
 VIAddVersionKey ProductVersion   "$version"
@@ -65,8 +65,9 @@ Section "ArmaBrowser"
   SetOutPath $INSTDIR
   
   ; Put file there
-  File "ArmaBrowser\bin\Release\ArmaBrowser.exe"
-  File "ArmaBrowser\bin\Release\ArmaBrowser.exe.config"
+  File "ArmaBrowser\bin\Release\*.exe"
+  File "ArmaBrowser\bin\Release\*.dll"
+  File "ArmaBrowser\bin\Release\*.config"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\armabrowser" "Install_Dir" "$INSTDIR"
@@ -81,12 +82,12 @@ Section "ArmaBrowser"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "DisplayIcon" '"$INSTDIR\ArmaBrowser.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "URLInfoAbout" "http://www.armabrowser.org"
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "NoModify" 0
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\armabrowser" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
   
   CreateDirectory "$SMPROGRAMS\ArmaBrowser"
-  ;CreateShortCut "$SMPROGRAMS\ArmaBrowser\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+  CreateShortCut "$SMPROGRAMS\ArmaBrowser\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\ArmaBrowser\Start ArmaBrowser.lnk" "$INSTDIR\ArmaBrowser.exe" "" "$INSTDIR\ArmaBrowser.exe" 0
   
 SectionEnd
