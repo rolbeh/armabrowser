@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -67,9 +68,7 @@ namespace ArmaBrowser.Logic
         {
             if (_ver != null) return _ver;
 
-            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-            if (xml.Root != null)
-                _ver = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
+            _ver = Assembly.GetEntryAssembly().GetName().Version.ToString();
             return _ver;
         }
 
