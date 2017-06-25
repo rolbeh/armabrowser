@@ -65,10 +65,6 @@ namespace ArmaBrowser.ViewModel
 
         private ListCollectionView CreateServerItemsView()
         {
-            var xml = System.Xml.Linq.XDocument.Load("ArmaBrowser.exe.manifest");
-            if (xml.Root != null) _version = ((System.Xml.Linq.XElement)xml.Root.FirstNode).Attribute("version").Value;
-
-
             _serverItemsView = new ListCollectionView(ServerItems) { Filter = OnServerItemsFilter };
 
             _serverItemsView.IsLiveSorting = true;
@@ -200,7 +196,8 @@ namespace ArmaBrowser.ViewModel
             if (!System.IO.Directory.Exists(ArmaBrowserAddonFolder))
                 System.IO.Directory.CreateDirectory(ArmaBrowserAddonFolder);
 
-
+            _version = this.GetType().Assembly.GetName().Version.ToString();
+            
             UiTask.Initialize();
             _context = new LogicContext();
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;

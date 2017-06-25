@@ -398,7 +398,7 @@ namespace ArmaBrowser.Logic
 
         private async Task ReloadAddonsAsync(string path, bool isArmaDefaultPath)
         {
-            if (!string.IsNullOrEmpty(path))
+            if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
             {
                 var items = await Task.Run(() => _defaultDataRepository.GetInstalledAddons(path));
                 foreach (var item in items)
