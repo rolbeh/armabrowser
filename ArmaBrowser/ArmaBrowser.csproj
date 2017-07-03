@@ -199,6 +199,7 @@
     </Compile>
     <Compile Include="ViewModel\ProgressState.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
+    <Compile Include="ViewModel\UpdateAvailableViewModel.cs" />
     <Compile Include="Views\Controls\AddonListControl.xaml.cs">
       <DependentUpon>AddonListControl.xaml</DependentUpon>
     </Compile>
