@@ -40,6 +40,8 @@ namespace ArmaBrowser.ViewModel
 
         #region Properties
         
+        public UpdateAvailableViewModel UpdateAvailable { get; }
+
         public Collection<IServerItem> ServerItems
         {
             get { return _context.ServerItems; }
@@ -196,6 +198,9 @@ namespace ArmaBrowser.ViewModel
             if (!System.IO.Directory.Exists(ArmaBrowserAddonFolder))
                 System.IO.Directory.CreateDirectory(ArmaBrowserAddonFolder);
 
+            UpdateAvailable = new UpdateAvailableViewModel();
+            UpdateAvailable.CheckForUpdates().Wait(0);
+            
             _version = this.GetType().Assembly.GetName().Version.ToString();
             
             UiTask.Initialize();
