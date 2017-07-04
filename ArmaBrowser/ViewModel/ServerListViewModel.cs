@@ -200,7 +200,7 @@ namespace ArmaBrowser.ViewModel
 
             UpdateAvailable = new UpdateAvailableViewModel();
             UpdateAvailable.CheckForUpdates().Wait(0);
-
+            
             _version = this.GetType().Assembly.GetName().Version.ToString();
             
             UiTask.Initialize();
