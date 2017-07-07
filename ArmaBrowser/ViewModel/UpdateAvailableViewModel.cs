@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,7 +23,6 @@ namespace ArmaBrowser.ViewModel
             var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
             var currentVersion = name.Version.ToString();
 
-            GitHubReleaseInfo[] gitHubReleases;
             string releasesJson = null;
             using (var client = new HttpClient())
             {
@@ -30,31 +30,32 @@ namespace ArmaBrowser.ViewModel
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name.Name, currentVersion));
                 client.DefaultRequestHeaders.Accept.Clear();
 
-                var response = await client.GetAsync("repos/sonabit/armabrowser/releases");
-                if (response.IsSuccessStatusCode)
+                using (var response = await client.GetAsync("repos/sonabit/armabrowser/releases"))
                 {
-                    releasesJson = await response.Content.ReadAsStringAsync();
+                    if (response.IsSuccessStatusCode)
+                    {
+                        releasesJson = await response.Content.ReadAsStringAsync();
+                    }
                 }
             }
             if (!string.IsNullOrEmpty(releasesJson))
             {
                 try
                 {
-                    gitHubReleases =
-                        JsonConvert.DeserializeObject<GitHubReleaseInfo[]>(releasesJson,
-                            new ExpandoObjectConverter());
+                    var gitHubReleases = JsonConvert.DeserializeObject<GitHubReleaseInfo[]>(releasesJson,
+                        new ExpandoObjectConverter());
                     var gitHubReleaseInfo = gitHubReleases.OrderByDescending(r => r.published_at)
-                        .FirstOrDefault();
-                    var tagName = gitHubReleaseInfo?.tag_name;
-                    if (string.IsNullOrEmpty(tagName))
+                        .FirstOrDefault(info => info.assets.Any(a => a.browser_download_url.EndsWith(".zip")));
+                    if (string.IsNullOrEmpty(gitHubReleaseInfo?.tag_name))
                     {
                         return;
                     }
-                    var lastGithubVersion = tagName.Substring(tagName.LastIndexOf("_", StringComparison.OrdinalIgnoreCase) + 1);
+                    var lastGithubVersion = gitHubReleaseInfo.tag_name.Substring(gitHubReleaseInfo.tag_name.LastIndexOf("_", StringComparison.OrdinalIgnoreCase) + 1);
 
                     if (new Version(lastGithubVersion) > new Version(currentVersion))
                     {
                         NewVersion = lastGithubVersion;
+                        await DownloadUpdateAsync(gitHubReleaseInfo);
                     }
 
                 }
@@ -63,6 +64,44 @@ namespace ArmaBrowser.ViewModel
                     Console.WriteLine(e);
                     throw;
                 }
+            }
+        }
+
+        private async Task DownloadUpdateAsync(GitHubReleaseInfo gitHubReleaseInfo)
+        {
+            var uri = gitHubReleaseInfo.assets.FirstOrDefault(a => a.browser_download_url.EndsWith(".zip"))?.browser_download_url;
+            if (string.IsNullOrEmpty(uri))
+            {
+                return;
+            }
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(uri);
+                    var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
+                    var currentVersion = name.Version.ToString();
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name.Name, currentVersion));
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    using (var response = await client.GetAsync(uri))
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string temp = Path.Combine(System.IO.Path.GetTempPath(), "armabrowserupdates", gitHubReleaseInfo.tag_name);
+                            Directory.CreateDirectory(temp);
+                            using (var fileStream =
+                                File.Open(
+                                    Path.Combine(temp, client.BaseAddress.Segments.Last()), FileMode.OpenOrCreate))
+                            {
+                                fileStream.SetLength(0);
+                                await response.Content.CopyToAsync(fileStream);
+                            }
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                // ignore
             }
         }
 
