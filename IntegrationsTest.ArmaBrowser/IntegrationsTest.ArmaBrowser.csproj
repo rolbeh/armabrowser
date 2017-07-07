@@ -16,7 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-  </PropertyGroup>    
+  </PropertyGroup>
   <PropertyGroup>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
@@ -57,6 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EncodingSteamExtensionsTests.cs" />
     <Compile Include="ServerQueryRepositorySteamTests.cs" />
+    <Compile Include="UpdateAvailableViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TestData\ServerRules\1.54.133741.rdat">
@@ -140,6 +141,10 @@
     <ProjectReference Include="..\ArmaBrowser\ArmaBrowser.csproj">
       <Project>{396D5BF5-9138-4D1D-A2A0-8938E9B7DB76}</Project>
       <Name>ArmaBrowser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\magic\Magic.Controls\Magic.Controls.csproj">
+      <Project>{BA84B818-EAAA-45F5-BD1F-EB13D5B7A29C}</Project>
+      <Name>Magic.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\SteamServerQueries\Magic.Steam.ServerQueries.csproj">
       <Project>{4F4350D7-FA03-47C9-A85D-6B86260E4F67}</Project>
