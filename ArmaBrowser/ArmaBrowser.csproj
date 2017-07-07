@@ -198,6 +198,9 @@
     <Compile Include="UserControl1.xaml.cs">
       <DependentUpon>UserControl1.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\GitHubReleaseInfo.cs" />
+    <Compile Include="Data\GitHubAssets.cs" />
+    <Compile Include="Data\GitHubAuthor.cs" />
     <Compile Include="ViewModel\ProgressState.cs" />
     <Compile Include="ViewModel\ServerListViewModel.cs" />
     <Compile Include="ViewModel\UpdateAvailableViewModel.cs" />

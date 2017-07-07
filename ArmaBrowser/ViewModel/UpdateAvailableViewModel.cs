@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using ArmaBrowser.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -13,22 +14,6 @@ namespace ArmaBrowser.ViewModel
 {
     internal class UpdateAvailableViewModel : ObjectNotify
     {
-        private string _newVersion;
-
-        public bool IsNewVersionAvailable => _newVersion != null;
-
-        public string NewVersion
-        {
-            get => _newVersion;
-            private set
-            {
-                if (value == _newVersion) return;
-                _newVersion = value;
-                OnPropertyChanged(nameof(IsNewVersionAvailable));
-                OnPropertyChanged();
-            }
-        }
-
         internal async Task CheckForUpdates()
         {
             var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
@@ -63,7 +48,6 @@ namespace ArmaBrowser.ViewModel
 
                     if (new Version(lastGithubVersion) > new Version(currentVersion))
                     {
-                        NewVersion = lastGithubVersion;
                         await DownloadUpdateAsync(gitHubReleaseInfo);
                     }
                 }
@@ -97,7 +81,8 @@ namespace ArmaBrowser.ViewModel
                             var tempArchiveDirectory = Path.Combine(Path.GetTempPath(), "armabrowserupdates",
                                 gitHubReleaseInfo.tag_name);
                             Directory.CreateDirectory(tempArchiveDirectory);
-                            var tempArchiveFileName = Path.Combine(tempArchiveDirectory, client.BaseAddress.Segments.Last());
+                            var tempArchiveFileName =
+                                Path.Combine(tempArchiveDirectory, client.BaseAddress.Segments.Last());
                             using (var fileStream =
                                 File.Open(tempArchiveFileName, FileMode.OpenOrCreate))
                             {
@@ -106,8 +91,9 @@ namespace ArmaBrowser.ViewModel
                             }
                             using (ZipArchive zipArchive = ZipFile.OpenRead(tempArchiveFileName))
                             {
-                                var zipArchiveEntry = zipArchive.Entries.FirstOrDefault(entry => entry.FullName.EndsWith("ArmaBrowserUpdater.exe",
-                                    StringComparison.OrdinalIgnoreCase));
+                                var zipArchiveEntry = zipArchive.Entries.FirstOrDefault(
+                                    entry => entry.FullName.EndsWith("ArmaBrowserUpdater.exe",
+                                        StringComparison.OrdinalIgnoreCase));
                                 if (zipArchiveEntry?.FullName != null)
                                 {
                                     // ReSharper disable once AssignNullToNotNullAttribute
@@ -125,7 +111,7 @@ namespace ArmaBrowser.ViewModel
                                         Path.GetDirectoryName(Assembly.GetEntryAssembly().GetName().FullName);
                                     if (binDir != null && File.Exists(Path.Combine(binDir, "ArmaBrowserUpdater.exe")))
                                     {
-                                        File.Copy(Path.Combine(binDir, "ArmaBrowserUpdater.exe"), 
+                                        File.Copy(Path.Combine(binDir, "ArmaBrowserUpdater.exe"),
                                             Path.Combine(tempArchiveDirectory, "ArmaBrowserUpdater.exe"), true);
                                     }
                                 }
@@ -139,37 +125,5 @@ namespace ArmaBrowser.ViewModel
                 // ignore
             }
         }
-    }
-
-
-    internal class GitHubReleaseInfo
-    {
-        public string tag_name { get; set; }
-
-        public bool draft { get; set; }
-
-        public GitHubAuthor author { get; set; }
-
-        public GitHubAssets[] assets { get; set; }
-
-        public string body { get; set; }
-
-        public DateTime published_at { get; set; }
-    }
-
-    internal class GitHubAuthor
-    {
-        public int id { get; set; }
-
-        public string login { get; set; }
-    }
-
-    internal class GitHubAssets
-    {
-        public string browser_download_url { get; set; }
-
-        public GitHubAuthor uploader { get; set; }
-
-        public int size { get; set; }
     }
 }
