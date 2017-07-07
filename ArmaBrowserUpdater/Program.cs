@@ -61,7 +61,7 @@ namespace ArmaBrowserUpdater
                 rollback = false;
                 Updated("SUCCESSFUL");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 rollback = true;
             }

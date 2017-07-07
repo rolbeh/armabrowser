@@ -324,6 +324,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ArmaBrowserUpdater\ArmaBrowserUpdater.csproj">
+      <Project>{0b6578d9-7e41-41fa-b86c-6ac0a342c73e}</Project>
+      <Name>ArmaBrowserUpdater</Name>
+    </ProjectReference>
     <ProjectReference Include="..\magic\Magic.Controls\Magic.Controls.csproj">
       <Project>{ba84b818-eaaa-45f5-bd1f-eb13d5b7a29c}</Project>
       <Name>Magic.Controls</Name>
