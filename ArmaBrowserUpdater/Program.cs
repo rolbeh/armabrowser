@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmaBrowserUpdater
@@ -14,10 +15,12 @@ namespace ArmaBrowserUpdater
     {
         static void Main(string[] args)
         {
-            if (IsUpdated())
-            {
-                return;
-            }
+            Console.Title = "Armabrowser Updater";
+            
+            //if (IsUpdated())
+            //{
+            //    return;
+            //}
 
             if (args.Length < 2 || !File.Exists(args[0]) || !Directory.Exists(args[1]))
             {
@@ -32,12 +35,21 @@ namespace ArmaBrowserUpdater
                 int pid = 0;
                 if (int.TryParse(args[argIdx + 1], out pid))
                 {
-                    var waitForExsitProcess = Process.GetProcessById(pid);
-                    if (!waitForExsitProcess.WaitForExit(15000))
+                    var waitForExsitProcess = Process.GetProcesses().FirstOrDefault(p => p.Id == pid);
+                    
+                    if (waitForExsitProcess != null && !waitForExsitProcess.WaitForExit(7000))
                     {
-                        waitForExsitProcess.Kill();
+                        try
+                        {
+                            waitForExsitProcess.Kill();
+                        }
+                        catch (Exception )
+                        {
+                            Updated("ERROR_WAITFOREXIT");
+                            return;
+                        }
                     }
-                    if (!waitForExsitProcess.WaitForExit(15000))
+                    if (waitForExsitProcess != null && !waitForExsitProcess.WaitForExit(7000))
                     {
                         Updated("ERROR_WAITFOREXIT");
                         return;
@@ -50,9 +62,15 @@ namespace ArmaBrowserUpdater
             string destinationBackupPath = args[1] + "backup";
             try
             {
+
                 if (Directory.Exists(destinationBackupPath))
                 {
                     Directory.Delete(destinationBackupPath, true);
+                }
+                if (!File.Exists(sourceFile))
+                {
+                    Updated("ERROR_MISSING_PACKAGEFILE");
+                    return;
                 }
                 Directory.Move(destinationPath, destinationBackupPath);
 
@@ -99,21 +117,13 @@ namespace ArmaBrowserUpdater
         private static bool IsUpdated()
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            return File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().FullName), "done"));
+            return File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "done"));
         }
 
         private static void Updated(string state)
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            using (var fileStream = File.Open(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().FullName), "done"), FileMode.OpenOrCreate))
-            using (var bw = new BinaryWriter(fileStream))
-            {
-                fileStream.SetLength(0);
-                if (state != null)
-                {
-                    bw.Write(Encoding.ASCII.GetBytes(state));
-                }
-            }
+            File.WriteAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "done"), state);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -14,7 +15,23 @@ namespace ArmaBrowser.ViewModel
 {
     internal class UpdateAvailableViewModel : ObjectNotify
     {
-        internal async Task CheckForUpdates()
+        private static readonly string TempBaseDirectory;
+        private static readonly string UpdateInfoFilepath;
+        private static readonly string CurrentVersion;
+        private static readonly string AppName;
+        private static readonly string AppInstallDirectoryPath;
+
+        static UpdateAvailableViewModel()
+        {
+            var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
+            AppInstallDirectoryPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            AppName = name.Name; 
+            CurrentVersion = name.Version.ToString();
+            TempBaseDirectory = Path.Combine(Path.GetTempPath(), "armabrowserupdates");
+            UpdateInfoFilepath = Path.Combine(TempBaseDirectory, "updateinfo.json");
+        }
+
+        internal async Task CheckForNewReleases()
         {
             var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
             var currentVersion = name.Version.ToString();
@@ -46,7 +63,7 @@ namespace ArmaBrowser.ViewModel
                         gitHubReleaseInfo.tag_name.Substring(
                             gitHubReleaseInfo.tag_name.LastIndexOf("_", StringComparison.OrdinalIgnoreCase) + 1);
 
-                    if (new Version(lastGithubVersion) > new Version(currentVersion))
+                    if (IsNewerVersion(lastGithubVersion, currentVersion))
                     {
                         await DownloadUpdateAsync(gitHubReleaseInfo);
                     }
@@ -56,6 +73,58 @@ namespace ArmaBrowser.ViewModel
                     Console.WriteLine(e);
                     throw;
                 }
+        }
+
+        private static bool IsNewerVersion(string newVersion, string currentVersion)
+        {
+            return new Version(newVersion) > new Version(currentVersion);
+        }
+
+        public static bool ExistNewUpdate()
+        {
+            try
+            {
+                if (!File.Exists(UpdateInfoFilepath))
+                    return false;
+                UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>(File.ReadAllText(UpdateInfoFilepath));
+                return IsNewerVersion(updateInfo.version, CurrentVersion) 
+                    && File.Exists(updateInfo.updaterFilepath);
+            }
+            catch (Exception )
+            {
+
+                return false;
+            }
+        }
+
+        public static void RunUpdate()
+        {
+            try
+            {
+                if (!File.Exists(UpdateInfoFilepath))
+                    return ;
+                UpdateInfo updateInfo = JsonConvert.DeserializeObject<UpdateInfo>(File.ReadAllText(UpdateInfoFilepath));
+                if (!IsNewerVersion(updateInfo.version, CurrentVersion))
+                    return;
+                if (File.Exists(updateInfo.updaterFilepath)
+                    && File.Exists(updateInfo.updaterFilepath)
+                    && File.Exists(Path.Combine(TempBaseDirectory, updateInfo.packageFilepath)))
+                {
+                    ProcessStartInfo ps =
+                        new ProcessStartInfo(updateInfo.updaterFilepath, $"{updateInfo.packageFilepath} {AppInstallDirectoryPath} --wait-exit-pid {Process.GetCurrentProcess().Id}")
+                        {
+                             UseShellExecute = false,
+                             CreateNoWindow = false,
+                             WorkingDirectory = TempBaseDirectory
+                        };
+                    Process.Start(ps);
+                    Environment.Exit(0);
+                }
+            }
+            catch (Exception)
+            {
+                // ignore all
+            }
         }
 
         private async Task DownloadUpdateAsync(GitHubReleaseInfo gitHubReleaseInfo)
@@ -69,22 +138,19 @@ namespace ArmaBrowser.ViewModel
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(uri);
-                    var name = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
-                    var currentVersion = name.Version.ToString();
-                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name.Name, currentVersion));
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(AppName, CurrentVersion));
                     client.DefaultRequestHeaders.Accept.Clear();
 
                     using (var response = await client.GetAsync(uri))
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            var tempArchiveDirectory = Path.Combine(Path.GetTempPath(), "armabrowserupdates",
-                                gitHubReleaseInfo.tag_name);
+                            string tempArchiveDirectory = Path.Combine(TempBaseDirectory, gitHubReleaseInfo.tag_name);
+                            string relativeArchiveFilePath = Path.Combine(gitHubReleaseInfo.tag_name, client.BaseAddress.Segments.Last());
+                            string tempArchiveFileName = Path.Combine(TempBaseDirectory, relativeArchiveFilePath);
+
                             Directory.CreateDirectory(tempArchiveDirectory);
-                            var tempArchiveFileName =
-                                Path.Combine(tempArchiveDirectory, client.BaseAddress.Segments.Last());
-                            using (var fileStream =
-                                File.Open(tempArchiveFileName, FileMode.OpenOrCreate))
+                            using (var fileStream = File.Open(tempArchiveFileName, FileMode.OpenOrCreate))
                             {
                                 fileStream.SetLength(0);
                                 await response.Content.CopyToAsync(fileStream);
@@ -107,14 +173,21 @@ namespace ArmaBrowser.ViewModel
                                 }
                                 else
                                 {
-                                    string binDir =
-                                        Path.GetDirectoryName(Assembly.GetEntryAssembly().GetName().FullName);
-                                    if (binDir != null && File.Exists(Path.Combine(binDir, "ArmaBrowserUpdater.exe")))
+                                    if (AppInstallDirectoryPath != null && File.Exists(Path.Combine(AppInstallDirectoryPath, "ArmaBrowserUpdater.exe")))
                                     {
-                                        File.Copy(Path.Combine(binDir, "ArmaBrowserUpdater.exe"),
+                                        File.Copy(Path.Combine(AppInstallDirectoryPath, "ArmaBrowserUpdater.exe"),
                                             Path.Combine(tempArchiveDirectory, "ArmaBrowserUpdater.exe"), true);
                                     }
                                 }
+                                
+                                UpdateInfo updateInfo = new UpdateInfo
+                                {
+                                    updaterFilepath = Path.Combine(tempArchiveDirectory, "ArmaBrowserUpdater.exe"),
+                                    version = gitHubReleaseInfo.tag_name,
+                                    draft = gitHubReleaseInfo.draft,
+                                    packageFilepath = relativeArchiveFilePath
+                                };
+                                File.WriteAllText(Path.Combine(TempBaseDirectory, "updateinfo.json"), JsonConvert.SerializeObject(updateInfo));
                             }
                         }
                     }
@@ -125,5 +198,16 @@ namespace ArmaBrowser.ViewModel
                 // ignore
             }
         }
+    }
+
+    internal class UpdateInfo
+    {
+        public string updaterFilepath { get; set; }
+
+        public string version { get; set; }
+
+        public string packageFilepath { get; set; }
+
+        public bool draft { get; internal set; }
     }
 }

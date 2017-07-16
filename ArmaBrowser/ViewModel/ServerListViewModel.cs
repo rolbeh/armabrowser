@@ -199,7 +199,7 @@ namespace ArmaBrowser.ViewModel
                 System.IO.Directory.CreateDirectory(ArmaBrowserAddonFolder);
 
             UpdateAvailable = new UpdateAvailableViewModel();
-            UpdateAvailable.CheckForUpdates().Wait(0);
+            UpdateAvailable.CheckForNewReleases().Wait(0);
             
             _version = this.GetType().Assembly.GetName().Version.ToString();
             

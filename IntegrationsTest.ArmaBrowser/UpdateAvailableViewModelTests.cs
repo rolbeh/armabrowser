@@ -19,7 +19,7 @@ namespace IntegrationsTest.ArmaBrowser
             UpdateAvailableViewModel viewModel = new UpdateAvailableViewModel();
 
             // when
-            await viewModel.CheckForUpdates();
+            await viewModel.CheckForNewReleases();
         }
     }
 }
