@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
 using System.Text;
+using ArmaBrowser.ViewModel;
 
 
 namespace ArmaBrowser
@@ -18,6 +19,10 @@ namespace ArmaBrowser
     {
         public App() : base()
         {
+            if (UpdateAvailableViewModel.ExistNewUpdate())
+            {
+                UpdateAvailableViewModel.RunUpdate();
+            }
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
 
