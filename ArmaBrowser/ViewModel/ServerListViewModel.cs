@@ -28,12 +28,12 @@ namespace ArmaBrowser.ViewModel
         private string _selectedEndPoint;
         private bool _runAsAdmin;
         private bool _launchWithoutHost;
-        private IEnumerable<System.Net.IPEndPoint> _lastItems = new System.Net.IPEndPoint[0];
+        private System.Net.IPEndPoint[] _lastItems = new System.Net.IPEndPoint[0];
 
         private System.Threading.CancellationTokenSource _reloadingCts = new System.Threading.CancellationTokenSource();
         
         private bool _isJoining;
-        private string _version;
+        private readonly string _version;
         private int _totalPlayerCount;
 
         #endregion Fields

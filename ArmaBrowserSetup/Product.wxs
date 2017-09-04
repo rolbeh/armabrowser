@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="ArmaBrowserSetup" Language="1033" Version="1.0.0.0" Manufacturer="sonabit" UpgradeCode="a2cb42ee-fc8e-4769-893b-1492393edeec">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
+
+		<Feature Id="ProductFeature" Title="ArmaBrowserSetup" Level="1">
+			<ComponentGroupRef Id="ArmabrowserComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="ArmaBrowserSetup" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ArmabrowserComponents" Directory="INSTALLFOLDER">
+			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+			 <Component Id="ArmabrowserComponent"> 
+		      <File Source="$(var.ArmaBrowser.TargetDir)" Id="ArmaBrowser.exe" />
+			 </Component> 
+		</ComponentGroup>
+	</Fragment>
+</Wix>

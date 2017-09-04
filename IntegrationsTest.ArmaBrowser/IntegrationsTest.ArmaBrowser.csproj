@@ -57,6 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EncodingSteamExtensionsTests.cs" />
     <Compile Include="ServerQueryRepositorySteamTests.cs" />
+    <Compile Include="ServerRepositoryTests.cs" />
     <Compile Include="UpdateAvailableViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>

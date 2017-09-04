@@ -299,7 +299,7 @@
                     <ItemsControl Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="20"  Height="145" Opacity="0.7"
                                   IsHitTestVisible="False"
                                   ItemsSource="{Binding ReloadContexts, Mode=OneWay}" 
-                                  ItemTemplate="{DynamicResource LoadingServerListContextDataTemplate}" >
+                                  ItemTemplate="{StaticResource LoadingServerListContextDataTemplate}" >
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />

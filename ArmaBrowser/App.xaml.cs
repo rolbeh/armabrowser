@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
-using System.Text;
 using ArmaBrowser.ViewModel;
 
 
@@ -15,13 +9,13 @@ namespace ArmaBrowser
     /// <summary>
     /// Interaktionslogik für "App.xaml"
     /// </summary>
-    partial class App : Application
+    partial class App
     {
-        public App() : base()
+        public App()
         {
             if (UpdateAvailableViewModel.ExistNewUpdate())
             {
-                UpdateAvailableViewModel.RunUpdate();
+                //UpdateAvailableViewModel.RunUpdate();
             }
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -73,8 +67,7 @@ namespace ArmaBrowser
             }
             catch 
             {
-                
-                
+                // ignore
             }
             
         }

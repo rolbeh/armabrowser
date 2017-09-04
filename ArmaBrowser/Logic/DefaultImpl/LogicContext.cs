@@ -31,12 +31,12 @@ namespace ArmaBrowser.Logic
         public void LookForArmaPath()
         {
             _armaPath = _defaultDataRepository.GetArma3Folder();
-            OnPropertyChanged("ArmaPath");
+            OnPropertyChanged(nameof(ArmaPath));
             _armaVersion = null;
-            OnPropertyChanged("ArmaVersion");
+            OnPropertyChanged(nameof(ArmaVersion));
         }
 
-        public void ReloadServerItems(IEnumerable<IPEndPoint> lastAddresses, CancellationToken cancellationToken)
+        public void ReloadServerItems(IPEndPoint[] lastAddresses, CancellationToken cancellationToken)
         {
             var dest = ServerItems;
             var recently = dest.Where(srv => srv.LastPlayed.HasValue).ToArray();
@@ -44,7 +44,7 @@ namespace ArmaBrowser.Logic
 
             try
             {
-                UiTask.Run(() => dest.Clear(), cancellationToken).Wait(cancellationToken);
+                UiTask.Run(dest.Clear, cancellationToken: cancellationToken).Wait(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -61,7 +61,7 @@ namespace ArmaBrowser.Logic
 
 
             _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
-            if (lastAddresses.Count() > 0)
+            if (lastAddresses.Length > 0)
             {
                 var last = _serverIPListe.Join(lastAddresses,
                     o => (object) o,
@@ -120,7 +120,7 @@ namespace ArmaBrowser.Logic
             var dest = ServerItems;
             try
             {
-                UiTask.Run(() => dest.Clear(), cancellationToken).Wait(cancellationToken);
+                UiTask.Run(dest.Clear, cancellationToken).Wait(cancellationToken);
             }
 
             catch (OperationCanceledException)
@@ -289,7 +289,7 @@ namespace ArmaBrowser.Logic
                 state.ProgressValue++;
                 state.Ping = item.Ping;
 
-                var t = UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item);
+                UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item).Wait(0);
             }
             state.Finished();
             Task.Delay(TimeSpan.FromSeconds(0.5))
@@ -300,18 +300,14 @@ namespace ArmaBrowser.Logic
 
         private void OnServerGenerated(ISteamGameServer obj)
         {
-            if (LiveAction != null)
-            {
-                LiveAction(this, new IPEndPoint(obj.Host, obj.QueryPort).ToString());
-            }
+            LiveAction?.Invoke(this, new IPEndPoint(obj.Host, obj.QueryPort).ToString());
         }
 
         private void UpdateServerInfo(IServerItem[] serverItems)
         {
-            foreach (ServerItem serverItem in serverItems)
+            foreach (ServerItem serverItem in serverItems.Cast<ServerItem>())
             {
-                if (serverItem == null) return;
-                if (serverItem.Host == null) return;
+                if (serverItem?.Host == null) return;
                 if (serverItem.QueryPort == 0) return;
 
 
@@ -326,13 +322,17 @@ namespace ArmaBrowser.Logic
                     Debug.WriteLine(ex);
                 }
                 if (dataItem == null)
+                {
+                    serverItem.Ping = 999; 
                     continue;
+                }
 
                 UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
+                //AssignProperties(serverItem, dataItem);
             }
         }
 
-        private void AssignProperties(ServerItem item, ISteamGameServer vo)
+        private static void AssignProperties(ServerItem item, ISteamGameServer vo)
         {
             var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);

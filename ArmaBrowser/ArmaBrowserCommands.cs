@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
-using ArmaBrowser.Data.DefaultImpl.Helper;
 using ArmaBrowser.Logic;
 using ArmaBrowser.Views.Controls;
 

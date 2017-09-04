@@ -189,6 +189,7 @@
     </Page>
     <Resource Include="Img\recently16.png" />
     <Resource Include="Img\cert24.png" />
+    <Compile Include="PingStringConverterValueConverter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

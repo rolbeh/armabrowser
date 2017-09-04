@@ -6,8 +6,6 @@ namespace ArmaBrowser.Data
 {
     interface IServerRepository
     {
-        IPEndPoint[] GetServerEndPoints();
-
         ISteamGameServer[] GetServerList(Action<ISteamGameServer> itemGenerated = null);
 
         ISteamGameServer GetServerInfo(IPEndPoint gameServerQueryEndpoint);

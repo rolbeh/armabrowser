@@ -11,11 +11,6 @@ namespace ArmaBrowser.Data.DefaultImpl
         
         #region IServerRepository
 
-        public IPEndPoint[] GetServerEndPoints()
-        {
-            throw new NotSupportedException();
-        }
-
         public ISteamGameServer[] GetServerList(Action<ISteamGameServer> itemGenerated)
         {
             // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
