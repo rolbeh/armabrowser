@@ -28,6 +28,11 @@ namespace ArmaBrowser.Logic
             //_defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
         }
 
+        public LogicContext(ModInstallPath[] modFolders) : this()
+        {
+            this._modFolders = modFolders;
+        }
+
         public void LookForArmaPath()
         {
             _armaPath = _defaultDataRepository.GetArma3Folder();
@@ -388,11 +393,13 @@ namespace ArmaBrowser.Logic
                     Path.DirectorySeparatorChar + "Arma 3" + Path.DirectorySeparatorChar, true);
 
             await
-                ReloadAddonsAsync(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
-                        Environment.SpecialFolderOption.DoNotVerify) + Path.DirectorySeparatorChar + @"ArmaBrowser" +
-                    Path.DirectorySeparatorChar + "Arma 3" + Path.DirectorySeparatorChar + "Addons", false);
-            
+                ReloadAddonsAsync(this.ArmaPath + Path.DirectorySeparatorChar + "!Workshop" + Path.DirectorySeparatorChar, false);
+
+            foreach (var modInstallPath in this._modFolders)
+            {
+                await ReloadAddonsAsync(modInstallPath.Path, modInstallPath.IsDefault);
+            }
+        
             AddonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray()).Wait(0);
         }
 
@@ -609,6 +616,7 @@ namespace ArmaBrowser.Logic
         private string _armaPath;
         private string _armaVersion;
         private ISteamGameServer[] _serverIPListe;
+        private readonly ModInstallPath[] _modFolders;
 
         public event EventHandler<string> LiveAction;
 

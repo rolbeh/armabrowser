@@ -189,7 +189,14 @@ namespace ArmaBrowser.ViewModel
                     System.IO.Path.DirectorySeparatorChar + "Arma 3" + System.IO.Path.DirectorySeparatorChar;
             }
         }
-
+        
+        public string Arma3SteamAddonFolder
+        {
+            get
+            {
+                return ArmaPath + System.IO.Path.DirectorySeparatorChar + "!Workshop" + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
 
         #endregion
 
@@ -204,7 +211,12 @@ namespace ArmaBrowser.ViewModel
             _version = this.GetType().Assembly.GetName().Version.ToString();
             
             UiTask.Initialize();
-            _context = new LogicContext();
+            ModInstallPath[] modFolders =
+            {
+                new ModInstallPath(ArmaBrowserAddonFolder, false),
+                new ModInstallPath(Arma3UserAddonFolder, false)
+            };
+            _context = new LogicContext(modFolders);
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
 
             _context.ServerItems.CollectionChanged += _serverItems_CollectionChanged;           
@@ -482,6 +494,9 @@ namespace ArmaBrowser.ViewModel
 
         }
 
+        /// <summary>
+        /// Steam install folder of Arma3
+        /// </summary>
         public string ArmaPath
         {
             get

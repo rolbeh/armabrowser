@@ -521,6 +521,7 @@
                             <MenuItem Header="Open install folder">
                                 <MenuItem Header="Armabrowser user addon folder" Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=ArmaBrowserAddonFolder}"/>
                                 <MenuItem Header="Arma 3 user addon folder" Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=Arma3UserAddonFolder}"/>
+                                <MenuItem Header="Arma 3 Steam addon folder"  Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=Arma3SteamAddonFolder}"/>
                                 <MenuItem Header="Arma 3 Steam folder"  Command="armaBrowser:ArmaBrowserCommands.OpenAddonFolder" CommandParameter="{Binding Path=ArmaPath}"/>
                             </MenuItem>
                             <MenuItem Header="Refresh" Command="armaBrowser:ArmaBrowserCommands.RefreshAddons" />
