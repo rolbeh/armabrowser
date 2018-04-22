@@ -65,7 +65,7 @@ namespace ArmaBrowser.Logic
                 }, UiTask.UiTaskScheduler).Wait(cancellationToken);
 
 
-            _serverIPListe = _defaultServerRepository.GetServerList(OnServerGenerated);
+            _serverIPListe = _defaultServerRepository.GetServerList().ToArray();
             if (lastAddresses.Length > 0)
             {
                 var last = _serverIPListe.Join(lastAddresses,
@@ -266,14 +266,7 @@ namespace ArmaBrowser.Logic
                     break;
 
                 var serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
-
-                if (LiveAction != null)
-                {
-                    LiveAction(this,
-                        string.Format("{2,3} {0} {1}", BitConverter.ToString(dataItem.Host.GetAddressBytes()),
-                            BitConverter.ToString(BitConverter.GetBytes(dataItem.QueryPort)), threadId));
-                }
-
+                
                 var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
 
                 if (state.Token.IsCancellationRequested)
@@ -302,12 +295,7 @@ namespace ArmaBrowser.Logic
                 .Wait();
             //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
-
-        private void OnServerGenerated(ISteamGameServer obj)
-        {
-            LiveAction?.Invoke(this, new IPEndPoint(obj.Host, obj.QueryPort).ToString());
-        }
-
+        
         private void UpdateServerInfo(IServerItem[] serverItems)
         {
             foreach (ServerItem serverItem in serverItems.Cast<ServerItem>())
@@ -611,14 +599,12 @@ namespace ArmaBrowser.Logic
         private readonly IArma3DataRepository _defaultDataRepository;
         private ObservableCollection<IPEndPoint> _favoritServerEndPoints;
         private ObservableCollection<IAddon> _addons;
-        private readonly ServerRepositorySteam _defaultServerRepository;
+        private readonly Arma3ServerRepositorySteam _defaultServerRepository;
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
         private string _armaPath;
         private string _armaVersion;
         private ISteamGameServer[] _serverIPListe;
         private readonly ModInstallPath[] _modFolders;
-
-        public event EventHandler<string> LiveAction;
 
         #endregion Fields
 

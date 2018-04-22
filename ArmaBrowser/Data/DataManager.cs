@@ -9,9 +9,9 @@ namespace ArmaBrowser.Data
             return new DataRepository();
         }
 
-        public static ServerRepositorySteam CreateNewServerRepository()
+        public static Arma3ServerRepositorySteam CreateNewServerRepository()
         {
-            return new ServerRepositorySteam();
+            return new Arma3ServerRepositorySteam();
         }
     }
 }

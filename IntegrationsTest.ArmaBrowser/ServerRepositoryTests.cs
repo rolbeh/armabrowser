@@ -1,4 +1,5 @@
-﻿using ArmaBrowser.Data;
+﻿using System.Linq;
+using ArmaBrowser.Data;
 using ArmaBrowser.Data.DefaultImpl;
 using Magic.Steam;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,10 +13,10 @@ namespace IntegrationsTest.ArmaBrowser
         public void GetServerListTest()
         {
             //given 
-            IServerRepository serverRepository = new ServerRepositorySteam();
+            IServerRepository serverRepository = new Arma3ServerRepositorySteam();
 
             // when 
-            ISteamGameServer[] serverList = serverRepository.GetServerList();
+            ISteamGameServer[] serverList = serverRepository.GetServerList().ToArray();
 
             // Then
 

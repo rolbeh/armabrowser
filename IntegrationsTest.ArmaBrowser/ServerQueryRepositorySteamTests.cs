@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace IntegrationsTest.ArmaBrowser
 {
     [TestClass]
+    [DeploymentItem("TestData", "TestData")]
     public class ServerQueryRepositorySteamTests
     {
         public TestContext TestContext { get; set; }
