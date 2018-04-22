@@ -24,8 +24,6 @@ namespace ArmaBrowser.Logic
             _defaultDataRepository = DataManager.CreateNewDataRepository();
 
             _defaultServerRepository = DataManager.CreateNewServerRepository();
-
-            //_defaultBrowserServerRepository = Data.DataManager.CreateNewArmaBrowserServerRepository();
         }
 
         public LogicContext(ModInstallPath[] modFolders) : this()
@@ -72,27 +70,41 @@ namespace ArmaBrowser.Logic
                 return;
 
             var maxParallelCount = Environment.ProcessorCount*4;
-
-            var _serverIPListe = allServer.ToArray();
-            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (maxParallelCount * 1d)));
-
-            if (_serverIPListe.Length == 0) return;
-
-            var waitArray = new WaitHandle[maxParallelCount + 1];
-
-            for (var i = 0; i < maxParallelCount; i++)
+            var maxblockCount = 300;
+            List<WaitHandle> waitArray = new List<WaitHandle>();
+            List<ISteamGameServer> block = new List<ISteamGameServer>();
+            foreach (var steamGameServer in allServer)
             {
-                LoadingServerListContext threadContext = NewQueryThread(this.ServerItems, cancellationToken, _serverIPListe.Skip(blockCount * i).Take(blockCount).ToArray());
-                waitArray[i] = threadContext.Reset;
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+                block.Add(steamGameServer);
+                if (block.Count >= maxblockCount)
+                {
+                    EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, waitArray);
+                }
+
+            }
+            if (block.Any())
+            {
+                EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, waitArray);
             }
 
-            // for the rest a single thread
-            {
-                var threadContext = NewQueryThread(this.ServerItems, cancellationToken, _serverIPListe.Skip(blockCount * waitArray.Length - 1).Take(blockCount).ToArray());
-                waitArray[waitArray.Length - 1] = threadContext.Reset;
-            }
+            WaitHandle.WaitAll(waitArray.ToArray());
+        }
 
-            WaitHandle.WaitAll(waitArray);
+        private void EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount, List<ISteamGameServer> block,
+            List<WaitHandle> waitArray)
+        {
+            while (this.ReloadThreads.Count >= maxParallelCount)
+            {
+                Task.Delay(150, cancellationToken).Wait(cancellationToken);
+            }
+            lock (this.ReloadThreads)
+            {
+                var threadContext = NewQueryThread(this.ServerItems, cancellationToken, block.ToArray());
+                block.Clear();
+                waitArray.Add(threadContext.Reset);
+            }
         }
 
         public void ReloadServerItem(IPEndPoint iPEndPoint, CancellationToken cancellationToken)
@@ -250,7 +262,10 @@ namespace ArmaBrowser.Logic
                 Ips = ips,
                 Token = token
             };
-            UiTask.Run(ReloadThreads.Add, threadContext).Wait(0);
+            lock (this._reloadThreadsLock)
+            {
+                UiTask.Run(ReloadThreads.Add, threadContext).Wait(100);
+            }
             thread.Start(threadContext);
             return threadContext;
         }
@@ -273,7 +288,14 @@ namespace ArmaBrowser.Logic
             }
             state.Finished();
             Task.Delay(TimeSpan.FromSeconds(0.5))
-                .ContinueWith((t,ctx) => ReloadThreads.Remove((LoadingServerListContext)ctx), state, UiTask.UiTaskScheduler)
+                .ContinueWith((t, ctx) =>
+                    {
+                        lock (this._reloadThreadsLock)
+                        {
+                            ReloadThreads.Remove((LoadingServerListContext)ctx);
+                        }
+                    }
+                , state, UiTask.UiTaskScheduler)
                 .Wait();
             //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
@@ -565,6 +587,7 @@ namespace ArmaBrowser.Logic
         private string _armaPath;
         private string _armaVersion;
         private readonly ModInstallPath[] _modFolders;
+        private readonly object _reloadThreadsLock = new object();
 
         #endregion Fields
 
