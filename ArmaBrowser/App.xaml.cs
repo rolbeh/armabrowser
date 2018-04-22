@@ -15,7 +15,7 @@ namespace ArmaBrowser
         {
             if (UpdateAvailableViewModel.ExistNewUpdate())
             {
-                //UpdateAvailableViewModel.RunUpdate();
+                UpdateAvailableViewModel.RunUpdate();
             }
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
