@@ -43,13 +43,13 @@ namespace ArmaBrowser.Logic
 
         public void ReloadServerItems(IPEndPoint[] lastAddresses, CancellationToken cancellationToken)
         {
-            var dest = ServerItems;
-            var recently = dest.Where(srv => srv.LastPlayed.HasValue).ToArray();
-            //.Select(srv => new System.Net.IPEndPoint(srv.Host, srv.Port))
+            var recently = this.ServerItems.Where(srv => srv.LastPlayed.HasValue)
+                .Select(a => new Data.DefaultImpl.ServerItem { Host = a.Host, QueryPort = a.QueryPort })
+                .ToArray();
 
             try
             {
-                UiTask.Run(dest.Clear, cancellationToken: cancellationToken).Wait(cancellationToken);
+                UiTask.Run(this.ServerItems.Clear, cancellationToken: cancellationToken).Wait(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -57,63 +57,38 @@ namespace ArmaBrowser.Logic
                 return;
             }
 
-            RefreshServerInfoAsync(recently)
-                .ContinueWith(t =>
-                {
-                    foreach (var recentlyItem in recently)
-                        dest.Add(recentlyItem);
-                }, UiTask.UiTaskScheduler).Wait(cancellationToken);
+            ISteamGameServer[] lastServer = lastAddresses
+                .Select(a => (ISteamGameServer) new Data.DefaultImpl.ServerItem { Host = a.Address, QueryPort = a.Port})
+                .ToArray();
 
+            IEnumerable<ISteamGameServer> discoveredServer = _defaultServerRepository.GetServerList()
+                                                                    .Except(lastServer, ServerQueryAddressComparer.Default)
+                                                                    .Except(recently, ServerQueryAddressComparer.Default);
 
-            _serverIPListe = _defaultServerRepository.GetServerList().ToArray();
-            if (lastAddresses.Length > 0)
-            {
-                var last = _serverIPListe.Join(lastAddresses,
-                    o => (object) o,
-                    i => (object) i,
-                    (o, i) => o,
-                    _comp.Default).ToArray();
-
-                //die EndPoints aus dem Argument lastAddresses aus der Gesamtliste zunächst entfernen
-                _serverIPListe = _serverIPListe.Except(last).ToArray();
-
-                // die EndPoints aus dem Argument lastAddresses vorn einreihen
-                _serverIPListe = last.Union(_serverIPListe).ToArray();
-            }
-
-            if (recently.Length > 0)
-            {
-                var recentlyData = _serverIPListe.Join(recently,
-                    o => (object) o,
-                    i => i,
-                    (o, i) => o,
-                    _comp.Default).ToArray();
-
-                _serverIPListe = _serverIPListe.Except(recentlyData).ToArray();
-            }
+            var allServer = recently.Union(lastServer.Except(recently, ServerQueryAddressComparer.Default))
+                .Union(discoveredServer);
 
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            var token = cancellationToken;
+            var maxParallelCount = Environment.ProcessorCount*4;
 
-            var threadCount = Environment.ProcessorCount*4;
-
-            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length/(threadCount*1d)));
+            var _serverIPListe = allServer.ToArray();
+            var blockCount = Convert.ToInt32(Math.Floor(_serverIPListe.Length / (maxParallelCount * 1d)));
 
             if (_serverIPListe.Length == 0) return;
 
-            var waitArray = new WaitHandle[threadCount + 1];
+            var waitArray = new WaitHandle[maxParallelCount + 1];
 
-            for (var i = 0; i < threadCount; i++)
+            for (var i = 0; i < maxParallelCount; i++)
             {
-                LoadingServerListContext threadContext = NewThread(dest, token, blockCount, i);
+                LoadingServerListContext threadContext = NewQueryThread(this.ServerItems, cancellationToken, _serverIPListe.Skip(blockCount * i).Take(blockCount).ToArray());
                 waitArray[i] = threadContext.Reset;
             }
 
             // for the rest a single thread
             {
-                var threadContext = NewThread(dest, token, blockCount, waitArray.Length - 1);
+                var threadContext = NewQueryThread(this.ServerItems, cancellationToken, _serverIPListe.Skip(blockCount * waitArray.Length - 1).Take(blockCount).ToArray());
                 waitArray[waitArray.Length - 1] = threadContext.Reset;
             }
 
@@ -225,79 +200,9 @@ namespace ArmaBrowser.Logic
         }
 
 
-        public void RefreshServerInfo(IServerItem[] items)
+        public void RefreshServerInfo(IServerItem[] serverItems)
         {
-            if (items == null) return;
-            RefreshServerInfoAsync(items).Wait();
-        }
-
-        public async Task RefreshServerInfoAsync(IServerItem[] items)
-        {
-            await Task.Run(() => UpdateServerInfo(items));
-        }
-
-        private LoadingServerListContext NewThread(Collection<IServerItem> dest, CancellationToken token, int blockCount,
-            int i)
-        {
-            var thread = new Thread(LoadingServerList)
-            {
-                Name = "UDP" + (i + 1),
-                IsBackground = true,
-                Priority = ThreadPriority.Lowest
-            };
-            var threadContext = new LoadingServerListContext
-            {
-                Dest = dest,
-                Ips = _serverIPListe.Skip(blockCount*i).Take(blockCount).ToArray(),
-                Token = token
-            };
-            UiTask.Run(ReloadThreads.Add, threadContext).Wait(0);
-            thread.Start(threadContext);
-            return threadContext;
-        }
-
-        private void LoadingServerList(object loadingServerListContext)
-        {
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-            var state = (LoadingServerListContext) loadingServerListContext;
-            foreach (var dataItem in state.Ips)
-            {
-                if (state.Token.IsCancellationRequested)
-                    break;
-
-                var serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
-                
-                var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
-
-                if (state.Token.IsCancellationRequested)
-                    break;
-
-                var item = new ServerItem();
-                if (vo != null)
-                {
-                    AssignProperties(item, vo);
-                }
-                else
-                {
-                    item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
-                    item.Host = serverQueryEndpoint.Address;
-                    item.QueryPort = serverQueryEndpoint.Port;
-                }
-
-                state.ProgressValue++;
-                state.Ping = item.Ping;
-
-                UiTask.Run((dest2, item2) => dest2.Add(item2), state.Dest, item).Wait(0);
-            }
-            state.Finished();
-            Task.Delay(TimeSpan.FromSeconds(0.5))
-                .ContinueWith((t,ctx) => ReloadThreads.Remove((LoadingServerListContext)ctx), state, UiTask.UiTaskScheduler)
-                .Wait();
-            //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
-        }
-        
-        private void UpdateServerInfo(IServerItem[] serverItems)
-        {
+            if (serverItems == null) return;
             foreach (ServerItem serverItem in serverItems.Cast<ServerItem>())
             {
                 if (serverItem?.Host == null) return;
@@ -316,13 +221,88 @@ namespace ArmaBrowser.Logic
                 }
                 if (dataItem == null)
                 {
-                    serverItem.Ping = 999; 
+                    serverItem.Ping = 999;
                     continue;
                 }
 
                 UiTask.Run(AssignProperties, serverItem, dataItem).Wait();
                 //AssignProperties(serverItem, dataItem);
             }
+        }
+
+        public async Task RefreshServerInfoAsync(IServerItem[] items)
+        {
+            await Task.Run(() => RefreshServerInfo(items));
+        }
+
+        private LoadingServerListContext NewQueryThread(Collection<IServerItem> dest, CancellationToken token, 
+            ISteamGameServer[] ips)
+        {
+            var thread = new Thread(LoadingServerList)
+            {
+                Name = "UDP " + ReloadThreads.Count + 1,
+                IsBackground = true,
+                Priority = ThreadPriority.Lowest
+            };
+            var threadContext = new LoadingServerListContext
+            {
+                Dest = dest,
+                Ips = ips,
+                Token = token
+            };
+            UiTask.Run(ReloadThreads.Add, threadContext).Wait(0);
+            thread.Start(threadContext);
+            return threadContext;
+        }
+
+        private void LoadingServerList(object loadingServerListContext)
+        {
+            var threadId = Thread.CurrentThread.ManagedThreadId;
+            var state = (LoadingServerListContext) loadingServerListContext;
+            foreach (var dataItem in state.Ips)
+            {
+                if (state.Token.IsCancellationRequested)
+                    break;
+
+                ServerItem item = AddGameServer(dataItem, state.Dest, state.Token).Result;
+                if (item != null)
+                {
+                    state.ProgressValue++;
+                    state.Ping = item.Ping;
+                }
+            }
+            state.Finished();
+            Task.Delay(TimeSpan.FromSeconds(0.5))
+                .ContinueWith((t,ctx) => ReloadThreads.Remove((LoadingServerListContext)ctx), state, UiTask.UiTaskScheduler)
+                .Wait();
+            //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
+        }
+
+        private async Task<ServerItem> AddGameServer(ISteamGameServer dataItem, ICollection<IServerItem> dest, CancellationToken cancellationToken)
+        {
+            var serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
+
+            var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            var item = new ServerItem();
+            if (vo != null)
+            {
+                AssignProperties(item, vo);
+            }
+            else
+            {
+                item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
+                item.Host = serverQueryEndpoint.Address;
+                item.QueryPort = serverQueryEndpoint.Port;
+            }
+
+            await UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
+            return item;
         }
 
         private static void AssignProperties(ServerItem item, ISteamGameServer vo)
@@ -423,8 +403,11 @@ namespace ArmaBrowser.Logic
             //Todo Move to ViewModel Code
             var t = UiTask.Run(() =>
             {
-                Application.Current.MainWindow.WindowState = WindowState.Normal;
-                Application.Current.MainWindow.Activate();
+                if (Application.Current.MainWindow != null)
+                {
+                    Application.Current.MainWindow.WindowState = WindowState.Normal;
+                    Application.Current.MainWindow.Activate();
+                }
             });
         }
 
@@ -554,43 +537,21 @@ namespace ArmaBrowser.Logic
             } //);
         }
 
-        private class _comp : IEqualityComparer<object>
+        private class ServerQueryAddressComparer : IEqualityComparer<ISteamGameServer>
         {
-            internal static readonly _comp Default = new _comp();
+            internal static readonly ServerQueryAddressComparer Default = new ServerQueryAddressComparer();
 
-            bool IEqualityComparer<object>.Equals(object x, object y)
+            bool IEqualityComparer<ISteamGameServer>.Equals(ISteamGameServer x, ISteamGameServer y)
             {
                 if (x == null || y == null)
                     return false;
 
-                if (x is IServerQueryAddress)
-                {
-                    var addr = (IServerQueryAddress) x;
-                    var xAddr = (IServerQueryAddress) y;
-
-                    return addr.Host + " " + addr.QueryPort == xAddr.Host + " " + xAddr.QueryPort;
-                }
-
-
-                var ip = (IPEndPoint) x;
-                var server = (IServerQueryAddress) y;
-
-                return ip.Address + " " + ip.Port == server.Host + " " + server.QueryPort;
+                return x.Host + " " + x.QueryPort == y.Host + " " + y.QueryPort;
             }
 
-            public int GetHashCode(object obj)
+            public int GetHashCode(ISteamGameServer obj)
             {
-                var ip = obj as IPEndPoint;
-                if (ip != null)
-                {
-                    return (ip.Address + " " + ip.Port).GetHashCode();
-                }
-                var server = obj as IServerQueryAddress;
-                if (server != null)
-                {
-                    return (server.Host + " " + server.QueryPort).GetHashCode();
-                }
-                return obj.GetHashCode();
+                return (obj.Host + " " + obj.QueryPort).GetHashCode();
             }
         }
 
@@ -603,7 +564,6 @@ namespace ArmaBrowser.Logic
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
         private string _armaPath;
         private string _armaVersion;
-        private ISteamGameServer[] _serverIPListe;
         private readonly ModInstallPath[] _modFolders;
 
         #endregion Fields

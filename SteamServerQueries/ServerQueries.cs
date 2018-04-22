@@ -152,6 +152,7 @@ namespace Magic.Steam
                             
                             if (addressBytes.All(b => b == 0))
                             {
+                                Debug.WriteLine("finished GameServerQueryEndPoints successfull");
                                 break;
                             }
                         }
