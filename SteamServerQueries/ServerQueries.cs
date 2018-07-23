@@ -25,13 +25,13 @@ namespace Magic.Steam
         static readonly Encoding CharEncoding = Encoding.GetEncoding(1252);
 
         [PublicAPI]
-        public static IEnumerable<GameServerQueryEndPoint> GetGameServers(
+        public static IEnumerable<GameServerQueryEndPoint> DiscoverQueryEndPoints(
             [CanBeNull] Action<GameServerQueryOption> optionAction)
         {
-            return GetGameServersUndistinct(optionAction).Distinct(new SteamGameServerQueryEndPointComparer());
+            return DiscoverQueryEndPointsIndistinct(optionAction).Distinct(new SteamGameServerQueryEndPointComparer());
         }
 
-        private static IEnumerable<GameServerQueryEndPoint> GetGameServersUndistinct([CanBeNull]Action<GameServerQueryOption> optionAction)
+        private static IEnumerable<GameServerQueryEndPoint> DiscoverQueryEndPointsIndistinct([CanBeNull]Action<GameServerQueryOption> optionAction)
         {
             var option   = new GameServerQueryOption();
             optionAction?.Invoke(option);

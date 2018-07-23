@@ -12,7 +12,7 @@ namespace QuerySteamGameServer
     {
         static void Main(string[] args)
         {
-            IEnumerable<GameServerQueryEndPoint> steamGameServerQueryEndPoints = ServerQueries.GetGameServers(option =>
+            IEnumerable<GameServerQueryEndPoint> steamGameServerQueryEndPoints = ServerQueries.DiscoverQueryEndPoints(option =>
             {
                 //option.Filter.GameDir = filter;
                 option.Filter.Appid = "107410";

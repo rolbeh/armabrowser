@@ -16,7 +16,7 @@ namespace ArmaBrowser.Data.DefaultImpl
         {
             // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
             
-            return ServerQueries.GetGameServers(option => option.Filter.GameDir = SteamGameNameFilter)
+            return ServerQueries.DiscoverQueryEndPoints(option => option.Filter.GameDir = SteamGameNameFilter)
                 .Select(ep => (ISteamGameServer)new ServerItem{Host =  ep.Host, QueryPort = ep.QueryPort} );
         }
 
