@@ -69,7 +69,7 @@ namespace ArmaBrowser.Logic
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            var maxParallelCount = Environment.ProcessorCount*4;
+            var maxParallelCount = Environment.ProcessorCount*2;
             var maxblockCount = 300;
             List<WaitHandle> waitArray = new List<WaitHandle>();
             List<ISteamGameServer> block = new List<ISteamGameServer>();
