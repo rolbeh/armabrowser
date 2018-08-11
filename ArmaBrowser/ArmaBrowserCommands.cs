@@ -121,15 +121,15 @@ namespace ArmaBrowser
 
         private static void MarkAsFavorite_OnExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var dataContext = e.Parameter as ViewModel.ServerListViewModel;
-            if (dataContext != null)
+            if (e.Parameter is ViewModel.ServerListViewModel dataContext )
             {
                 var item = dataContext.SelectedServerItem;
                 if (item != null)
                 {
                     item.IsFavorite = !item.IsFavorite;
-                    dataContext.SaveFavorits();
+                    dataContext.SaveFavorits(item);
                 }
+                return;
             }
         }
     }

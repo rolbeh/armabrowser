@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Diagnostics;
+using ArmaBrowser.Logic;
+using ArmaBrowser.Logic.DefaultImpl;
 using ArmaBrowser.ViewModel;
 
 
@@ -39,6 +41,9 @@ namespace ArmaBrowser
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            ServiceHub.Instance.Set(new AppPathService());
+            ServiceHub.Instance.Set(new FavoriteService());
+
             MainWindow = new MainWindow();
             MainWindow.Show();
 

@@ -55,7 +55,7 @@
                             <Style TargetType="Image">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=GroupName}" Value="Recently">
+                                    <DataTrigger Binding="{Binding Path=GroupName, Mode=OneWay}" Value="Recently">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -181,6 +181,22 @@
                     <Setter Property="Foreground" Value="WhiteSmoke"/>
                 </Style>
             </DataGrid.ColumnHeaderStyle>
+            <DataGrid.GroupStyle>
+                <GroupStyle HidesIfEmpty="True">
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="armaBrowser:ArmaBrowserCommands.MarkAsFavorite" CommandParameter="{Binding Path=.}"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
         </DataGrid>
     </Grid>
 </UserControl>

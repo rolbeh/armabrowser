@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using ArmaBrowser.Data;
 using ArmaBrowser.Data.DefaultImpl;
@@ -80,20 +82,20 @@ namespace ArmaBrowser.Logic
                 block.Add(steamGameServer);
                 if (block.Count >= maxblockCount)
                 {
-                    EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, waitArray);
+                   waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block));
                 }
 
             }
             if (block.Any())
             {
-                EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, waitArray);
+                waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block));
             }
 
             WaitHandle.WaitAll(waitArray.ToArray());
+            
         }
 
-        private void EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount, List<ISteamGameServer> block,
-            List<WaitHandle> waitArray)
+        private WaitHandle EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount, List<ISteamGameServer> block)
         {
             while (this.ReloadThreads.Count >= maxParallelCount)
             {
@@ -103,7 +105,7 @@ namespace ArmaBrowser.Logic
             {
                 var threadContext = NewQueryThread(this.ServerItems, cancellationToken, block.ToArray());
                 block.Clear();
-                waitArray.Add(threadContext.Reset);
+                return threadContext.Reset;
             }
         }
 
@@ -126,7 +128,7 @@ namespace ArmaBrowser.Logic
                 return;
             var item = new ServerItem();
             AssignProperties(item, vo);
-
+            
             UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item).Wait(0);
         }
 
@@ -449,6 +451,17 @@ namespace ArmaBrowser.Logic
                 result.Add(serverItem);
             }
             return result.ToArray();
+        }
+
+        internal IServerItem[] AddServerItems(IEnumerable<IServerItem> serverItems)
+        {
+            IEnumerable<IServerItem> items = serverItems.ToArray();
+            foreach (var serverItem in items)
+            {
+                ServerItems.Add(serverItem);
+            }
+
+            return items.ToArray();
         }
 
         public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)

@@ -9,7 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;  
+using System.Windows.Data;
+using ArmaBrowser.Logic.DefaultImpl;
 
 namespace ArmaBrowser.ViewModel
 {
@@ -76,8 +77,7 @@ namespace ArmaBrowser.ViewModel
             _serverItemsView.SortDescriptions.Add(new System.ComponentModel.SortDescription { PropertyName = "CurrentPlayerCount", Direction = System.ComponentModel.ListSortDirection.Descending });
 
             // Grouping           
-            if (_serverItemsView.GroupDescriptions != null)
-                _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
+            _serverItemsView.GroupDescriptions.Add(new PropertyGroupDescription("GroupName"));
 
             return _serverItemsView;
         }
@@ -229,11 +229,14 @@ namespace ArmaBrowser.ViewModel
 
             string[] recentlyHosts = Properties.Settings.Default.RecentlyHosts.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Reverse().ToArray();
             IServerItem[] recentlyServerItems = _context.AddServerItems(recentlyHosts);
+            IServerItem[] favoriteServerItems = ServiceHub.Instance.GetService<FavoriteService>().Get();
+            _context.AddServerItems(favoriteServerItems);
+            IServerItem[] serverItems = favoriteServerItems.Union(recentlyServerItems).ToArray();
             foreach (var item in recentlyServerItems)
             {
                 item.LastPlayed = DateTime.Now;
             }
-            var refreshRecentlyServerItemsTask = _context.RefreshServerInfoAsync(recentlyServerItems);
+            var refreshRecentlyServerItemsTask = _context.RefreshServerInfoAsync(serverItems);
             refreshRecentlyServerItemsTask.ContinueWith((t,o) => ServerItemsView.Refresh(), null, TaskScheduler.FromCurrentSynchronizationContext());
             
             Task.Run((Action)EndlessRefreshSelecteItem);
@@ -652,9 +655,16 @@ namespace ArmaBrowser.ViewModel
             Properties.Settings.Default.ArmaPath = _context.ArmaPath;
         }
 
-        internal void SaveFavorits()
+        internal void SaveFavorits(IServerItem item)
         {
-
+            if (item.IsFavorite)
+            {
+                ServiceHub.Instance.GetService<FavoriteService>().Add(item);
+            }
+            else
+            {
+                ServiceHub.Instance.GetService<FavoriteService>().Remove(item);
+            }
         }
 
         internal void StopAll()
