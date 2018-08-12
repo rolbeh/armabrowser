@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -71,10 +70,31 @@ namespace ArmaBrowser.Logic
             if (cancellationToken.IsCancellationRequested)
                 return;
 
+            BufferBlock<IServerItem> buffer = new BufferBlock<IServerItem>();
+            BatchBlock<IServerItem> batchBlock = new BatchBlock<IServerItem>(10, new GroupingDataflowBlockOptions()
+            {
+                CancellationToken = cancellationToken
+            });
+            buffer.LinkTo(batchBlock, new DataflowLinkOptions { PropagateCompletion = true });
+            ActionBlock<IServerItem[]> insertActionBlock = new ActionBlock<IServerItem[]>(
+                action: items =>
+                {
+                    items.Each(i => this.ServerItems.Add(i));
+                },
+                dataflowBlockOptions: new ExecutionDataflowBlockOptions()
+                {
+                    BoundedCapacity = 1,
+                    CancellationToken = cancellationToken,
+                    SingleProducerConstrained = true,
+                    TaskScheduler = UiTask.UiTaskScheduler
+                });
+            batchBlock.LinkTo(insertActionBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
             var maxParallelCount = Environment.ProcessorCount*2;
             var maxblockCount = 300;
             List<WaitHandle> waitArray = new List<WaitHandle>();
             List<ISteamGameServer> block = new List<ISteamGameServer>();
+
             foreach (var steamGameServer in allServer)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -82,28 +102,31 @@ namespace ArmaBrowser.Logic
                 block.Add(steamGameServer);
                 if (block.Count >= maxblockCount)
                 {
-                   waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block));
+                   waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
                 }
 
             }
             if (block.Any())
             {
-                waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block));
+                waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
             }
 
             WaitHandle.WaitAll(waitArray.ToArray());
-            
+            buffer.Complete();
+            batchBlock.Completion.Wait(5000);
+            insertActionBlock.Completion.Wait(5000);
         }
 
-        private WaitHandle EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount, List<ISteamGameServer> block)
+        private WaitHandle EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount,
+            List<ISteamGameServer> block, BufferBlock<IServerItem> buffer)
         {
             while (this.ReloadThreads.Count >= maxParallelCount)
             {
                 Task.Delay(150, cancellationToken).Wait(cancellationToken);
             }
-            lock (this.ReloadThreads)
-            {
-                var threadContext = NewQueryThread(this.ServerItems, cancellationToken, block.ToArray());
+            lock (this.ReloadThreads){
+                
+                var threadContext = NewQueryThread(buffer, cancellationToken, block.ToArray());
                 block.Clear();
                 return threadContext.Reset;
             }
@@ -249,7 +272,7 @@ namespace ArmaBrowser.Logic
             await Task.Run(() => RefreshServerInfo(items));
         }
 
-        private LoadingServerListContext NewQueryThread(Collection<IServerItem> dest, CancellationToken token, 
+        private LoadingServerListContext NewQueryThread(BufferBlock<IServerItem> dest, CancellationToken token, 
             ISteamGameServer[] ips)
         {
             var thread = new Thread(LoadingServerList)
@@ -274,20 +297,27 @@ namespace ArmaBrowser.Logic
 
         private void LoadingServerList(object loadingServerListContext)
         {
-            var threadId = Thread.CurrentThread.ManagedThreadId;
             var state = (LoadingServerListContext) loadingServerListContext;
-            foreach (var dataItem in state.Ips)
-            {
-                if (state.Token.IsCancellationRequested)
-                    break;
 
-                ServerItem item = AddGameServer(dataItem, state.Dest, state.Token).Result;
-                if (item != null)
+            var innerBuffer = new BufferBlock<IServerItem>();
+            using (innerBuffer.LinkTo(state.Dest))
+            {
+                IObserver<IServerItem> asObserver = innerBuffer.AsObserver();
+                foreach (var dataItem in state.Ips)
                 {
-                    state.ProgressValue++;
-                    state.Ping = item.Ping;
+                    if (state.Token.IsCancellationRequested)
+                        break;
+
+                    ServerItem item = AddGameServer(dataItem, asObserver, state.Token).Result;
+                    if (item != null)
+                    {
+                        state.ProgressValue++;
+                        state.Ping = item.Ping;
+                    }
                 }
+                asObserver.OnCompleted();
             }
+
             state.Finished();
             Task.Delay(TimeSpan.FromSeconds(0.5))
                 .ContinueWith((t, ctx) =>
@@ -302,7 +332,7 @@ namespace ArmaBrowser.Logic
             //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
 
-        private async Task<ServerItem> AddGameServer(ISteamGameServer dataItem, ICollection<IServerItem> dest, CancellationToken cancellationToken)
+        private async Task<ServerItem> AddGameServer(ISteamGameServer dataItem, IObserver<IServerItem> dest, CancellationToken cancellationToken)
         {
             var serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
 
@@ -325,7 +355,9 @@ namespace ArmaBrowser.Logic
                 item.QueryPort = serverQueryEndpoint.Port;
             }
 
-            await UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item);
+            dest.OnNext(item);
+            await Task.FromResult(item);
+            //await UiTask.Run((dest2, item2) => dest2.OnNext(item2), dest, item);
             return item;
         }
 
@@ -425,26 +457,25 @@ namespace ArmaBrowser.Logic
         private void ps_Exited(object sender, EventArgs e)
         {
             //Todo Move to ViewModel Code
-            var t = UiTask.Run(() =>
+            UiTask.Run(() =>
             {
                 if (Application.Current.MainWindow != null)
                 {
                     Application.Current.MainWindow.WindowState = WindowState.Normal;
                     Application.Current.MainWindow.Activate();
                 }
-            });
+            }).Wait(0);
         }
 
 
         internal IServerItem[] AddServerItems(IEnumerable<string> hostQueryAddresses)
         {
-            var result = new List<IServerItem>(hostQueryAddresses.Count());
+            var result = new List<IServerItem>();
             foreach (var hostQueryAddress in hostQueryAddresses)
             {
                 var pos = hostQueryAddress.IndexOf(':');
                 var addr = hostQueryAddress.Substring(0, pos);
-                var port = 0;
-                int.TryParse(hostQueryAddress.Substring(pos + 1), out port);
+                int.TryParse(hostQueryAddress.Substring(pos + 1), out var port);
 
                 var serverItem = new ServerItem {Host = IPAddress.Parse(addr), QueryPort = port, Name = addr};
                 ServerItems.Add(serverItem);
@@ -464,24 +495,24 @@ namespace ArmaBrowser.Logic
             return items.ToArray();
         }
 
-        public async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
+        private async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
         {
             return await AddonWebApi.GetAddonInfosAsync(addonKeynames);
         }
 
-        internal void AddAddonUri(IAddon addon, string uri)
-        {
-            //Task.Run(() =>
-            //{
-            //    var webapi = new AddonWebApi();
-            //    webapi.AddAddonDownloadUri(addon,uri);
-            //});
-        }
+        //internal void AddAddonUri(IAddon addon, string uri)
+        //{
+        //    //Task.Run(() =>
+        //    //{
+        //    //    var webapi = new AddonWebApi();
+        //    //    webapi.AddAddonDownloadUri(addon,uri);
+        //    //});
+        //}
 
         internal static async Task UploadAddonAsync(IAddon addon)
         {
-                IEnumerable<RestAddonInfoResult> infos = await AddonWebApi.GetAddonInfosAsync(addon.KeyNames.Select(k => k.Hash).ToArray());
-                if (infos.Count() == 0 || infos.Any(a => a.easyinstall))
+                RestAddonInfoResult[] infos = await AddonWebApi.GetAddonInfosAsync(addon.KeyNames.Select(k => k.Hash).ToArray());
+                if (!infos.Any() || infos.Any(a => a.easyinstall))
                     return;
 
             AddonWebApi.UploadAddon(addon);
@@ -593,7 +624,6 @@ namespace ArmaBrowser.Logic
         #region Fields
 
         private readonly IArma3DataRepository _defaultDataRepository;
-        private ObservableCollection<IPEndPoint> _favoritServerEndPoints;
         private ObservableCollection<IAddon> _addons;
         private readonly Arma3ServerRepositorySteam _defaultServerRepository;
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
@@ -609,19 +639,6 @@ namespace ArmaBrowser.Logic
         public ObservableCollection<IServerItem> ServerItems { get; } = new ObservableCollection<IServerItem>();
 
         public ObservableCollection<LoadingServerListContext> ReloadThreads { get; } = new ObservableCollection<LoadingServerListContext>();
-
-        public ObservableCollection<IPEndPoint> FavoritServerEndPoints
-        {
-            get
-            {
-                if (_favoritServerEndPoints == null)
-                {
-                    _favoritServerEndPoints = new ObservableCollection<IPEndPoint>();
-                }
-
-                return _favoritServerEndPoints;
-            }
-        }
 
         public string ArmaVersion
         {
@@ -669,7 +686,7 @@ namespace ArmaBrowser.Logic
         }
 
         public ISteamGameServer[] Ips { get; set; }
-        public Collection<IServerItem> Dest { get; set; }
+        public BufferBlock<IServerItem> Dest { get; set; }
         public CancellationToken Token { get; set; }
 
         public WaitHandle Reset

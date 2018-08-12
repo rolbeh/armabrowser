@@ -104,7 +104,7 @@ namespace ArmaBrowser.Logic
             await ExecuteRequest(request);
         }
 
-        public static async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeyNames)
+        public static async Task<RestAddonInfoResult[]> GetAddonInfosAsync(params string[] addonKeyNames)
         {
             try
             {
@@ -118,7 +118,7 @@ namespace ArmaBrowser.Logic
                 {
                     var c = await restResult.Content.ReadAsStringAsync();
                     var o = JsonConvert.DeserializeObject<List<RestAddonInfoResult>>(c);
-                    return o;
+                    return o.ToArray();
                 }
             }
             catch (Exception exception)

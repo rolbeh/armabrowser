@@ -89,6 +89,17 @@
 
               MaxHeight="1600"
               VirtualizingStackPanel.IsVirtualizing="True" MaxColumnWidth="2560" BorderThickness="0"  >
+            <!--<DataGrid.GroupStyle>
+                <GroupStyle HidesIfEmpty="True">
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>-->
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="20" SortMemberPath="Passworded" >
                     <DataGridTemplateColumn.Header>
@@ -181,17 +192,6 @@
                     <Setter Property="Foreground" Value="WhiteSmoke"/>
                 </Style>
             </DataGrid.ColumnHeaderStyle>
-            <DataGrid.GroupStyle>
-                <GroupStyle HidesIfEmpty="True">
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Path=Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </DataGrid.GroupStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="armaBrowser:ArmaBrowserCommands.MarkAsFavorite" CommandParameter="{Binding Path=.}"/>

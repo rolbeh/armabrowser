@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Magic.Steam;
 using Magic.Steam.Queries;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -594,13 +596,13 @@ namespace IntegrationsTest.ArmaBrowser
             if (!Directory.Exists(localTestDataFolder))
                 return;
             
-            List<string> failedFiles = new List<string>(100);
+            BlockingCollection<string> failedFiles = new BlockingCollection<string>(100);
 
             string[] ruleFiles = Directory.GetFiles(localTestDataFolder);
-            foreach (var ruleFile in ruleFiles)
+            Parallel.ForEach(ruleFiles, ruleFile =>
             {
                 if (!ruleFile.EndsWith(".rdefrag"))
-                    continue;
+                    return;
                 try
                 {
                     using (FileStream unframedFile = File.OpenRead(ruleFile))
@@ -608,14 +610,14 @@ namespace IntegrationsTest.ArmaBrowser
                     {
                         SteamServerRule[] steamServerRules = ServerQueries.ReadRuleFile(data).ToArray();
                     }
-                    Trace.WriteLine($"OK!   File '{ruleFile}' ");
+                    //Trace.WriteLine($"OK!   File '{ruleFile}' ");
                 }
                 catch (Exception exception)
                 {
                     failedFiles.Add(ruleFile);
                     Trace.WriteLine($"FAIL! File '{ruleFile}' {exception.GetType().Name} {exception.Message}");
                 }
-            }
+            });
 
             foreach (var failedFile in failedFiles)
             {
