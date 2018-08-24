@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?define ArmaBrowserProjectDir="..\ArmaBrowser\bin\" ?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Product Id="*" Name="ArmaBrowser" Language="1033" Version="!(bind.FileVersion.ArmaBrowserexe)" Manufacturer="armabroswer.org" UpgradeCode="22e96da8-8487-4590-87e7-481ec8618640">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" Manufacturer="armabroswer.org" Comments="Installation ARMA III browser and launcher" Keywords="ARMA Serverbrowser" />
+  <Product Id="*" Name="ArmaBrowser" Language="1033" Version="!(bind.FileVersion.ArmaBrowserID)" Manufacturer="armabrowser.org" UpgradeCode="22e96da8-8487-4590-87e7-481ec8618640">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" Manufacturer="armabrowser.org" Comments="Installation ARMA III browser and launcher" Keywords="ARMA Serverbrowser" Description="Installation ARMA III browser and launcher" />
     <Property Id="ARPREADME" Value="Installation ARMA III browser and launcher" />
     <Property Id="ARPCOMMENTS" Value="Installation ARMA III browser and launcher" />
     <Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
-    <Property Id="ARPCONTACT" Value="armabroswer.org" />
+    <Property Id="ARPCONTACT" Value="armabrowser.org" />
     <CustomAction Id="DIRCA_TARGETDIR" Property="TARGETDIR" Value="[LocalAppDataFolder][Manufacturer]\[ProductName]" Execute="firstSequence" />
     <Property Id="ARPHELPLINK" Value="http://www.armabroswer.org" />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallInitialize" AllowSameVersionUpgrades="yes" />
     <MediaTemplate EmbedCab="yes" />
     <Feature Id="ProductFeature" Title="ArmaBrowser" Level="1">
       <ComponentGroupRef Id="ArmaBrowserGroup" />
+      <ComponentRef Id="comp_dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" />
+      <ComponentRef Id="comp_C44AB46A_A464_408E_9139_F47E0A091FBD" />
     </Feature>
     <InstallExecuteSequence>
       <Custom Action="DIRCA_TARGETDIR" Before="CostInitialize"><![CDATA[TARGETDIR=""]]></Custom>
@@ -319,12 +321,24 @@
   </Product>
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" Name="Armabrowser">
+          <Component Id="comp_dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" Guid="D6AAA8B6-1BEC-45A8-839E-6CAAD2168993">
+            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]\Installer" Name="comp_dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" Type="string" Value="New Folder #1 directory" KeyPath="yes" />
+            <RemoveFolder Id="id_7835C324_09F5_4A0D_863F_15B59902DF8C" On="uninstall" Directory="dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" />
+          </Component>
+          <Component Id="comp_C44AB46A_A464_408E_9139_F47E0A091FBD" Guid="2FD867BC-A45B-41BD-BAF2-01F4EC07E53E" Permanent="no" SharedDllRefCount="no" Transitive="no">
+            <Shortcut Id="_1ABDE88C_221B_4B93_AB93_EC7AA01041D0" Directory="dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" Name="ArmaBrowser" Show="normal" Target="[TARGETDIR]ArmaBrowser.exe" WorkingDirectory="dir_99251E9F_5E0E_45D9_BD42_5CCF1851B8D2" Description="ARMA III Server Browser" />
+            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]\Installer" Name="comp_C44AB46A_A464_408E_9139_F47E0A091FBD" Type="string" Value="Armabrowser directory" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
     </Directory>
   </Fragment>
   <Fragment>
     <ComponentGroup Id="ArmaBrowserGroup">
       <Component Id="comp_82C76F89_F27A_4DB9_8623_EC381D5D6066" Directory="TARGETDIR" Guid="C186777B-EB06-4216-AE86-04D7770F67CA">
-        <File Id="ArmaBrowserexe" DiskId="1" Name="ArmaBrowser.exe" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\ArmaBrowser.exe" KeyPath="yes" />
+        <File Id="ArmaBrowserID" DiskId="1" Name="ArmaBrowser.exe" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\ArmaBrowser.exe" KeyPath="yes" />
       </Component>
       <Component Id="comp_42271D70_D1EA_44C1_9C6C_639C5DC73217" Directory="TARGETDIR" Guid="6407BF45-7CDA-460A-90C2-3D3FA263EC13">
         <File Id="_8C814278_650A_4614_AEAC_80C196609DBE" DiskId="1" Name="Magic.dll" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\Magic.dll" KeyPath="yes" />
