@@ -9,7 +9,7 @@ namespace IntegrationsTest.ArmaBrowser
     [TestClass]
     public class ServerRepositoryTests
     {
-        [TestMethod]
+        [TestMethod, TestCategory("NO_CI")]
         public void GetServerListTest()
         {
             //given 

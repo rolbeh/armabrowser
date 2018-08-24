@@ -37,7 +37,7 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.html</WebPage>
     <ApplicationRevision>106</ApplicationRevision>
-    <ApplicationVersion>2017.04.11.%2a</ApplicationVersion>
+    <ApplicationVersion>2018.08.23.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -329,10 +329,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ArmaBrowserUpdater\ArmaBrowserUpdater.csproj">
-      <Project>{0b6578d9-7e41-41fa-b86c-6ac0a342c73e}</Project>
-      <Name>ArmaBrowserUpdater</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SteamServerQueries\Magic.Steam.ServerQueries.csproj">
       <Project>{4F4350D7-FA03-47C9-A85D-6B86260E4F67}</Project>
       <Name>Magic.Steam.ServerQueries</Name>
