@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?define ArmaBrowserProjectDir="..\ArmaBrowser\bin\" ?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Product Id="*" Name="ArmaBrowser" Language="1033" Version="1.0.0.0" Manufacturer="armabroswer.org" UpgradeCode="22e96da8-8487-4590-87e7-481ec8618640">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser"/>
+  <Product Id="*" Name="ArmaBrowser" Language="1033" Version="!(bind.FileVersion.ArmaBrowserexe)" Manufacturer="armabroswer.org" UpgradeCode="22e96da8-8487-4590-87e7-481ec8618640">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" Manufacturer="armabroswer.org" Comments="Installation ARMA III browser and launcher" Keywords="ARMA Serverbrowser" />
+    <Property Id="ARPREADME" Value="Installation ARMA III browser and launcher" />
+    <Property Id="ARPCOMMENTS" Value="Installation ARMA III browser and launcher" />
+    <Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+    <Property Id="ARPCONTACT" Value="armabroswer.org" />
     <CustomAction Id="DIRCA_TARGETDIR" Property="TARGETDIR" Value="[LocalAppDataFolder][Manufacturer]\[ProductName]" Execute="firstSequence" />
     <Property Id="ARPHELPLINK" Value="http://www.armabroswer.org" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -319,19 +324,19 @@
   <Fragment>
     <ComponentGroup Id="ArmaBrowserGroup">
       <Component Id="comp_82C76F89_F27A_4DB9_8623_EC381D5D6066" Directory="TARGETDIR" Guid="C186777B-EB06-4216-AE86-04D7770F67CA">
-        <File Id="_686D412F_8296_4567_BC2A_204556014243" DiskId="1" Name="ArmaBrowser.exe" Source="..\ArmaBrowser\bin\Debug\ArmaBrowser.exe" KeyPath="yes" />
+        <File Id="ArmaBrowserexe" DiskId="1" Name="ArmaBrowser.exe" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\ArmaBrowser.exe" KeyPath="yes" />
       </Component>
       <Component Id="comp_42271D70_D1EA_44C1_9C6C_639C5DC73217" Directory="TARGETDIR" Guid="6407BF45-7CDA-460A-90C2-3D3FA263EC13">
-        <File Id="_8C814278_650A_4614_AEAC_80C196609DBE" DiskId="1" Name="Magic.dll" Source="..\ArmaBrowser\bin\Debug\Magic.dll" KeyPath="yes" />
+        <File Id="_8C814278_650A_4614_AEAC_80C196609DBE" DiskId="1" Name="Magic.dll" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\Magic.dll" KeyPath="yes" />
       </Component>
       <Component Id="comp_88C779C0_EA50_426C_8509_4337CA0BE305" Directory="TARGETDIR" Guid="C131CD4B-772D-4EFF-BA9D-1ACDC0D181D1">
-        <File Id="_280035FB_BF9E_4D25_8D5E_1736E63B47E3" DiskId="1" Name="Magic.Controls.dll" Source="..\ArmaBrowser\bin\Debug\Magic.Controls.dll" KeyPath="yes" />
+        <File Id="_280035FB_BF9E_4D25_8D5E_1736E63B47E3" DiskId="1" Name="Magic.Controls.dll" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\Magic.Controls.dll" KeyPath="yes" />
       </Component>
       <Component Id="comp_C2DFE7A0_A2BD_44BB_8D8F_08E04C087FAF" Directory="TARGETDIR" Guid="9FB9018B-65A7-48A7-80AE-26EFCB11014A">
-        <File Id="_DA1A3AC0_8552_4777_B7B1_B97AB96924DD" DiskId="1" Name="Magic.Steam.Queries.dll" Source="..\ArmaBrowser\bin\Debug\Magic.Steam.Queries.dll" KeyPath="yes" />
+        <File Id="_DA1A3AC0_8552_4777_B7B1_B97AB96924DD" DiskId="1" Name="Magic.Steam.Queries.dll" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\Magic.Steam.Queries.dll" KeyPath="yes" />
       </Component>
       <Component Id="comp_3EE63357_4F81_4B2D_8722_131753B395E7" Directory="TARGETDIR" Guid="9E206772-C516-45DC-A406-742F9B79E0D0">
-        <File Id="_D5C15685_84B6_4BDB_A579_733597B38C0E" DiskId="1" Name="Newtonsoft.Json.dll" Source="..\ArmaBrowser\bin\Debug\Newtonsoft.Json.dll" KeyPath="yes" />
+        <File Id="_D5C15685_84B6_4BDB_A579_733597B38C0E" DiskId="1" Name="Newtonsoft.Json.dll" Source="$(var.ArmaBrowserProjectDir)$(var.Configuration)\Newtonsoft.Json.dll" KeyPath="yes" />
       </Component>
     </ComponentGroup>
   </Fragment>
