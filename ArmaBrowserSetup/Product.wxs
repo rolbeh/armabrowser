@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?define ArmaBrowserProjectDir="..\ArmaBrowser\bin\" ?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="ArmaBrowser" Language="1033" Version="!(bind.FileVersion.ArmaBrowserID)" Manufacturer="armabrowser.org" UpgradeCode="22e96da8-8487-4590-87e7-481ec8618640">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" Manufacturer="armabrowser.org" Comments="Installation ARMA III browser and launcher" Keywords="ARMA Serverbrowser" Description="Installation ARMA III browser and launcher" />
     <Property Id="ARPREADME" Value="Installation ARMA III browser and launcher" />
@@ -9,7 +9,8 @@
     <Property Id="ARPCONTACT" Value="armabrowser.org" />
     <CustomAction Id="DIRCA_TARGETDIR" Property="TARGETDIR" Value="[LocalAppDataFolder][Manufacturer]\[ProductName]" Execute="firstSequence" />
     <Property Id="ARPHELPLINK" Value="http://www.armabroswer.org" />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallInitialize" AllowSameVersionUpgrades="yes" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallInitialize" AllowSameVersionUpgrades="yes"
+                  />
     <MediaTemplate EmbedCab="yes" />
     <Feature Id="ProductFeature" Title="ArmaBrowser" Level="1">
       <ComponentGroupRef Id="ArmaBrowserGroup" />
