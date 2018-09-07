@@ -587,7 +587,7 @@ namespace IntegrationsTest.ArmaBrowser
 
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("olnylocal")]
         public void ReadRules_Temp_Folder_NoExceptions()
         {
             string localTestDataFolder = @"E:\Temp\Data\";
