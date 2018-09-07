@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArmaBrowser.Logic
 {
@@ -15,12 +10,10 @@ namespace ArmaBrowser.Logic
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile,
                     Environment.SpecialFolderOption.DoNotVerify), "ArmaBrowser");
 
+        // ReSharper disable once UnusedMember.Global
         public void EnsureDirectory(string path)
         {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         }
     }
 }

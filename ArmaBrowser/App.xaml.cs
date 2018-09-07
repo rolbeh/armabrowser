@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Diagnostics;
 using ArmaBrowser.Logic;
-using ArmaBrowser.Logic.DefaultImpl;
 using ArmaBrowser.ViewModel;
 
 

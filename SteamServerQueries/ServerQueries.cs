@@ -169,7 +169,8 @@ namespace Magic.Steam
 
             public bool Equals(GameServerQueryEndPoint x, GameServerQueryEndPoint y)
             {
-                return x.QueryPort == y.QueryPort && x.Host.ToString() == y.Host.ToString();
+                return y != null && x != null 
+                    && x.QueryPort == y.QueryPort && x.Host.ToString() == y.Host.ToString();
             }
 
             public int GetHashCode(GameServerQueryEndPoint obj)
@@ -401,12 +402,10 @@ namespace Magic.Steam
                     result.Add(p);
                 }
                 item.Players = result;
-                return;
             }
             catch (Exception)
             {
                 // ignored
-                return;
             }
         }
 
@@ -422,7 +421,7 @@ namespace Magic.Steam
             IPEndPoint endp = null;
             // Rules auslesen
             var challengeRequest = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, RuleRequestByte, 0xFF, 0xFF, 0xFF, 0xFF };
-            var sendlen = udp.Send(challengeRequest, 9);
+            udp.Send(challengeRequest, 9);
 
             byte[] respose = udp.Receive(ref endp);
 
@@ -432,7 +431,7 @@ namespace Magic.Steam
                 return;
             }
             respose[4] = RuleRequestByte;
-            sendlen = udp.Send(respose, 9);
+            udp.Send(respose, 9);
             respose = udp.Receive(ref endp);
 
             if (respose[4] != RuleReponseByte)
@@ -447,7 +446,7 @@ namespace Magic.Steam
                 SteamDefragmentedBytes unFramed = respose.DefragmentSteamBytes_1_56();
 #if DEBUG
                 bool writeFile = Directory.Exists(@"E:\temp\Data");
-                string filename = @"E:\temp\Data\V_" + item.Version + "_" + item.IpAdresse.ToString();
+                string filename = @"E:\temp\Data\V_" + item.Version + "_" + item.IpAdresse;
                 if (writeFile)
                 {
                     if (respose.Length > 7)
@@ -529,7 +528,6 @@ namespace Magic.Steam
             file.Seek(0, SeekOrigin.Begin);
             using (var br = new BinaryReader(file, Encoding.ASCII, true))
             {
-                var modCount = 0;
                 var versionByte = br.ReadByte();
                 var someExtras = br.ReadByte();
                 var dlcFlags1 = br.ReadUInt16();
@@ -554,7 +552,7 @@ namespace Magic.Steam
                 Debug.WriteLineIf(trace, String.Format("Position: {0}", file.Position));
 
                 Debug.WriteIf(trace, "ModCount: ");
-                modCount = br.ReadByte();
+                int modCount = br.ReadByte();
 
                 Debug.WriteLineIf(trace, modCount);
                 var modNr = 0;
@@ -563,16 +561,14 @@ namespace Magic.Steam
                 {
                     modNr++;
 
-                    var modHash = uint.MinValue;
-                    var pubId = uint.MinValue;
                     string modName = null;
 
 
                     Debug.WriteLineIf(trace, "");
                     Debug.WriteLineIf(trace, $"Mod {modNr}");
 
-                    modHash = br.ReadUInt32();
-                    pubId = ReadPublisherId(br);
+                    var modHash = br.ReadUInt32();
+                    var pubId = ReadPublisherId(br);
 
                     byte modNameLength = br.ReadByte();
 
@@ -639,6 +635,7 @@ namespace Magic.Steam
         [Flags]
         private enum  DlcFlags : ushort
         {
+            // ReSharper disable UnusedMember.Local
             Dlc1 = 1,
             Dlc2 = 1 << 1,
             Dlc3 = 1 << 2,
@@ -655,6 +652,7 @@ namespace Magic.Steam
             Dlc14 = 1 << 13,
             Dlc15 = 1 << 14,
             Dlc16 = 1 << 15 
+            // ReSharper restore UnusedMember.Local
         }
 
         private static uint ReadPublisherId(BinaryReader reader)
@@ -675,8 +673,7 @@ namespace Magic.Steam
             if (key != null)
             {
                 var idx = key.LastIndexOf('-') + 1;
-                var count = 0;
-                if (Int32.TryParse(key.Substring(idx, key.Length - idx), out count))
+                if (Int32.TryParse(key.Substring(idx, key.Length - idx), out var count))
                 {
                     for (int i = 0; i < count; i++)
                     {
@@ -701,30 +698,33 @@ namespace Magic.Steam
                 KeyValues = new Dictionary<string, string>();
             }
 
+            // ReSharper disable NotAccessedField.Local InconsistentNaming
             public byte ProtocolVersion;
             public string GameServerName;
             public string Map;
+            
             public string Folder;
             public string Game;
-
+            
             public short ID;
             public byte CurrentPlayerCount;
             public byte MaxPlayerCount;
             public byte CurrentBotsCount;
             public ServerQueryRequestType ServerType;
             public bool Password;
-
+            
             public bool VAC;
             public bool Mode;
             public string Version;
+
             public Int32 GamePort;
             public byte[] Data;
-
             public long ServerSteamId;
 
             public string Keywords;
 
             public long GameID;
+            // ReSharper restore NotAccessedField.Local InconsistentNaming
             public int Ping;
 
             public Dictionary<string, string> KeyValues { get; private set; }
@@ -747,14 +747,17 @@ namespace Magic.Steam
 
         enum ServerQueryRequestType
         {
+            // ReSharper disable UnusedMember.Local
             DedicatedServer = 0x64, // 'd'
             NonDedicatedServer = 0x6C, // 'l'
             RelayServer = 0x70, // 'p'
+            // ReSharper restore UnusedMember.Local
         }
 
-        static bool IsNULL(byte b)
+        // ReSharper disable once InconsistentNaming
+        private static bool IsNULL(byte b)
         {
-            return b == System.Byte.MinValue;
+            return b == Byte.MinValue;
         }
     }
 

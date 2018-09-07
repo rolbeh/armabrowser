@@ -5,12 +5,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using ArmaBrowser.Logic.DefaultImpl;
 
 namespace ArmaBrowser.ViewModel
 {
@@ -21,7 +19,7 @@ namespace ArmaBrowser.ViewModel
         private readonly LogicContext _context;
         private ListCollectionView _serverItemsView;
         private string _textFilter = string.Empty;
-        private System.Net.IPEndPoint _ipEndPointFilter = null;
+        private System.Net.IPEndPoint _ipEndPointFilter;
         private IServerItem _selectedServerItem;
         private ICollection<LoadingServerListContext> _reloadContexts; 
         private IAddon _selectedAddon;
@@ -623,7 +621,7 @@ namespace ArmaBrowser.ViewModel
         {
             while (true)
             {
-                var mainwin = await UiTask.Run(() => App.Current.MainWindow);
+                var mainwin = await UiTask.Run(() => Application.Current.MainWindow);
 
                 if (mainwin == null) break;
                 try
@@ -642,7 +640,7 @@ namespace ArmaBrowser.ViewModel
                 }
                 catch
                 {
-
+                    // ignore
                 }
             }
         }
@@ -670,7 +668,6 @@ namespace ArmaBrowser.ViewModel
         internal void StopAll()
         {
             _reloadingCts.Cancel();
-            var oldsrc = _reloadingCts;
             _reloadingCts = new System.Threading.CancellationTokenSource();
         }
 

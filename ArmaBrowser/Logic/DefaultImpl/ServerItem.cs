@@ -1,37 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using ArmaBrowser.Data;
 using Magic.Steam;
 
 namespace ArmaBrowser.Logic
 {
-    class ServerItem : ObjectNotify, IServerItem, ArmaBrowser.Data.IServerQueryAddress
+    internal class ServerItem : ObjectNotify, IServerItem, IServerQueryAddress
     {
-        //const string imageUrl = "http://arma3.swec.se/images/flags/png/{0}.png";
-        #region Fields
-        //private string _country = "--";
-        //private string _countryUrl = string.Format(imageUrl, "--");
+        private string _modsText;
 
-        private int _playersNum;
-        private string _mission;
-        private string _version;
-        private string _currentPlayersText;
-        private string _signatures;
-        private int _maxPlayers;
-        private string _name;
-        private string _mode;
-        private ISteamGameServerPlayer[] _currentPlayers;
-        private int _ping;
-        private DateTime? _lastPlayed;
-        private bool _isFavorite;
+        internal ServerItem()
+        {
+            Signatures = string.Empty;
+        }
 
-        #endregion Field
+        public ServerItemGroup GroupName
+        {
+            get
+            {
+                if (_isFavorite) return ServerItemGroup.Favorite;
+                if (LastPlayed.HasValue) return ServerItemGroup.Recently;
+                if (Port > 0) return ServerItemGroup.Found;
+                return ServerItemGroup.NoResponse;
+            }
+            // ReSharper disable once ValueParameterNotUsed
+            private set => OnPropertyChanged();
+        }
+
+        // ReSharper disable once UnusedMember.Global
+        public string Endpoint => string.Format("{0}:{1}", Host, Port);
+
+        public string PlayersState => string.Format("{0}/{1}", _playersNum, _maxPlayers);
 
         public bool IsFavorite
         {
-            get { return _isFavorite; }
+            get => _isFavorite;
             set
             {
                 _isFavorite = value;
@@ -40,9 +43,9 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        public DateTime? LastPlayed  
+        public DateTime? LastPlayed
         {
-            get { return _lastPlayed; }
+            get => _lastPlayed;
             set
             {
                 _lastPlayed = value;
@@ -51,28 +54,11 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        public ServerItemGroup GroupName
-        {
-            get 
-            {
-                if (_isFavorite) return  ServerItemGroup.Favorite;
-                if (LastPlayed.HasValue) return ServerItemGroup.Recently;
-                if (Port > 0) return ServerItemGroup.Found;
-                return ServerItemGroup.NoResponse;
-            }
-            private set { OnPropertyChanged(); }
-        }
-
-        internal ServerItem()
-        {
-            Signatures = string.Empty;
-        }
-
         public string Gamename { get; internal set; }
 
         public string Mode
         {
-            get { return _mode; }
+            get => _mode;
             set
             {
                 _mode = value;
@@ -82,7 +68,7 @@ namespace ArmaBrowser.Logic
 
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 _name = value;
@@ -92,7 +78,7 @@ namespace ArmaBrowser.Logic
 
         public string Mission
         {
-            get { return _mission; }
+            get => _mission;
             set
             {
                 _mission = value;
@@ -116,20 +102,15 @@ namespace ArmaBrowser.Logic
         //    get { return _countryUrl ?? (_countryUrl = string.Format(imageUrl, _country ?? "--")); }
         //}
 
-        public System.Net.IPAddress Host { get; internal set; }
+        public IPAddress Host { get; internal set; }
 
         public int Port { get; internal set; }
-
-        public string Endpoint
-        {
-            get { return string.Format("{0}:{1}", Host, Port); }
-        }
 
         public int QueryPort { get; internal set; }
 
         public string Version
         {
-            get { return _version; }
+            get => _version;
             set
             {
                 if (_version == value) return;
@@ -142,11 +123,11 @@ namespace ArmaBrowser.Logic
 
         public string ModsText
         {
-            get { return _modsText; }
+            get => _modsText;
             internal set
             {
                 _modsText = value ?? string.Empty;
-                Mods = _modsText.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                Mods = _modsText.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
             }
         }
 
@@ -156,16 +137,13 @@ namespace ArmaBrowser.Logic
 
         public string Signatures
         {
-            get { return _signatures; }
-            internal set
-            {
-                _signatures = (value ?? string.Empty);
-            }
+            get => _signatures;
+            internal set => _signatures = value ?? string.Empty;
         }
 
         public int CurrentPlayerCount
         {
-            get { return _playersNum; }
+            get => _playersNum;
             set
             {
                 _playersNum = value;
@@ -177,7 +155,7 @@ namespace ArmaBrowser.Logic
 
         public int MaxPlayers
         {
-            get { return _maxPlayers; }
+            get => _maxPlayers;
             set
             {
                 _maxPlayers = value;
@@ -187,30 +165,22 @@ namespace ArmaBrowser.Logic
             }
         }
 
-        public string PlayersState
-        {
-            get { return string.Format("{0}/{1}", _playersNum, _maxPlayers); }
-        }
-
         public ISteamGameServerPlayer[] CurrentPlayers
         {
-            get { return _currentPlayers; }
+            get => _currentPlayers;
             internal set
             {
                 if (_currentPlayers == value) return;
-                    _currentPlayers = value;
+                _currentPlayers = value;
                 OnPropertyChanged();
             }
         }
 
-        public bool IsPlayerSlotsFull
-        {
-            get { return _maxPlayers == _playersNum; }
-        }
+        public bool IsPlayerSlotsFull => _maxPlayers == _playersNum;
 
         public string CurrentPlayersText
         {
-            get { return _currentPlayersText; }
+            get => _currentPlayersText;
             internal set
             {
                 if (_currentPlayersText == value) return;
@@ -220,21 +190,14 @@ namespace ArmaBrowser.Logic
         }
 
         public string Island { get; internal set; }
-        
-        public string FullText
-        {
-            get { return string.Format("{0} {1} {2}", Name, Mission, Island); }
-        }
 
-        public string _modsText { get; set; }
+        public string FullText => string.Format("{0} {1} {2}", Name, Mission, Island);
 
         public bool Passworded { get; set; }
 
-        public bool IsVersionOk { get; set; }
-
         public int Ping
         {
-            get { return _ping; }
+            get => _ping;
             internal set
             {
                 if (_ping == value) return;
@@ -245,6 +208,26 @@ namespace ArmaBrowser.Logic
 
 
         public bool VerifySignatures { get; set; }
-    }
+        //const string imageUrl = "http://arma3.swec.se/images/flags/png/{0}.png";
 
+        #region Fields
+
+        //private string _country = "--";
+        //private string _countryUrl = string.Format(imageUrl, "--");
+
+        private int _playersNum;
+        private string _mission;
+        private string _version;
+        private string _currentPlayersText;
+        private string _signatures;
+        private int _maxPlayers;
+        private string _name;
+        private string _mode;
+        private ISteamGameServerPlayer[] _currentPlayers;
+        private int _ping;
+        private DateTime? _lastPlayed;
+        private bool _isFavorite;
+
+        #endregion Field
+    }
 }

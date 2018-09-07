@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -608,6 +607,7 @@ namespace IntegrationsTest.ArmaBrowser
                     using (FileStream unframedFile = File.OpenRead(ruleFile))
                     using (SteamDecodedBytes data = (new SteamDefragmentedBytes(ToArray(unframedFile))).DecodeSteamRuleFile_1_56())
                     {
+                        // ReSharper disable once UnusedVariable
                         SteamServerRule[] steamServerRules = ServerQueries.ReadRuleFile(data).ToArray();
                     }
                     //Trace.WriteLine($"OK!   File '{ruleFile}' ");
@@ -636,13 +636,14 @@ namespace IntegrationsTest.ArmaBrowser
             return result;
         }
 
+        // ReSharper disable once UnusedMember.Local
         private static void PrintAsserts(SteamServerRule[] array)
         {
             var i = 0;
             foreach (var steamServerRule in array)
             {
-                Console.WriteLine($"Assert.AreEqual(\"{steamServerRule.Key}\", array[{i}].Key);");
-                Console.WriteLine($"Assert.AreEqual(\"{steamServerRule.Name}\", array[{i}].Name);");
+                Console.WriteLine($@"Assert.AreEqual(""{steamServerRule.Key}"", array[{i}].Key);");
+                Console.WriteLine($@"Assert.AreEqual(""{steamServerRule.Name}"", array[{i}].Name);");
                 Console.WriteLine();
                 i++;
             }

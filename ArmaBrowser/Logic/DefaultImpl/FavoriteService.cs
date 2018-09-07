@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using ArmaBrowser.Logic.DefaultImpl;
-using ArmaBrowser.ViewModel;
 
 namespace ArmaBrowser.Logic
 {
@@ -24,23 +20,23 @@ namespace ArmaBrowser.Logic
 
         public void Add(params IServerItem[] items)
         {
-            HashSet<EndPoint> endPoints = this.GetEntries();
+            HashSet<EndPoint> endPoints = GetEntries();
             items.Each(i => endPoints.Add(new IPEndPoint(i.Host, i.QueryPort)));
             SaveEntries(endPoints);
         }
 
         public void Remove(params IServerItem[] items)
         {
-            HashSet<EndPoint> endPoints = this.GetEntries();
+            HashSet<EndPoint> endPoints = GetEntries();
             items.Each(i => endPoints.Remove(new IPEndPoint(i.Host, i.QueryPort)));
             SaveEntries(endPoints);
         }
 
         public IServerItem[] Get()
         {
-            HashSet<EndPoint> endPoints = this.GetEntries();
+            HashSet<EndPoint> endPoints = GetEntries();
             return endPoints.OfType<IPEndPoint>()
-                .Select(e => (IServerItem)new ServerItem() {Host = e.Address, QueryPort = e.Port, IsFavorite = true})
+                .Select(e => (IServerItem) new ServerItem {Host = e.Address, QueryPort = e.Port, IsFavorite = true})
                 .ToArray();
         }
 
@@ -48,35 +44,31 @@ namespace ArmaBrowser.Logic
 
         private HashSet<EndPoint> GetEntries()
         {
-            HashSet<EndPoint> result = new HashSet<EndPoint>();
+            var result = new HashSet<EndPoint>();
             lock (this)
             {
-                string path = _appPathService.UserSettingsPath;
+                var path = _appPathService.UserSettingsPath;
                 Directory.CreateDirectory(_appPathService.UserSettingsPath);
-                if (!File.Exists(_filename))
-                {
-                    return new HashSet<EndPoint>();
-                }
+                if (!File.Exists(_filename)) return new HashSet<EndPoint>();
 
-                using (StreamReader streamReader = File.OpenText(Path.Combine(path, Filename)))
+                using (var streamReader = File.OpenText(Path.Combine(path, Filename)))
                 {
                     while (!streamReader.EndOfStream)
-                    {
                         try
                         {
                             var line = streamReader.ReadLine();
                             if (line != null)
                             {
                                 var pos = line.LastIndexOf(":", StringComparison.Ordinal);
-                                var ipEndPoint = new IPEndPoint(IPAddress.Parse(line.Substring(0, pos)), Int32.Parse(line.Substring(pos+1)));
+                                var ipEndPoint = new IPEndPoint(IPAddress.Parse(line.Substring(0, pos)),
+                                    int.Parse(line.Substring(pos + 1)));
                                 result.Add(ipEndPoint);
                             }
                         }
-                        catch 
+                        catch
                         {
                             // ignore
                         }
-                    }
                 }
             }
 
@@ -92,10 +84,7 @@ namespace ArmaBrowser.Logic
                 using (var streamWriter = File.CreateText(Path.Combine(path, Filename)))
                 {
                     streamWriter.BaseStream.Position = 0;
-                    foreach (var endPoint in entries)
-                    {
-                        streamWriter.WriteLine(endPoint.ToString());
-                    }
+                    foreach (var endPoint in entries) streamWriter.WriteLine(endPoint.ToString());
                     streamWriter.BaseStream.SetLength(streamWriter.BaseStream.Length);
                 }
             }
