@@ -11,6 +11,11 @@ namespace ArmaBrowser.Logic
         DateTime? LastPlayed { get; set; }
 
         /// <summary>
+        /// Get the endpoint to connect the server for gaming.
+        /// </summary>
+        string Endpoint { get; }
+
+        /// <summary>
         ///     Arma3
         /// </summary>
         string Gamename { get; }

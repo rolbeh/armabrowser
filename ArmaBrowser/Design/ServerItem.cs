@@ -3,6 +3,7 @@ using System.Net;
 using ArmaBrowser.Logic;
 using Magic.Steam;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace ArmaBrowser.Design
 {
@@ -11,6 +12,7 @@ namespace ArmaBrowser.Design
         public ServerItemGroup GroupName { get; set; }
         public bool IsFavorite { get; set; }
         public DateTime? LastPlayed { get; set; }
+        public string Endpoint { get; set; }
         public string Gamename { get; private set; }
         public string Mode { get; private set; }
         public string Name { get; set; }
