@@ -21,7 +21,7 @@ namespace ArmaBrowser
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    internal sealed partial class MainWindow : Window
+    internal sealed partial class MainWindow
     {
         private CancellationTokenSource _joinServerCancellationTokenSrc;
 
@@ -143,41 +143,7 @@ namespace ArmaBrowser
                 }
 
                 return true;
-            });
-        }
-
-        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            this.DragMove();
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.Default.MainWindowHeight = this.ActualHeight;
-            Settings.Default.MainWindowWidth = this.ActualWidth;
-            Settings.Default.MainWindowTop = this.Top;
-            Settings.Default.MainWindowLeft = this.Left;
-            Settings.Default.MainWindowState = (int) this.WindowState;
-            Application.Current.Shutdown(0);
-        }
-
-        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ClickCount == 2)
-            {
-                if (this.WindowState == WindowState.Maximized)
-                {
-                    this.WindowState = WindowState.Normal;
-                    e.Handled = true;
-                    return;
-                }
-
-                if (this.WindowState == WindowState.Normal)
-                {
-                    this.WindowState = WindowState.Maximized;
-                    e.Handled = true;
-                }
-            }
+            }, token);
         }
 
         private void PoweredByHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -193,10 +159,10 @@ namespace ArmaBrowser
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(HostConfigCollection));
-            using (TextWriter textwr = new StringWriter())
+            using (TextWriter textWriter = new StringWriter())
             {
-                serializer.Serialize(textwr, HostConfigCollection.Default);
-                Settings.Default.HostConfigs = textwr.ToString();
+                serializer.Serialize(textWriter, HostConfigCollection.Default);
+                Settings.Default.HostConfigs = textWriter.ToString();
                 Settings.Default.Save();
             }
 
@@ -204,13 +170,15 @@ namespace ArmaBrowser
             {
                 this.MyViewModel.StopAll();
             }
-            catch { }
+            catch
+            {
+                // ignore
+            }
         }
 
         private void CvsSelectedAddons_OnFilter(object sender, FilterEventArgs e)
         {
-            IAddon item = e.Item as IAddon;
-            if (item != null)
+            if (e.Item is IAddon item)
             {
                 e.Accepted = item.IsActive;
             }
@@ -226,11 +194,6 @@ namespace ArmaBrowser
             {
                 MessageBox.Show("Arma 3 installation not found");
             }
-        }
-
-        private void AppbarSettings_OnClick(object sender, RoutedEventArgs e)
-        {
-            this.TabListBox.SelectedItem = "Arma III";
         }
 
         private void AutoJoinControl_Canceled(object sender, RoutedEventArgs e)
