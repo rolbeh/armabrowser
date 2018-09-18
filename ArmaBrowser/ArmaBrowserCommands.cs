@@ -3,22 +3,23 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ArmaBrowser.Logic;
+using ArmaBrowser.ViewModel;
 using ArmaBrowser.Views.Controls;
 
 namespace ArmaBrowser
 {
-    static class ArmaBrowserCommands
+    internal static class ArmaBrowserCommands
     {
-        public static ICommand RefreshAddons { get; private set; }
-        public static ICommand ReloadServerList { get; private set; }
-        public static ICommand MarkAsFavorite { get; private set; }
+        public static ICommand RefreshAddons { get; }
+        public static ICommand ReloadServerList { get; }
+        public static ICommand MarkAsFavorite { get; }
 
-        public static ICommand OpenAddonFolder { get; private set; }
+        public static ICommand OpenAddonFolder { get; }
 
-        public static ICommand UploadAddon { get; private set; }
-        public static ICommand EasyInstallAddon { get; private set; }
+        public static ICommand UploadAddon { get; }
+        public static ICommand EasyInstallAddon { get; }
 
-        public static ICommand StopReloadServerList { get; private set; }
+        public static ICommand StopReloadServerList { get; }
 
         static ArmaBrowserCommands()
         {
@@ -48,43 +49,40 @@ namespace ArmaBrowser
 
         private static void StopReloadServerList_OnExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var mainwnd = sender as MainWindow;
-            if (mainwnd != null)
+            if (sender is MainWindow mainWnd)
             {
-                mainwnd.MyViewModel.StopAll();
+                mainWnd.MyViewModel.StopAll();
             }
         }
 
         private static void ReloadServerList_OnExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var mainwnd = sender as MainWindow;
-            if (mainwnd != null)
+            if (sender is MainWindow mainWnd)
             {
-                mainwnd.MyViewModel.ReloadServerList();
+                mainWnd.MyViewModel.ReloadServerList();
             }
         }
 
         private static void EasyInstallAddon_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            var addon = e.Parameter as IAddon;
-            e.CanExecute = addon != null && addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value &&
+            e.CanExecute = e.Parameter is IAddon addon && addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value &&
                             addon.KeyNames.Any() && addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash));
         }
 
         private static void EasyInstallAddon_OnExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var addon = e.Parameter as IAddon;
-            if (addon != null)
+            if (e.Parameter is IAddon addon)
             {
-                if (sender is FrameworkElement && ((FrameworkElement)sender).DataContext is ViewModel.ServerListViewModel)
-                    ((ViewModel.ServerListViewModel) ((FrameworkElement) sender).DataContext).DownloadAddon(addon);
+                if (sender is FrameworkElement element && element.DataContext is ServerListViewModel model)
+                {
+                    model.DownloadAddon(addon);
+                }
             }
         }
 
         private static void UploadAddon_OnExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var addon = e.Parameter as IAddon;
-            if (addon != null)
+            if (e.Parameter is IAddon addon)
             {
                 //if (PathHelper.CalculateFolderSize(addon.Path) < (1024*1024*20))
                 {
@@ -103,19 +101,20 @@ namespace ArmaBrowser
             if (e.Parameter is string)
             {
                 if (System.IO.Directory.Exists(e.Parameter.ToString()))
+                {
                     System.Diagnostics.Process.Start(e.Parameter.ToString());
+                }
                 else
+                {
                     MessageBox.Show("Folder not found");
+                }
             }
         }
 
         private static void RefreshAddonsCommand_OnExecuted(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
         {
-            var dc = ((FrameworkElement) sender).DataContext as ViewModel.ServerListViewModel;
-            if (dc != null)
-            {
-                dc.RefreshAddons();
-            } 
+            ServerListViewModel dc = ((FrameworkElement) sender).DataContext as ViewModel.ServerListViewModel;
+            dc?.RefreshAddons();
 
         }
 
@@ -123,13 +122,12 @@ namespace ArmaBrowser
         {
             if (e.Parameter is ViewModel.ServerListViewModel dataContext )
             {
-                var item = dataContext.SelectedServerItem;
+                IServerItem item = dataContext.SelectedServerItem;
                 if (item != null)
                 {
                     item.IsFavorite = !item.IsFavorite;
                     dataContext.SaveFavorits(item);
                 }
-                return;
             }
         }
     }

@@ -20,11 +20,11 @@ namespace ArmaBrowser.Logic
 {
     internal class LogicContext : ObjectNotify, ILogicContext
     {
-        public LogicContext()
+        private LogicContext()
         {
-            _defaultDataRepository = DataManager.CreateNewDataRepository();
+            this._defaultDataRepository = DataManager.CreateNewDataRepository();
 
-            _defaultServerRepository = DataManager.CreateNewServerRepository();
+            this._defaultServerRepository = DataManager.CreateNewServerRepository();
         }
 
         public LogicContext(ModInstallPath[] modFolders) : this()
@@ -34,21 +34,21 @@ namespace ArmaBrowser.Logic
 
         public void LookForArmaPath()
         {
-            _armaPath = _defaultDataRepository.GetArma3Folder();
-            OnPropertyChanged(nameof(ArmaPath));
-            _armaVersion = null;
-            OnPropertyChanged(nameof(ArmaVersion));
+            this._armaPath = this._defaultDataRepository.GetArma3Folder();
+            this.OnPropertyChanged(nameof(this.ArmaPath));
+            this._armaVersion = null;
+            this.OnPropertyChanged(nameof(this.ArmaVersion));
         }
 
         public void ReloadServerItems(IPEndPoint[] lastAddresses, CancellationToken cancellationToken)
         {
-            var recently = this.ServerItems.Where(srv => srv.LastPlayed.HasValue)
-                .Select(a => new Data.DefaultImpl.ServerItem { Host = a.Host, QueryPort = a.QueryPort })
+            Data.DefaultImpl.ServerItem[] recently = this.ServerItems.Where(srv => srv.LastPlayed.HasValue)
+                .Select(a => new Data.DefaultImpl.ServerItem {Host = a.Host, QueryPort = a.QueryPort})
                 .ToArray();
 
             try
             {
-                UiTask.Run(this.ServerItems.Clear, cancellationToken: cancellationToken).Wait(cancellationToken);
+                UiTask.Run(this.ServerItems.Clear, cancellationToken).Wait(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -57,58 +57,61 @@ namespace ArmaBrowser.Logic
             }
 
             ISteamGameServer[] lastServer = lastAddresses
-                .Select(a => (ISteamGameServer) new Data.DefaultImpl.ServerItem { Host = a.Address, QueryPort = a.Port})
+                .Select(a => (ISteamGameServer) new Data.DefaultImpl.ServerItem {Host = a.Address, QueryPort = a.Port})
                 .ToArray();
 
-            IEnumerable<ISteamGameServer> discoveredServer = _defaultServerRepository.GetServerList()
-                                                                    .Except(lastServer, ServerQueryAddressComparer.Default)
-                                                                    .Except(recently, ServerQueryAddressComparer.Default);
+            IEnumerable<ISteamGameServer> discoveredServer = this._defaultServerRepository.GetServerList()
+                .Except(lastServer, ServerQueryAddressComparer.Default)
+                .Except(recently, ServerQueryAddressComparer.Default);
 
-            var allServer = recently.Union(lastServer.Except(recently, ServerQueryAddressComparer.Default))
+            IEnumerable<ISteamGameServer> allServer = recently
+                .Union(lastServer.Except(recently, ServerQueryAddressComparer.Default))
                 .Union(discoveredServer);
 
             if (cancellationToken.IsCancellationRequested)
+            {
                 return;
+            }
 
             BufferBlock<IServerItem> buffer = new BufferBlock<IServerItem>();
-            BatchBlock<IServerItem> batchBlock = new BatchBlock<IServerItem>(10, new GroupingDataflowBlockOptions()
+            BatchBlock<IServerItem> batchBlock = new BatchBlock<IServerItem>(10, new GroupingDataflowBlockOptions
             {
                 CancellationToken = cancellationToken
             });
-            buffer.LinkTo(batchBlock, new DataflowLinkOptions { PropagateCompletion = true });
+            buffer.LinkTo(batchBlock, new DataflowLinkOptions {PropagateCompletion = true});
             ActionBlock<IServerItem[]> insertActionBlock = new ActionBlock<IServerItem[]>(
-                action: items =>
-                {
-                    items.Each(i => this.ServerItems.Add(i));
-                },
-                dataflowBlockOptions: new ExecutionDataflowBlockOptions()
+                items => { items.Each(i => this.ServerItems.Add(i)); },
+                new ExecutionDataflowBlockOptions
                 {
                     BoundedCapacity = 1,
                     CancellationToken = cancellationToken,
                     SingleProducerConstrained = true,
                     TaskScheduler = UiTask.UiTaskScheduler
                 });
-            batchBlock.LinkTo(insertActionBlock, new DataflowLinkOptions { PropagateCompletion = true });
+            batchBlock.LinkTo(insertActionBlock, new DataflowLinkOptions {PropagateCompletion = true});
 
-            var maxParallelCount = Environment.ProcessorCount*2;
-            var maxblockCount = 300;
+            int maxParallelCount = Environment.ProcessorCount * 2;
+            const int maxBlockCount = 300;
             List<WaitHandle> waitArray = new List<WaitHandle>();
             List<ISteamGameServer> block = new List<ISteamGameServer>();
 
-            foreach (var steamGameServer in allServer)
+            foreach (ISteamGameServer steamGameServer in allServer)
             {
                 if (cancellationToken.IsCancellationRequested)
-                    return;
-                block.Add(steamGameServer);
-                if (block.Count >= maxblockCount)
                 {
-                   waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
+                    return;
                 }
 
+                block.Add(steamGameServer);
+                if (block.Count >= maxBlockCount)
+                {
+                    waitArray.Add(this.EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
+                }
             }
+
             if (block.Any())
             {
-                waitArray.Add(EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
+                waitArray.Add(this.EnsureNewQueryingThread(cancellationToken, maxParallelCount, block, buffer));
             }
 
             WaitHandle.WaitAll(waitArray.ToArray());
@@ -117,24 +120,9 @@ namespace ArmaBrowser.Logic
             insertActionBlock.Completion.Wait(5000);
         }
 
-        private WaitHandle EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount,
-            List<ISteamGameServer> block, BufferBlock<IServerItem> buffer)
-        {
-            while (this.ReloadThreads.Count >= maxParallelCount)
-            {
-                Task.Delay(150, cancellationToken).Wait(cancellationToken);
-            }
-            lock (this.ReloadThreads){
-                
-                var threadContext = NewQueryThread(buffer, cancellationToken, block.ToArray());
-                block.Clear();
-                return threadContext.Reset;
-            }
-        }
-
         public void ReloadServerItem(IPEndPoint iPEndPoint, CancellationToken cancellationToken)
         {
-            var dest = ServerItems;
+            ObservableCollection<IServerItem> dest = this.ServerItems;
             try
             {
                 UiTask.Run(dest.Clear, cancellationToken).Wait(cancellationToken);
@@ -146,12 +134,16 @@ namespace ArmaBrowser.Logic
                 return;
             }
 
-            var vo = _defaultServerRepository.GetServerInfo(new IPEndPoint(iPEndPoint.Address, iPEndPoint.Port + 1));
+            ISteamGameServer vo =
+                this._defaultServerRepository.GetServerInfo(new IPEndPoint(iPEndPoint.Address, iPEndPoint.Port + 1));
             if (cancellationToken.IsCancellationRequested || vo == null)
+            {
                 return;
-            var item = new ServerItem();
+            }
+
+            ServerItem item = new ServerItem();
             AssignProperties(item, vo);
-            
+
             UiTask.Run((dest2, item2) => dest2.Add(item2), dest, item).Wait(0);
         }
 
@@ -160,27 +152,27 @@ namespace ArmaBrowser.Logic
         {
             get
             {
-                if (_addons == null)
+                if (this._addons == null)
                 {
-                    _addons = new ObservableCollection<IAddon>();
+                    this._addons = new ObservableCollection<IAddon>();
 
 
                     if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                     {
-                        _addons.Add(new Addon
+                        this._addons.Add(new Addon
                         {
-                            Name = "no Sign",
-                            DisplayText = string.Format("{0} ({1})", "DisplayText CannotActived", "Name"),
-                            ModName = "@modename",
+                            Name = "no Sign Mod1",
+                            DisplayText = "DisplayText CannotActivated (no Sign Mod1)",
+                            ModName = "@ModName",
                             Version = "000.00.0",
                             KeyNames = new[] {new AddonKey {Name = "key"}}
                         });
 
-                        _addons.Add(new Addon
+                        this._addons.Add(new Addon
                         {
-                            Name = "new Sign",
-                            DisplayText = string.Format("{0} ({1})", "DisplayText CanActived", "Name"),
-                            ModName = "@modename",
+                            Name = "new Sign Mod2",
+                            DisplayText = "DisplayText CanActivated (new Sign Mod2)",
+                            ModName = "@ModName",
                             Version = "000.00.0",
                             KeyNames = new[] {new AddonKey {Name = "key"}},
                             CanActived = true
@@ -188,11 +180,11 @@ namespace ArmaBrowser.Logic
                     }
                     else
                     {
-                        ReloadAddons();
+                        this.ReloadAddons();
                     }
                 }
 
-                return _addons;
+                return this._addons;
             }
         }
 
@@ -205,29 +197,32 @@ namespace ArmaBrowser.Logic
                 addonArgs = $@" ""-mod={string.Join(";", addons.Select(i => i.CommandlinePath).ToArray())}""";
             }
 
-            var serverArgs = serverItem != null
-                ? string.Format(" -connect={0} -port={1}", serverItem.Host, serverItem.Port)
+            string serverArgs = serverItem != null
+                ? $" -connect={serverItem.Host} -port={serverItem.Port}"
                 : string.Empty;
-            var path = Settings.Default.ArmaPath;
-            var psInfo = new ProcessStartInfo
+            string path = Settings.Default.ArmaPath;
+            ProcessStartInfo psInfo = new ProcessStartInfo
             {
                 FileName = Path.Combine(path, "arma3battleye.exe"),
-                Arguments = " 2 1 1 -exe Arma3_x64 -skipintro -noSplash -noPause -world=empty " + addonArgs + serverArgs,
+                Arguments =
+                    " 2 1 1 -exe Arma3_x64 -skipintro -noSplash -noPause -world=empty " + addonArgs + serverArgs,
                 // -malloc=system
                 WorkingDirectory = path,
                 UseShellExecute = true
             };
 
             if (runAsAdmin)
+            {
                 psInfo.Verb = "runsas";
+            }
 
             try
             {
-                var ps = Process.Start(psInfo);
+                Process ps = Process.Start(psInfo);
                 if (ps != null)
                 {
                     ps.EnableRaisingEvents = true;
-                    ps.Exited += ps_Exited;
+                    ps.Exited += this.ps_Exited;
                 }
             }
             catch (Exception)
@@ -239,23 +234,35 @@ namespace ArmaBrowser.Logic
 
         public void RefreshServerInfo(IServerItem[] serverItems)
         {
-            if (serverItems == null) return;
+            if (serverItems == null)
+            {
+                return;
+            }
+
             foreach (ServerItem serverItem in serverItems.Cast<ServerItem>())
             {
-                if (serverItem?.Host == null) return;
-                if (serverItem.QueryPort == 0) return;
+                if (serverItem?.Host == null)
+                {
+                    return;
+                }
+
+                if (serverItem.QueryPort == 0)
+                {
+                    return;
+                }
 
 
                 ISteamGameServer dataItem = null;
                 try
                 {
-                    dataItem =
-                        _defaultServerRepository.GetServerInfo(new IPEndPoint(serverItem.Host, serverItem.QueryPort));
+                    dataItem = this._defaultServerRepository.GetServerInfo(new IPEndPoint(serverItem.Host,
+                        serverItem.QueryPort));
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex);
                 }
+
                 if (dataItem == null)
                 {
                     serverItem.Ping = 999;
@@ -269,19 +276,36 @@ namespace ArmaBrowser.Logic
 
         public async Task RefreshServerInfoAsync(IServerItem[] items)
         {
-            await Task.Run(() => RefreshServerInfo(items));
+            await Task.Run(() => this.RefreshServerInfo(items));
         }
 
-        private LoadingServerListContext NewQueryThread(BufferBlock<IServerItem> dest, CancellationToken token, 
-            ISteamGameServer[] ips)
+        private WaitHandle EnsureNewQueryingThread(CancellationToken cancellationToken, int maxParallelCount,
+                                                   List<ISteamGameServer> block, BufferBlock<IServerItem> buffer)
         {
-            var thread = new Thread(LoadingServerList)
+            while (this.ReloadThreads.Count >= maxParallelCount)
             {
-                Name = "UDP " + ReloadThreads.Count + 1,
+                Task.Delay(150, cancellationToken).Wait(cancellationToken);
+            }
+
+            lock (this.ReloadThreads)
+            {
+                LoadingServerListContext threadContext =
+                    this.NewQueryThread(buffer, cancellationToken, block.ToArray());
+                block.Clear();
+                return threadContext.Reset;
+            }
+        }
+
+        private LoadingServerListContext NewQueryThread(BufferBlock<IServerItem> dest, CancellationToken token,
+                                                        ISteamGameServer[] ips)
+        {
+            Thread thread = new Thread(this.LoadingServerList)
+            {
+                Name = "UDP " + this.ReloadThreads.Count + 1,
                 IsBackground = true,
                 Priority = ThreadPriority.Lowest
             };
-            var threadContext = new LoadingServerListContext
+            LoadingServerListContext threadContext = new LoadingServerListContext
             {
                 Dest = dest,
                 Ips = ips,
@@ -289,32 +313,36 @@ namespace ArmaBrowser.Logic
             };
             lock (this._reloadThreadsLock)
             {
-                UiTask.Run(ReloadThreads.Add, threadContext).Wait(100);
+                UiTask.Run(this.ReloadThreads.Add, threadContext).Wait(100);
             }
+
             thread.Start(threadContext);
             return threadContext;
         }
 
         private void LoadingServerList(object loadingServerListContext)
         {
-            var state = (LoadingServerListContext) loadingServerListContext;
+            LoadingServerListContext state = (LoadingServerListContext) loadingServerListContext;
 
-            var innerBuffer = new BufferBlock<IServerItem>();
+            BufferBlock<IServerItem> innerBuffer = new BufferBlock<IServerItem>();
             using (innerBuffer.LinkTo(state.Dest))
             {
                 IObserver<IServerItem> asObserver = innerBuffer.AsObserver();
-                foreach (var dataItem in state.Ips)
+                foreach (ISteamGameServer dataItem in state.Ips)
                 {
                     if (state.Token.IsCancellationRequested)
+                    {
                         break;
+                    }
 
-                    ServerItem item = AddGameServer(dataItem, asObserver, state.Token).Result;
+                    ServerItem item = this.AddGameServer(dataItem, asObserver, state.Token).Result;
                     if (item != null)
                     {
                         state.ProgressValue++;
                         state.Ping = item.Ping;
                     }
                 }
+
                 asObserver.OnCompleted();
             }
 
@@ -324,33 +352,34 @@ namespace ArmaBrowser.Logic
                     {
                         lock (this._reloadThreadsLock)
                         {
-                            ReloadThreads.Remove((LoadingServerListContext)ctx);
+                            this.ReloadThreads.Remove((LoadingServerListContext) ctx);
                         }
                     }
-                , state, UiTask.UiTaskScheduler)
+                    , state, UiTask.UiTaskScheduler)
                 .Wait();
             //UiTask.Run(ctx => ReloadThreads.Remove(ctx), state).Wait();
         }
 
-        private async Task<ServerItem> AddGameServer(ISteamGameServer dataItem, IObserver<IServerItem> dest, CancellationToken cancellationToken)
+        private async Task<ServerItem> AddGameServer(ISteamGameServer dataItem, IObserver<IServerItem> dest,
+                                                     CancellationToken cancellationToken)
         {
-            var serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
+            IPEndPoint serverQueryEndpoint = new IPEndPoint(dataItem.Host, dataItem.QueryPort);
 
-            var vo = _defaultServerRepository.GetServerInfo(serverQueryEndpoint);
+            ISteamGameServer vo = this._defaultServerRepository.GetServerInfo(serverQueryEndpoint);
 
             if (cancellationToken.IsCancellationRequested)
             {
                 return null;
             }
 
-            var item = new ServerItem();
+            ServerItem item = new ServerItem();
             if (vo != null)
             {
                 AssignProperties(item, vo);
             }
             else
             {
-                item.Name = string.Format("{0}:{1}", serverQueryEndpoint.Address, serverQueryEndpoint.Port - 1);
+                item.Name = $"{serverQueryEndpoint.Address}:{serverQueryEndpoint.Port - 1}";
                 item.Host = serverQueryEndpoint.Address;
                 item.QueryPort = serverQueryEndpoint.Port;
             }
@@ -363,12 +392,12 @@ namespace ArmaBrowser.Logic
 
         private static void AssignProperties(ServerItem item, ISteamGameServer vo)
         {
-            var keyWordsSplited = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            var keyWords = new Dictionary<string, string>(keyWordsSplited.Length);
+            string[] keyWordsParts = vo.Keywords.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            Dictionary<string, string> keyWords = new Dictionary<string, string>(keyWordsParts.Length);
 
-            foreach (var s in keyWordsSplited)
+            foreach (string s in keyWordsParts)
             {
-                var k = s.Substring(0, 1);
+                string k = s.Substring(0, 1);
                 if (!keyWords.ContainsKey(k))
                 {
                     keyWords.Add(k, s.Substring(1));
@@ -391,7 +420,7 @@ namespace ArmaBrowser.Logic
             item.Signatures = vo.Signatures;
             item.VerifySignatures = vo.VerifySignatures;
             item.Version = vo.Version;
-            item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.Passworded;
+            item.Passworded = keyWords.FirstOrDefault(k => k.Key == "l").Value == "t"; //dataItem1.HasPassword;
             item.Ping = vo.Ping;
             if (vo.Players != null)
             {
@@ -402,42 +431,43 @@ namespace ArmaBrowser.Logic
 
         internal async void ReloadAddons()
         {
-            if (_addons == null)
-                _addons = new ObservableCollection<IAddon>();
-
-            _addons.Clear();
-
-            var armaPath = Settings.Default.ArmaPath;
-
-            await ReloadAddonsAsync(armaPath, true);
-            await
-                ReloadAddonsAsync(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
-                        Environment.SpecialFolderOption.DoNotVerify) +
-                    Path.DirectorySeparatorChar + "Arma 3" + Path.DirectorySeparatorChar, true);
-
-            await
-                ReloadAddonsAsync(this.ArmaPath + Path.DirectorySeparatorChar + "!Workshop" + Path.DirectorySeparatorChar, false);
-
-            foreach (var modInstallPath in this._modFolders)
+            if (this._addons == null)
             {
-                await ReloadAddonsAsync(modInstallPath.Path, modInstallPath.IsDefault);
+                this._addons = new ObservableCollection<IAddon>();
             }
-        
-            AddonWebApi.PostInstalledAddonsKeysAsync(_addons.ToArray()).Wait(0);
+
+            this._addons.Clear();
+
+            string armaPath = Settings.Default.ArmaPath;
+
+            await this.ReloadAddonsAsync(armaPath, true);
+            await this.ReloadAddonsAsync(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+                    Environment.SpecialFolderOption.DoNotVerify) +
+                Path.DirectorySeparatorChar + "Arma 3" + Path.DirectorySeparatorChar, true);
+
+            await this.ReloadAddonsAsync(
+                this.ArmaPath + Path.DirectorySeparatorChar + "!Workshop" + Path.DirectorySeparatorChar, false);
+
+            foreach (ModInstallPath modInstallPath in this._modFolders)
+            {
+                await this.ReloadAddonsAsync(modInstallPath.Path, modInstallPath.IsDefault);
+            }
+
+            AddonWebApi.PostInstalledAddonsKeysAsync(this._addons.ToArray()).Wait(0);
         }
 
         private async Task ReloadAddonsAsync(string path, bool isArmaDefaultPath)
         {
             if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
             {
-                var items = await Task.Run(() => _defaultDataRepository.GetInstalledAddons(path));
-                foreach (var item in items)
+                IArmaAddon[] items = await Task.Run(() => this._defaultDataRepository.GetInstalledAddons(path));
+                foreach (IArmaAddon item in items)
                 {
-                    _addons.Add(new Addon
+                    this._addons.Add(new Addon
                     {
                         Name = item.Name,
-                        DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+                        DisplayText = $"{item.DisplayText} ({item.Name})",
                         Path = item.Path,
                         ModName = item.ModName,
                         Version = item.Version,
@@ -470,29 +500,28 @@ namespace ArmaBrowser.Logic
 
         internal IServerItem[] AddServerItems(IEnumerable<string> hostQueryAddresses)
         {
-            var result = new List<IServerItem>();
-            foreach (var hostQueryAddress in hostQueryAddresses)
+            List<IServerItem> result = new List<IServerItem>();
+            foreach (string hostQueryAddress in hostQueryAddresses)
             {
-                var pos = hostQueryAddress.IndexOf(':');
-                var addr = hostQueryAddress.Substring(0, pos);
-                int.TryParse(hostQueryAddress.Substring(pos + 1), out var port);
+                int pos = hostQueryAddress.IndexOf(':');
+                string address = hostQueryAddress.Substring(0, pos);
+                int.TryParse(hostQueryAddress.Substring(pos + 1), out int port);
 
-                var serverItem = new ServerItem {Host = IPAddress.Parse(addr), QueryPort = port, Name = addr};
-                ServerItems.Add(serverItem);
+                ServerItem serverItem = new ServerItem {Host = IPAddress.Parse(address), QueryPort = port, Name = address};
+                this.ServerItems.Add(serverItem);
                 result.Add(serverItem);
             }
+
             return result.ToArray();
         }
 
-        internal IServerItem[] AddServerItems(IEnumerable<IServerItem> serverItems)
+        internal void AddServerItems(IEnumerable<IServerItem> serverItems)
         {
             IEnumerable<IServerItem> items = serverItems.ToArray();
-            foreach (var serverItem in items)
+            foreach (IServerItem serverItem in items)
             {
-                ServerItems.Add(serverItem);
+                this.ServerItems.Add(serverItem);
             }
-
-            return items.ToArray();
         }
 
         private async Task<IEnumerable<RestAddonInfoResult>> GetAddonInfosAsync(params string[] addonKeynames)
@@ -504,16 +533,19 @@ namespace ArmaBrowser.Logic
         //{
         //    //Task.Run(() =>
         //    //{
-        //    //    var webapi = new AddonWebApi();
-        //    //    webapi.AddAddonDownloadUri(addon,uri);
+        //    //    var webApi = new AddonWebApi();
+        //    //    webApi.AddAddonDownloadUri(addon,uri);
         //    //});
         //}
 
         internal static async Task UploadAddonAsync(IAddon addon)
         {
-                RestAddonInfoResult[] infos = await AddonWebApi.GetAddonInfosAsync(addon.KeyNames.Select(k => k.Hash).ToArray());
-                if (!infos.Any() || infos.Any(a => a.easyinstall))
-                    return;
+            RestAddonInfoResult[] infos =
+                await AddonWebApi.GetAddonInfosAsync(addon.KeyNames.Select(k => k.Hash).ToArray());
+            if (!infos.Any() || infos.Any(a => a.easyinstall))
+            {
+                return;
+            }
 
             AddonWebApi.UploadAddon(addon);
         }
@@ -523,25 +555,25 @@ namespace ArmaBrowser.Logic
             if (addon.IsEasyInstallable.HasValue && addon.IsEasyInstallable.Value && addon.KeyNames.Any() &&
                 addon.KeyNames.Any(k => !string.IsNullOrEmpty(k.Hash)))
             {
-                var installedAddon = await Task.Run(() =>
+                Addon installedAddon = await Task.Run(() =>
                 {
-                    var targetFolder =
+                    string targetFolder =
                         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
                             Environment.SpecialFolderOption.DoNotVerify) +
                         Path.DirectorySeparatorChar + @"ArmaBrowser" + Path.DirectorySeparatorChar +
                         "Arma 3" +
                         Path.DirectorySeparatorChar + "Addons" + Path.DirectorySeparatorChar;
-                    var hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
+                    string hash = addon.KeyNames.First(k => !string.IsNullOrEmpty(k.Hash)).Hash;
                     AddonWebApi.DownloadAddon(addon, hash, targetFolder);
 
-                    var addons = _defaultDataRepository.GetInstalledAddons(targetFolder);
-                    var item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));
+                    IArmaAddon[] addons = this._defaultDataRepository.GetInstalledAddons(targetFolder);
+                    IArmaAddon item = addons.FirstOrDefault(a => a.KeyNames.Any(k => k.Hash == hash));
                     if (item != null)
                     {
                         return new Addon
                         {
                             Name = item.Name,
-                            DisplayText = string.Format("{0} ({1})", item.DisplayText, item.Name),
+                            DisplayText = $"{item.DisplayText} ({item.Name})",
                             Path = item.Path,
                             ModName = item.ModName,
                             Version = item.Version,
@@ -552,42 +584,45 @@ namespace ArmaBrowser.Logic
                             IsActive = addon.CanActived
                         };
                     }
+
                     return null;
                 });
 
                 if (installedAddon != null)
                 {
-                    var idx = _addons.IndexOf(addon);
-                    _addons[idx] = installedAddon;
+                    int idx = this._addons.IndexOf(addon);
+                    this._addons[idx] = installedAddon;
                 }
             }
         }
 
         public async Task UpdateAddonInfos(string[] hostAddonKeyNames)
         {
-            var addonInfosTask = await GetAddonInfosAsync(hostAddonKeyNames);
+            IEnumerable<RestAddonInfoResult> addonInfosTask = await this.GetAddonInfosAsync(hostAddonKeyNames);
 
-            var addonInfosTaskResult = addonInfosTask;
+            IEnumerable<RestAddonInfoResult> addonInfosTaskResult = addonInfosTask;
 
             //await addonInfosTask.ContinueWith(parentTask =>
             {
                 //if (parentTask.Status != TaskStatus.RanToCompletion) return;
 
                 //var addonInfosTaskResult = parentTask.Result;
-                foreach (var addonInfo in addonInfosTaskResult)
+                foreach (RestAddonInfoResult addonInfo in addonInfosTaskResult)
                 {
-                    var updAddon =
-                        Addons.FirstOrDefault(
-                            a =>
-                                a.KeyNames.Any(
-                                    tag => tag.Hash.Equals(addonInfo.hash, StringComparison.OrdinalIgnoreCase)));
+                    IAddon updAddon = this.Addons.FirstOrDefault(
+                        a =>
+                            a.KeyNames.Any(
+                                tag => tag.Hash.Equals(addonInfo.hash, StringComparison.OrdinalIgnoreCase)));
 
                     if (updAddon != null)
+                    {
                         updAddon.IsEasyInstallable = addonInfo.easyinstall;
+                    }
                     else
                     {
                         if (addonInfo.easyinstall)
-                            Addons.Add(new Addon
+                        {
+                            this.Addons.Add(new Addon
                             {
                                 Name = addonInfo.name,
                                 ModName = addonInfo.name,
@@ -598,6 +633,7 @@ namespace ArmaBrowser.Logic
                                 IsEasyInstallable = addonInfo.easyinstall,
                                 CanActived = true
                             });
+                        }
                     }
                 }
             } //);
@@ -610,7 +646,9 @@ namespace ArmaBrowser.Logic
             bool IEqualityComparer<ISteamGameServer>.Equals(ISteamGameServer x, ISteamGameServer y)
             {
                 if (x == null || y == null)
+                {
                     return false;
+                }
 
                 return x.Host + " " + x.QueryPort == y.Host + " " + y.QueryPort;
             }
@@ -625,7 +663,9 @@ namespace ArmaBrowser.Logic
 
         private readonly IArma3DataRepository _defaultDataRepository;
         private ObservableCollection<IAddon> _addons;
+
         private readonly Arma3ServerRepositorySteam _defaultServerRepository;
+
         //private Data.IArmaBrowserServerRepository _defaultBrowserServerRepository;
         private string _armaPath;
         private string _armaVersion;
@@ -638,37 +678,33 @@ namespace ArmaBrowser.Logic
 
         public ObservableCollection<IServerItem> ServerItems { get; } = new ObservableCollection<IServerItem>();
 
-        public ObservableCollection<LoadingServerListContext> ReloadThreads { get; } = new ObservableCollection<LoadingServerListContext>();
+        public ObservableCollection<LoadingServerListContext> ReloadThreads { get; } =
+            new ObservableCollection<LoadingServerListContext>();
 
         public string ArmaVersion
         {
             get
             {
-                if (_armaVersion == null)
+                if (this._armaVersion == null)
                 {
-                    var folder = Settings.Default.ArmaPath;
+                    string folder = Settings.Default.ArmaPath;
                     if (!string.IsNullOrEmpty(folder) && File.Exists(Path.Combine(folder, "arma3.exe")))
                     {
-                        var version = FileVersionInfo.GetVersionInfo(Path.Combine(folder, "arma3.exe"));
-                        _armaVersion = string.Format("{0}.{1}.{2:000}{3}", version.FileMajorPart, version.FileMinorPart,
-                            version.FileBuildPart, version.FilePrivatePart);
+                        FileVersionInfo version = FileVersionInfo.GetVersionInfo(Path.Combine(folder, "arma3.exe"));
+                        this._armaVersion =
+                            $"{version.FileMajorPart}.{version.FileMinorPart}.{version.FileBuildPart:000}{version.FilePrivatePart}";
                     }
                     else
-                        _armaVersion = "unkown";
+                    {
+                        this._armaVersion = "unknown";
+                    }
                 }
-                return _armaVersion;
+
+                return this._armaVersion;
             }
         }
 
-        public string ArmaPath
-        {
-            get
-            {
-                if (_armaPath == null)
-                    _armaPath = _defaultDataRepository.GetArma3Folder();
-                return _armaPath;
-            }
-        }
+        public string ArmaPath => this._armaPath ?? (this._armaPath = this._defaultDataRepository.GetArma3Folder());
 
         #endregion Properties
     }
@@ -676,77 +712,87 @@ namespace ArmaBrowser.Logic
     internal class LoadingServerListContext : ObjectNotify
     {
         private readonly ManualResetEvent _reset;
+        private bool _isRemoving;
         private int _ping;
         private int _progressValue;
-        private bool _isRemoving;
 
         public LoadingServerListContext()
         {
-            _reset = new ManualResetEvent(false);
+            this._reset = new ManualResetEvent(false);
         }
 
         public ISteamGameServer[] Ips { get; set; }
         public BufferBlock<IServerItem> Dest { get; set; }
         public CancellationToken Token { get; set; }
 
-        public WaitHandle Reset
-        {
-            get { return _reset; }
-        }
+        public WaitHandle Reset => this._reset;
 
-        public int MaximumValue
-        {
-            get { return Ips != null ? Ips.Length : 0; }
-        }
+        public int MaximumValue => this.Ips?.Length ?? 0;
 
         public int ProgressValue
         {
-            get { return _progressValue; }
+            get => this._progressValue;
             set
             {
-                if (value == _progressValue) return;
-                _progressValue = value;
-                OnPropertyChanged();
-                OnPropertyChanged("Procent");
+                if (value == this._progressValue)
+                {
+                    return;
+                }
+
+                this._progressValue = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.Percent));
             }
         }
 
 
-        public double Procent
+        public double Percent
         {
             get
             {
-                if (MaximumValue <= 0) return 0;
-                return ProgressValue/(MaximumValue*1d);
+                if (this.MaximumValue <= 0)
+                {
+                    return 0;
+                }
+
+                return this.ProgressValue / (this.MaximumValue * 1d);
             }
         }
 
         public int Ping
         {
-            get { return _ping; }
+            get => this._ping;
             set
             {
-                if (value == _ping) return;
-                _ping = value;
-                OnPropertyChanged();
+                if (value == this._ping)
+                {
+                    return;
+                }
+
+                this._ping = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool IsRemoving
         {
-            get { return _isRemoving; }
+            get => this._isRemoving;
             private set
             {
-                if (value == _isRemoving) return;
-                _isRemoving = value;
-                OnPropertyChanged();
+                if (value == this._isRemoving)
+                {
+                    return;
+                }
+
+                this._isRemoving = value;
+                this.OnPropertyChanged();
             }
         }
 
         public void Finished()
         {
-            IsRemoving = true;
-            _reset.Set();
+            this.IsRemoving = true;
+            this._reset.Set();
         }
     }
 }

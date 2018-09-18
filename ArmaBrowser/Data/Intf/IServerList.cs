@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Collections.Generic;
 using Magic.Steam;
 
 namespace ArmaBrowser.Data
 {
-    interface IServerRepository
+    internal interface IServerRepository
     {
         IEnumerable<ISteamGameServer> GetServerList();
-
-        ISteamGameServer GetServerInfo(IPEndPoint gameServerQueryEndpoint);
     }
 }
