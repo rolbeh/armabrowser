@@ -99,7 +99,7 @@
             <!-- search field and server listing -->
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="34"/>
                     <RowDefinition/>
                     <RowDefinition MinHeight="42" Height="Auto"/>
                 </Grid.RowDefinitions>
@@ -107,8 +107,8 @@
                 <!-- search field -->
                 <Grid Grid.Row="0" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="127"/>
+                        <ColumnDefinition Width="350" />
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="1"  Command="armaBrowser:ArmaBrowserCommands.ReloadServerList" Padding="2" Margin="0,4" VerticalAlignment="Stretch" 
                             FontSize="16"
@@ -125,7 +125,7 @@
                             Content="{Binding Path=Command.(RoutedUICommand.Text), RelativeSource={RelativeSource Self}}"
                             Visibility="{Binding Path=LoadingBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
                     </Button>
-                    <Grid Margin="0,4,4,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+                    <Grid Grid.Column="0" Margin="0,4,16,4" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
                         <TextBlock Text="Search for server or Missions" Foreground="#FFE0E0E0" VerticalAlignment="Center" 
                                    FontStyle="Italic"
                                    FontSize="18"
@@ -420,7 +420,7 @@
                     </CollectionViewSource>
                 </Grid.Resources>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="34"/>
                     <RowDefinition/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
