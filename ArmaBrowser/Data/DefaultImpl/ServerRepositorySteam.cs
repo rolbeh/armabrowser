@@ -11,7 +11,7 @@ namespace ArmaBrowser.Data.DefaultImpl
 
         #region IServerRepository
 
-        public IEnumerable<ISteamGameServer> GetServerList()
+        public IEnumerable<ISteamGameServer> DiscoverServer()
         {
             // https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol
 

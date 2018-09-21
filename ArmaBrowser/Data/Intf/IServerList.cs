@@ -5,6 +5,6 @@ namespace ArmaBrowser.Data
 {
     internal interface IServerRepository
     {
-        IEnumerable<ISteamGameServer> GetServerList();
+        IEnumerable<ISteamGameServer> DiscoverServer();
     }
 }

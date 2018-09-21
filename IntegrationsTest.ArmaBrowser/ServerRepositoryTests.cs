@@ -16,7 +16,7 @@ namespace IntegrationsTest.ArmaBrowser
             IServerRepository serverRepository = new Arma3ServerRepositorySteam();
 
             // when 
-            ISteamGameServer[] serverList = serverRepository.GetServerList().ToArray();
+            ISteamGameServer[] serverList = serverRepository.DiscoverServer().ToArray();
 
             // Then
 
