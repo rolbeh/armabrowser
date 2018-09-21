@@ -11,46 +11,46 @@ namespace ArmaBrowser.Logic
 
         internal ServerItem()
         {
-            Signatures = string.Empty;
+            this.Signatures = string.Empty;
         }
 
         public ServerItemGroup GroupName
         {
             get
             {
-                if (_isFavorite) return ServerItemGroup.Favorite;
-                if (LastPlayed.HasValue) return ServerItemGroup.Recently;
-                if (Port > 0) return ServerItemGroup.Found;
+                if (this._isFavorite) return ServerItemGroup.Favorite;
+                if (this.LastPlayed.HasValue) return ServerItemGroup.Recently;
+                if (this.Port > 0) return ServerItemGroup.Found;
                 return ServerItemGroup.NoResponse;
             }
             // ReSharper disable once ValueParameterNotUsed
-            private set => OnPropertyChanged();
+            private set => this.OnPropertyChanged();
         }
 
         // ReSharper disable once UnusedMember.Global
-        public string Endpoint => string.Format("{0}:{1}", Host, Port);
+        public string Endpoint => string.Format("{0}:{1}", this.Host, this.Port);
 
-        public string PlayersState => string.Format("{0}/{1}", _playersNum, _maxPlayers);
+        public string PlayersState => string.Format("{0}/{1}", this._playersNum, this._maxPlayers);
 
         public bool IsFavorite
         {
-            get => _isFavorite;
+            get => this._isFavorite;
             set
             {
-                _isFavorite = value;
-                OnPropertyChanged();
-                GroupName = ServerItemGroup.Favorite;
+                this._isFavorite = value;
+                this.OnPropertyChanged();
+                this.GroupName = ServerItemGroup.Favorite;
             }
         }
 
         public DateTime? LastPlayed
         {
-            get => _lastPlayed;
+            get => this._lastPlayed;
             set
             {
-                _lastPlayed = value;
-                GroupName = ServerItemGroup.Recently;
-                OnPropertyChanged();
+                this._lastPlayed = value;
+                this.GroupName = ServerItemGroup.Recently;
+                this.OnPropertyChanged();
             }
         }
 
@@ -58,31 +58,31 @@ namespace ArmaBrowser.Logic
 
         public string Mode
         {
-            get => _mode;
+            get => this._mode;
             set
             {
-                _mode = value;
-                OnPropertyChanged();
+                this._mode = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string Name
         {
-            get => _name;
+            get => this._name;
             set
             {
-                _name = value;
-                OnPropertyChanged();
+                this._name = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string Mission
         {
-            get => _mission;
+            get => this._mission;
             set
             {
-                _mission = value;
-                OnPropertyChanged();
+                this._mission = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -110,12 +110,12 @@ namespace ArmaBrowser.Logic
 
         public string Version
         {
-            get => _version;
+            get => this._version;
             set
             {
-                if (_version == value) return;
-                _version = value;
-                OnPropertyChanged();
+                if (this._version == value) return;
+                this._version = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -123,11 +123,11 @@ namespace ArmaBrowser.Logic
 
         public string ModsText
         {
-            get => _modsText;
+            get => this._modsText;
             internal set
             {
-                _modsText = value ?? string.Empty;
-                Mods = _modsText.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
+                this._modsText = value ?? string.Empty;
+                this.Mods = this._modsText.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
             }
         }
 
@@ -137,72 +137,72 @@ namespace ArmaBrowser.Logic
 
         public string Signatures
         {
-            get => _signatures;
-            internal set => _signatures = value ?? string.Empty;
+            get => this._signatures;
+            internal set => this._signatures = value ?? string.Empty;
         }
 
         public int CurrentPlayerCount
         {
-            get => _playersNum;
+            get => this._playersNum;
             set
             {
-                _playersNum = value;
-                OnPropertyChanged("IsPlayerSlotsFull");
-                OnPropertyChanged("PlayersState");
-                OnPropertyChanged();
+                this._playersNum = value;
+                this.OnPropertyChanged("IsPlayerSlotsFull");
+                this.OnPropertyChanged("PlayersState");
+                this.OnPropertyChanged();
             }
         }
 
         public int MaxPlayers
         {
-            get => _maxPlayers;
+            get => this._maxPlayers;
             set
             {
-                _maxPlayers = value;
-                OnPropertyChanged("IsPlayerSlotsFull");
-                OnPropertyChanged("PlayersState");
-                OnPropertyChanged();
+                this._maxPlayers = value;
+                this.OnPropertyChanged("IsPlayerSlotsFull");
+                this.OnPropertyChanged("PlayersState");
+                this.OnPropertyChanged();
             }
         }
 
         public ISteamGameServerPlayer[] CurrentPlayers
         {
-            get => _currentPlayers;
+            get => this._currentPlayers;
             internal set
             {
-                if (_currentPlayers == value) return;
-                _currentPlayers = value;
-                OnPropertyChanged();
+                if (this._currentPlayers == value) return;
+                this._currentPlayers = value;
+                this.OnPropertyChanged();
             }
         }
 
-        public bool IsPlayerSlotsFull => _maxPlayers == _playersNum;
+        public bool IsPlayerSlotsFull => this._maxPlayers == this._playersNum;
 
         public string CurrentPlayersText
         {
-            get => _currentPlayersText;
+            get => this._currentPlayersText;
             internal set
             {
-                if (_currentPlayersText == value) return;
-                _currentPlayersText = value;
-                OnPropertyChanged();
+                if (this._currentPlayersText == value) return;
+                this._currentPlayersText = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string Island { get; internal set; }
 
-        public string FullText => string.Format("{0} {1} {2}", Name, Mission, Island);
+        public string FullText => string.Format("{0} {1} {2}", this.Name, this.Mission, this.Island);
 
         public bool Passworded { get; set; }
 
         public int Ping
         {
-            get => _ping;
+            get => this._ping;
             internal set
             {
-                if (_ping == value) return;
-                _ping = value;
-                OnPropertyChanged();
+                if (this._ping == value) return;
+                this._ping = value;
+                this.OnPropertyChanged();
             }
         }
 
