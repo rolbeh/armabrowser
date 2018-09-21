@@ -56,11 +56,11 @@ namespace ArmaBrowser.Logic
                 return;
             }
 
-            ISteamGameServer[] lastServer = lastAddresses
+            ISteamGameServer[] lastServer = lastAddresses.Distinct()
                 .Select(a => (ISteamGameServer) new Data.DefaultImpl.ServerItem {Host = a.Address, QueryPort = a.Port})
                 .ToArray();
 
-            IEnumerable<ISteamGameServer> discoveredServer = this._defaultServerRepository.GetServerList()
+            IEnumerable<ISteamGameServer> discoveredServer = this._defaultServerRepository.DiscoverServer()
                 .Except(lastServer, ServerQueryAddressComparer.Default)
                 .Except(recently, ServerQueryAddressComparer.Default);
 
@@ -497,17 +497,21 @@ namespace ArmaBrowser.Logic
             }).Wait(0);
         }
 
+        internal IServerItem ToServerItem(string hostQueryEndpoint)
+        {
+            int pos = hostQueryEndpoint.IndexOf(':');
+            string address = hostQueryEndpoint.Substring(0, pos);
+            int.TryParse(hostQueryEndpoint.Substring(pos + 1), out int port);
+
+            return new ServerItem { Host = IPAddress.Parse(address), QueryPort = port, Name = address };
+        }
 
         internal IServerItem[] AddServerItems(IEnumerable<string> hostQueryAddresses)
         {
             List<IServerItem> result = new List<IServerItem>();
             foreach (string hostQueryAddress in hostQueryAddresses)
             {
-                int pos = hostQueryAddress.IndexOf(':');
-                string address = hostQueryAddress.Substring(0, pos);
-                int.TryParse(hostQueryAddress.Substring(pos + 1), out int port);
-
-                ServerItem serverItem = new ServerItem {Host = IPAddress.Parse(address), QueryPort = port, Name = address};
+                IServerItem serverItem = this.ToServerItem(hostQueryAddress);
                 this.ServerItems.Add(serverItem);
                 result.Add(serverItem);
             }
